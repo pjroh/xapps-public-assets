@@ -2,15 +2,15 @@
 
 ### Overview
 
-Dashboard sheets turn workbook data into styled widget surfaces for executive summaries, KPI snapshots, launch status boards, revenue tracking, and at-a-glance reporting. Widgets pull live data from other sheets in the workbook and render it as cards, charts, tables, text blocks, gauges, treemaps, and progress rings. Dashboards support full surface styling, two layout modes, drag-to-move, drag-to-resize, and a 12-24 column grid system.
+Dashboard sheets turn workbook data into styled widget surfaces for executive summaries, KPI snapshots, CRM pipeline reviews, launch status boards, revenue tracking, and at-a-glance reporting. Widgets pull live data from other sheets in the workbook and render it as cards, CRM funnels, pipeline stage summaries, charts, linked map views, tables, text blocks, gauges, treemaps, and progress rings. Dashboards support full surface styling, two layout modes, drag-to-move, drag-to-resize, and a 12-24 column grid system.
 
 > 🤖 Agent example: an agent can read source metrics from spreadsheets, create KPI and gauge widgets, and leave a polished executive readout for a human to refine instead of starting from an empty dashboard.
 
-![Dashboard sheet showing KPI, gauge, treemap, and narrative widgets driven by workbook data](/help-assets/screenshots/dashboard-sheet.png)
+![Dashboard sheet showing KPI cards, line chart, bar chart, sales funnel, pipeline stages, gauge, data table, text block, donut chart, and sector treemap widgets on a dark surface](/help-assets/screenshots/dashboard-sheet.png)
 
 ### Features
 
-- Nine widget types: KPI Card, Bar Chart, Line Chart, Donut/Pie Chart, Progress Ring, Data Table, Text Block, Treemap, Gauge
+- Twelve widget types: KPI Card, Sales Funnel, Pipeline Stages, Bar Chart, Line Chart, Donut/Pie Chart, Map, Progress Ring, Data Table, Text Block, Treemap, Gauge
 - Live data binding from spreadsheet cell ranges
 - Template variables in text widgets (e.g., `{{SheetName!A1}}`)
 - 12-column grid layout (configurable 8-24 columns)
@@ -36,18 +36,49 @@ Dashboard sheets turn workbook data into styled widget surfaces for executive su
 7. Drag the widget header to reposition, or drag the corner handle to resize.
 8. Click **Surface** to customize the board background, grid lines, and layout mode.
 
+![Complete executive dashboard with all 14 widgets: KPIs, line chart, bar chart, funnel, pipeline stages, gauge, progress ring, data table, text block, donut chart, and treemap](/help-assets/screenshots/dashboard-full.png)
+
 ### Widget Types
 
 #### KPI Card
 
-A single executive metric with optional prefix, suffix, and trend indicator.
+A single executive metric with optional prefix, suffix, trend indicator, and sparkline.
 
 - **Data Range**: A single cell (e.g., `B2`) from the source sheet provides the headline number.
 - **Prefix**: Text before the value (e.g., `$`).
 - **Suffix**: Text after the value (e.g., `%`, `M`).
 - **Trend**: Freeform trend text (e.g., `+12%`, `-3.2pp`).
+- **Sparkline Range**: Optional cell range (e.g., `B2:B13`) from the source sheet that renders a small inline sparkline beneath the headline value, visualizing the trend over time.
 
 Example: A KPI card titled "Monthly Revenue" reading cell B12 from the "Financials" sheet, with prefix `$` and suffix `M`, showing `$4.2M` with trend `+8%`.
+
+![KPI cards, line chart, bar chart, and funnel widgets on a dark dashboard surface showing live workbook data](/help-assets/screenshots/dashboard-sheet.png)
+
+#### Sales Funnel
+
+A CRM funnel that visualizes stage drop-off from first touch through close.
+
+- **Labels Range**: Cell range for stage names (e.g., `A2:A6`).
+- **Values Range**: Cell range for stage totals, counts, or pipeline value (e.g., `B2:B6`).
+- **Data Range**: Optional rectangular range where the first column is stage label and the second column is value.
+- Each stage shows the current value and conversion from the previous stage.
+- Default size: 4 columns wide, 4 rows tall.
+
+Example: Leads, Qualified, Proposal, Negotiation, and Closed Won stages with deal counts or pipeline value.
+
+![Sales funnel, pipeline stages, and quota attainment gauge widgets on the dashboard](/help-assets/screenshots/dashboard-gauge-funnel.png)
+
+#### Pipeline Stages
+
+A compact CRM stage summary with a weighted horizontal bar per stage.
+
+- **Labels Range**: Cell range for stage names.
+- **Values Range**: Cell range for stage value or record count.
+- **Data Range**: Optional rectangular label/value range.
+- Each row shows the stage value, share of total pipeline, and relative weight against the largest stage.
+- Default size: 5 columns wide, 4 rows tall.
+
+Use Pipeline Stages when you need dense stage comparison next to KPIs, tables, or funnel charts.
 
 #### Bar Chart
 
@@ -67,11 +98,14 @@ Track movement over time with a connected line and data points.
 
 #### Donut / Pie Chart
 
-Show share-of-total breakdowns as proportional arc segments.
+Show share-of-total breakdowns as proportional arc segments. The widget type is `pie`; the center hole renders it as a donut.
 
 - **Labels Range**: Cell range for segment names.
 - **Values Range**: Cell range for segment values.
-- Colors cycle through a built-in palette.
+- Colors cycle through a built-in multi-color palette.
+- The legend below the chart labels each segment.
+
+![Pipeline distribution donut chart and data table widget with the sector performance treemap below](/help-assets/screenshots/dashboard-table-text.png)
 
 #### Progress Ring
 
@@ -80,6 +114,16 @@ Visualize completion toward a goal as a circular arc.
 - **Data Range**: A single cell providing the current value.
 - **Max Value**: The goal value (default: 100).
 - The ring fills proportionally (value / max) using the accent color.
+
+#### Map
+
+A linked geographic view from a Map sheet.
+
+- **Map Sheet**: Select the source Map sheet. The Map sheet owns geography, layers, choropleths, saved views, named regions, basemaps, and legends.
+- **Saved View / Named Region**: Optional `viewId` or `regionId` in `config.mapSource` focuses the dashboard widget on a saved Map view or named region.
+- **Dashboard Role**: The dashboard stores widget title, placement, size, and style while the Map surface renders the actual map embed.
+
+Example: A "Revenue by State" dashboard widget linked to a "Revenue Map" sheet configured with `us-states` geography and a region layer sourced from spreadsheet revenue rows.
 
 #### Data Table
 
@@ -101,6 +145,7 @@ Narrative notes, commentary, calls to action, and analysis.
 
 Finviz-style proportional heatmap with labeled rectangles sized by value and colored by a secondary metric.
 
+- **Data Range**: Optional rectangular range. When `tmLabels` / `tmSizes` are not set, the first column becomes labels, the second column becomes sizes, and the third column becomes colors. Header rows are skipped automatically when the size column header is text.
 - **Labels Range**: Cell range for rectangle labels (e.g., `A2:A50`).
 - **Size Values Range**: Cell range for sizing each rectangle (e.g., `B2:B50`).
 - **Color Values Range**: Cell range for coloring each rectangle (e.g., `C2:C50`).
@@ -108,6 +153,8 @@ Finviz-style proportional heatmap with labeled rectangles sized by value and col
 - **Neutral Color**: Color for mid-range values (default: gray `#555555`).
 - **Max Color**: Color for the highest value (default: green `#34a853`).
 - Default size: 12 columns wide, 4 rows tall (full-width).
+
+![Sector performance treemap heatmap widget showing proportional colored rectangles labeled by sector with percentage changes](/help-assets/screenshots/dashboard-treemap.png)
 
 #### Gauge
 
@@ -228,6 +275,60 @@ Dashboard interaction is primarily mouse-driven. Widget editing uses the standar
 
 All CLI commands require `--file <WorkbookName>` and the dashboard sheet name.
 
+Agents should prefer the typed helpers for dashboard construction. Raw
+`add-widget <json>` remains available for advanced or unsupported widget
+payloads, but the typed commands avoid memorizing the full widget schema.
+
+**Set surface settings:**
+
+```
+xapps dashboard set-surface MyDashboard \
+  --background '#0f172a' \
+  --grid-color '#334155' \
+  --layout packed \
+  --columns 16 \
+  --row-height 64 \
+  --file MyWorkbook.json
+```
+
+**Pack or reset layout:**
+
+```
+xapps dashboard pack-widgets MyDashboard --file MyWorkbook.json
+xapps dashboard reset-layout MyDashboard --w 4 --h 3 --file MyWorkbook.json
+```
+
+**Move, resize, or style one widget:**
+
+```
+xapps dashboard move-widget MyDashboard widget-1 --x 4 --y 2 --file MyWorkbook.json
+xapps dashboard resize-widget MyDashboard widget-1 --w 5 --h 4 --file MyWorkbook.json
+xapps dashboard style-widget MyDashboard widget-1 --accent '#2563eb' --background '#ffffff' --border '#94a3b8' --file MyWorkbook.json
+```
+
+**Typed widget helpers:**
+
+```
+xapps dashboard add-kpi MyDashboard --source 'Metrics!B2' --title 'Revenue' --prefix '$' --suffix 'K' --file MyWorkbook.json
+xapps dashboard add-funnel MyDashboard --source 'Pipeline!A1:B6' --title 'Sales Funnel' --file MyWorkbook.json
+xapps dashboard add-pipeline MyDashboard --source 'Pipeline!A1:B6' --title 'Pipeline by Stage' --file MyWorkbook.json
+xapps dashboard add-chart MyDashboard --type line --source 'Metrics!A1:B5' --labels A2:A5 --values B2:B5 --title 'Revenue Trend' --file MyWorkbook.json
+xapps dashboard add-table MyDashboard --source 'Accounts!A1:D10' --title 'Top Accounts' --max-rows 10 --file MyWorkbook.json
+xapps dashboard add-text MyDashboard --title 'Executive Note' --content 'Pipeline is {{Pipeline!B2}}.' --file MyWorkbook.json
+xapps dashboard add-gauge MyDashboard --source 'Monitoring!B1' --title 'CPU' --min 0 --max 100 --suffix '%' --file MyWorkbook.json
+xapps dashboard add-progress MyDashboard --source 'Sprint!D1' --title 'Sprint Progress' --max 100 --file MyWorkbook.json
+xapps dashboard add-treemap MyDashboard --source 'Stocks!A1:C50' --title 'Market Map' --file MyWorkbook.json
+xapps dashboard add-map MyDashboard --map-sheet 'Revenue Map' --title 'Revenue by State' --file MyWorkbook.json
+```
+
+**Batch construction:**
+
+```
+xapps dashboard batch MyDashboard \
+  '{"surface":{"background":"#f8fafc","gridColor":"#cbd5e1","layout":"grid","columns":12,"rowHeight":72},"widgets":[{"id":"revenue","type":"kpi","title":"Revenue","dataSource":{"sheetName":"Metrics","range":"B2"}},{"id":"market-map","type":"treemap","title":"Market Map","dataSource":{"sheetName":"Stocks","range":"A1:C50"}}],"pack":true}' \
+  --file MyWorkbook.json
+```
+
 **List widgets:**
 
 ```
@@ -312,6 +413,22 @@ xapps add-widget MyDashboard \
 ```
 xapps add-widget MyDashboard \
   '{"type":"treemap","title":"Market Cap Heatmap","dataSource":{"sheetName":"Stocks","range":"A1"},"config":{"tmLabels":"A2:A50","tmSizes":"B2:B50","tmColors":"C2:C50","tmMinColor":"#d93025","tmNeutral":"#555555","tmMaxColor":"#34a853"},"gridW":12,"gridH":4}' \
+  --file MyWorkbook.json
+```
+
+Range-only treemaps are also supported when the source range is `Label, Size, Color`:
+
+```
+xapps add-widget MyDashboard \
+  '{"type":"treemap","title":"Market Cap Heatmap","dataSource":{"sheetName":"Stocks","range":"A1:C50"},"gridW":12,"gridH":4}' \
+  --file MyWorkbook.json
+```
+
+**Create a map widget:**
+
+```
+xapps add-widget MyDashboard \
+  '{"type":"map","title":"Revenue by State","dataSource":{"sheetName":"Revenue Map"},"config":{"mapSource":{"kind":"sheet-view","sheetType":"map","sheet":"Revenue Map","mode":"embed"}},"gridW":6,"gridH":4}' \
   --file MyWorkbook.json
 ```
 
@@ -519,7 +636,7 @@ In freeform grid mode, auto-placement finds the first open slot but may not alwa
 The dashboard automatically adapts text colors based on surface and widget background luminance. If a custom widget background causes contrast issues, adjust the widget background color in the widget editor to be lighter or darker.
 
 **Treemap appears blank**
-Treemap requires three ranges: labels, sizes, and colors. The sizes must be positive numbers. Ensure the source sheet has data in all three ranges and that size values are numeric and greater than zero.
+Treemap requires either a rectangular `dataSource.range` with label/size/color columns or explicit `tmLabels` and `tmSizes` ranges. Color values are optional and default to sizes. The sizes must be positive numbers.
 
 **Gauge needle stuck at minimum**
 The gauge reads a single cell value. Ensure the data range points to a cell with a numeric value within the configured min/max range. If the value is text, the gauge interprets it as 0.

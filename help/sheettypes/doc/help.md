@@ -1,4 +1,4 @@
-## 📄 Wiki
+## Wiki
 
 ### Pages, briefs, SOPs, and knowledge entries
 
@@ -11,19 +11,22 @@ Wiki sheets are the narrative layer of an xApps workbook. They are designed for:
 - release notes
 - wiki pages that link to the rest of the workbook
 
-> 🤖 Agent example: an agent can draft a brief, structure sections and tables, pull workbook facts into the page, and leave the human editor with a clean wiki page instead of raw notes.
+> Agent example: an agent can draft a brief, structure sections and tables, pull workbook facts into the page, and leave the human editor with a clean wiki page instead of raw notes.
 
-![Wiki sheet showing a structured page with heading, narrative blocks, and embedded table content](/help-assets/screenshots/doc-sheet.png)
+![Wiki sheet showing the Welcome page of a Team Handbook with heading, callout block, and a sidebar listing five pages](/help-assets/screenshots/doc-sheet.png)
 
-### ✍️ One Wiki sheet can contain many pages
+### One Wiki sheet can contain many pages
 
 Each Wiki sheet is a small internal wiki workspace. Keep many related pages inside one Wiki sheet, and use separate Wiki sheets only when you want separate workspaces.
 
-- use the page rail to switch pages inline
+- use the page rail on the left to switch pages inline
+- the search box in the rail filters pages by title and summary
 - page operations target the active page
 - legacy `docTitle` / `docBlocks` fields still mirror the active page for compatibility
 
-### 🔗 Wiki links
+![Wiki sidebar showing five pages — Welcome, Onboarding Checklist, Communication Norms, Engineering Process, and Incident Response SOP](/help-assets/screenshots/doc-pages.png)
+
+### Wiki links
 
 Wiki supports internal links:
 
@@ -35,7 +38,7 @@ Wiki supports internal links:
 
 When you create a page from selected text, the menu asks for the new page title instead of assuming the highlighted text is the title. The highlighted text remains the inline link label.
 
-### 🧱 Blocks
+### Blocks
 
 Wiki pages are block-based. Current block types include:
 
@@ -43,33 +46,37 @@ Wiki pages are block-based. Current block types include:
 - heading 1
 - heading 2
 - bulleted list
-- checklist
+- checklist (todo)
 - quote
 - code block
 - divider
 - callout
 - toggle list
 - image
+- table
+- live data embed
 
-### 📝 Inline formatting
+![Onboarding Checklist page showing heading, checklist todo blocks, and structured properties in the page header](/help-assets/screenshots/doc-blocks.png)
+
+### Inline formatting
 
 Text within blocks supports rich inline formatting:
 
-- **bold**, **italic**, **underline**, **strikethrough**
-- **inline code**
-- **hyperlinks**
+- **bold**, *italic*, underline, strikethrough
+- inline code
+- hyperlinks
 
 Apply formatting via the floating format bar or keyboard shortcuts (`Ctrl/Cmd + B`, `I`, `U`, etc.).
 
-### 📊 Table blocks
+### Table blocks
 
-Insert a table with the `/table` slash command. Tables support:
+Insert a table with the `/table` slash command or the toolbar table button. Tables support:
 
 - header row toggle
 - add and delete rows and columns
 - `Tab` to navigate between cells
 
-### 🖼️ Image blocks
+### Image blocks
 
 Image blocks support:
 
@@ -77,36 +84,57 @@ Image blocks support:
 - alignment — left, center, or right
 - drag-drop and paste to insert images directly
 
-### 💬 Block comments
+### Live data embed blocks
+
+Insert a live data view from another sheet in the workbook using `/embed` or the Insert menu. The block renders a live snapshot of the linked sheet and updates when the workbook data changes.
+
+### Callout blocks
+
+Callout blocks draw attention to key information. They support:
+
+- icon (emoji)
+- background color — Blue, Green, Yellow, Red, Purple, Orange, or Gray
+- tones via CLI: `info`, `success`, `warn`, `danger`
+
+![Incident Response SOP page showing a callout block with blue background and a Purpose heading](/help-assets/screenshots/doc-callout.png)
+
+### Code blocks
+
+Code blocks support syntax language labels (e.g. `bash`, `javascript`, `python`). The language is preserved on export.
+
+![Engineering Process page showing heading, bullet list, code review checklist, and a bash code block](/help-assets/screenshots/doc-code-block.png)
+
+### Block comments
 
 Hover over any block to reveal the comment button. Comments support threaded discussions per block for feedback and review.
 
-### 🎨 Block colors
+### Block colors
 
-Apply a background tint to any block for visual emphasis. Useful for highlighting key sections or creating visual groupings.
+Apply a background tint to any block for visual emphasis. Useful for highlighting key sections or creating visual groupings. Available tints: None, Blue, Green, Yellow, Red, Purple, Orange, Gray.
 
-### ↕️ Block reordering
+### Block reordering
 
 Drag blocks to reorder them within a page.
 
-### 📤 Export
+### Export
 
 - **PDF export** — toolbar button or `Wiki` menu
 - **DOCX export** — toolbar button or `Wiki` menu (Word-compatible HTML)
 
-### 🧠 Wiki-style page shell
+### Wiki-style page shell
 
 The Wiki sheet is more than a blank editor. Each page also has:
 
-- a cover tone
+- a cover tone (Ocean, Amber, Forest, Berry, Slate)
 - an accent color
 - page summary text
-- editable properties
+- editable properties panel
+- linked pages
 - linked sheets
 - a live outline generated from headings
 - page templates for common wiki page shapes
 
-### ⚡ Editing flow
+### Editing flow
 
 The editor is designed to feel like one flowing page instead of a stack of form cards:
 
@@ -114,48 +142,59 @@ The editor is designed to feel like one flowing page instead of a stack of form 
 - press `Enter` on a heading to continue below with a paragraph
 - press `Enter` on a checklist item to add the next checklist item
 - use `/` inside a text block to open the slash menu
-- use markdown-style shortcuts like `#`, `##`, `>`, `-`, `[]`, and ``` to convert the current block
+- use markdown-style shortcuts like `#`, `##`, `>`, `-`, `[]`, and ` ``` ` to convert the current block
 - use `Ctrl/Cmd + Z` and `Ctrl/Cmd + Shift + Z` to undo and redo Wiki edits while the editor has focus
 - hover or focus a block to reveal type and action controls
 
-### 🪄 Templates
+### Templates
 
-Built-in templates currently include:
+Built-in templates are applied via the Settings panel (gear icon in the page header). Applying a template replaces the current active page structure, so use them early or after confirming a reset. Templates currently include:
 
+- Blank
 - Project Brief
 - Meeting Notes
 - SOP
 - Research Note
 - Release Notes
 
-Templates replace the current active page structure, so use them early or after confirming a reset.
+### Page styling
 
-### 🎨 Page styling
+The Settings panel (gear icon, top-right of the page) controls page-level style:
 
-Wiki pages support page-level controls for:
+- **Layout** — Page (single document) or Collection (sidebar list + reading pane)
+- **Font family** — Inter, DM Sans, Work Sans, Merriweather, Playfair Display, Georgia, Source Code Pro
+- **Text scale** — Compact (16 px), Standard (18 px), Large (22 px)
+- **Page width** — Narrow (760 px), Standard (980 px), Wide (1280 px), Full width
+- **Cover tone** — Ocean, Amber, Forest, Berry, Slate
+- **Accent color** — any hex color applied to headings and interactive elements
 
-- font family
-- text scale
-- page width
-- cover tone
-- accent color
-- icon
-- title
-- summary
+### Collection mode
 
-### 🏷️ Properties and linked sheets
+Switch the layout to Collection in the Settings panel. In collection mode, the page rail expands into a persistent sidebar and the selected page opens in a reading/editing pane on the right. Useful for knowledge bases and document libraries where users browse many pages in one session.
 
-Use the page-header **Properties** control to turn a freeform page into a structured wiki entry without putting the metadata editor in the reading body. Common fields include:
+### Properties and linked sheets
 
-- status
-- owner
-- audience
-- source
-- review cadence
+Use the **Properties** button (top-right of the page, `#` icon) to add structured metadata without cluttering the reading body. Property keys are auto-typed by name — fields named `status`, `owner`, `date`, `tag`, or `url` get the appropriate icon and display treatment. Common fields include:
 
-Linked sheets let one Wiki page act as the front door to related workbook surfaces, like a timeline, dashboard, floor plan, or spreadsheet.
+- Status
+- Owner
+- Audience
+- Source
+- Review cadence
 
-### 🔗 Great uses inside xApps
+**Linked sheets** (in the Settings panel) let one Wiki page act as the front door to related workbook surfaces, like a timeline, dashboard, floor plan, or spreadsheet.
+
+**Linked pages** connect related wiki pages as named cross-references without using inline `[[...]]` syntax.
+
+### Outline panel
+
+Click the **Outline** button (top-right of the page) to open a live outline built from all heading blocks on the current page. Click any outline item to jump directly to that heading.
+
+### Search
+
+The search box at the top of the page rail filters pages by title and summary as you type. Matches update instantly without leaving the page.
+
+### Great uses inside xApps
 
 Wiki pages work especially well when paired with other sheet types:
 
@@ -165,7 +204,7 @@ Wiki pages work especially well when paired with other sheet types:
 
 ---
 
-### 💻 CLI Commands
+### CLI Commands
 
 The Wiki / Doc surface ships 23 CLI commands. They share the same `xapps <command> <sheet> ...` pattern as the spreadsheet/kanban/canvas surfaces. The `<sheet>` is the wiki sheet name in the active workbook.
 
@@ -243,6 +282,8 @@ xapps doc-export-doc-json <sheet> [--out bundle.json]
 The JSON shape is `{ meta?: {...}, pages: [{ title, icon?, summary?, blocks: [{ type, text, checked?, props? }] }] }`.
 Import validates page titles, optional page IDs, linked page arrays, block types, table rows, boolean fields, and property objects before creating or replacing pages.
 
+Prefer `doc-import-doc-json` over `doc-import-markdown` when you need explicit block types — the markdown importer collapses ambiguous content into single paragraphs, while the JSON importer preserves the exact block type for every item.
+
 #### Markdown mapping (single source of truth)
 
 | Markdown source | Block type | Notes |
@@ -277,7 +318,7 @@ properties:
 # Page Title
 ```
 
-### 🤖 Agent recipe — build a wiki from one Markdown file
+### Agent recipe — build a wiki from one Markdown file
 
 ```bash
 # Create a fresh workbook with a Wiki sheet
@@ -294,3 +335,23 @@ xapps doc-list-page-links MyWiki page-2
 ```
 
 This replaces what previously took dozens of HTTP POSTs with two CLI calls.
+
+### Agent recipe — build a multi-page wiki from a JSON manifest
+
+```bash
+# Create workbook
+xapps create-workbook TeamHandbook --sheet doc:Handbook
+
+# Import pages with explicit block types, icons, summaries, and properties
+xapps doc-import-doc-json Handbook handbook.json --replace-pages
+
+# Add cross-page links from the home page to all others
+xapps doc-add-page-link Handbook page-1 page-2 page-3 page-4
+
+# Style the wiki
+xapps doc-set-meta Handbook --icon "📖" --accent-color "#4f46e5" --font-family "Inter" --page-width "980px"
+
+# Verify
+xapps doc-list-pages Handbook
+xapps doc-get-page Handbook page-1
+```

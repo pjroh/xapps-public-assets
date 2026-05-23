@@ -6,7 +6,7 @@ Floor Plan sheets provide a 2D architectural canvas for drawing walls, placing d
 
 > 🤖 Agent example: an agent can lay out an initial room plan, place doors and furniture, and leave a scaled arrangement that a human can fine-tune for the real space.
 
-![Floor Plan sheet showing walls, furniture, notes, and a scaled studio layout](/help-assets/screenshots/floorplan-sheet.png)
+![Floor Plan sheet showing walls, furniture, notes, and a scaled office layout](/help-assets/screenshots/floorplan-sheet.png)
 
 ---
 
@@ -34,16 +34,20 @@ Floor Plan sheets provide a 2D architectural canvas for drawing walls, placing d
 
 ### Getting Started
 
+![Sample office floor plan with rooms, furniture, labels, doors, and notes](/help-assets/screenshots/floorplan-layout.png)
+
 1. Create a new sheet and choose **Floor Plan** from the sheet type menu.
 2. Select the **Wall** tool and click to place wall endpoints. Walls are drawn as connected segments.
 3. Switch to the **Door** or **Window** tool and click near a wall to place openings.
-4. Open the furniture panel and drag presets onto the canvas.
+4. Open the **FURNITURE LIBRARY** panel on the right and drag presets onto the canvas.
 5. Use the **Measure** tool to add dimension annotations.
 6. Set your preferred unit (ft or m) and scale from the settings.
 
 ---
 
 ### Tools
+
+![Floor Plan toolbar showing Select, Walls, Door, Window, Line, Rect, Circle, Measure, Text, Note, Image, and layer controls](/help-assets/screenshots/floorplan-toolbar.png)
 
 | Tool | Key | Use |
 |---|---|---|
@@ -89,24 +93,28 @@ Windows work like doors and snap to nearby walls. Properties:
 
 ### Furniture Library
 
-Over 100 furniture presets organized into 12 categories:
+103 furniture presets organized into 12 categories:
 
-| Category | Example Items |
-|---|---|
-| Stairs | Straight Staircase, L-Shape Staircase, Spiral Staircase, Ramp |
-| Living Room | 3-Seat Sofa, 2-Seat Sofa, Armchair, Ottoman, Coffee Table, Side Table, TV Stand, Wall TV, Bookshelf, Fireplace, Console Table, Area Rug, Upright Piano |
-| Bedroom | King Bed, Queen Bed, Single Bed, Crib, Nightstand, Dresser, Wardrobe, Vanity Desk |
-| Kitchen | L Counter, Counter, Refrigerator, Stove/Oven, Kitchen Sink, Kitchen Island, Dishwasher, Microwave, Bar Stool |
-| Bathroom | Bathtub, Shower, Toilet, Bathroom Sink, Double Vanity, Towel Rack |
-| Office | Desk, Standing Desk, Office Chair, Conference Table, Filing Cabinet, Whiteboard, Printer |
-| Dining | Rect Table (6), Round Table (4), Dining Chair, Buffet/Sideboard, Bar Cart, High Chair |
-| Lighting | Floor Lamp, Table Lamp, Ceiling Light, Chandelier, Recessed Light, Wall Sconce |
-| Electrical | Outlet, Light Switch, Thermostat, Smoke Detector, Ceiling Fan |
-| Appliances | Washer, Dryer, Water Heater, HVAC Vent |
-| Plants & Outdoor | Potted Plant, Large Planter, Tree, Palm Tree, Bush, Hedge Row, Flower Bed, Lawn Area, Garden Path, Patio, Pergola, Gazebo, Fence, Pool, Hot Tub, BBQ Grill, Outdoor Kitchen, Hammock, Swing Set, and more |
-| Storage | Closet Rod, Shelving Unit, Storage Bench, Shoe Cabinet, Coat Rack |
+| Category | Count | Preset IDs (CLI) |
+|---|---|---|
+| Stairs | 4 | `stair-straight`, `stair-l`, `stair-spiral`, `ramp` |
+| Living Room | 13 | `sofa-3`, `sofa-2`, `armchair`, `ottoman`, `coffee-table`, `side-table`, `tv-stand`, `tv-wall`, `bookshelf`, `fireplace`, `console-table`, `rug`, `piano` |
+| Bedroom | 8 | `bed-king`, `bed-queen`, `bed-single`, `crib`, `nightstand`, `dresser`, `wardrobe`, `vanity` |
+| Kitchen | 9 | `counter-l`, `counter`, `fridge`, `stove`, `sink-k`, `island`, `dishwasher`, `microwave`, `bar-stool` |
+| Bathroom | 6 | `bathtub`, `shower`, `toilet`, `sink-b`, `double-vanity`, `towel-rack` |
+| Office | 7 | `desk`, `standing-desk`, `office-chair`, `conf-table`, `filing-cabinet`, `whiteboard-w`, `printer` |
+| Dining | 6 | `dining-table-rect`, `dining-table-round`, `dining-chair`, `buffet`, `bar-cart`, `high-chair` |
+| Lighting | 6 | `floor-lamp`, `table-lamp`, `ceiling-light`, `chandelier`, `recessed`, `wall-sconce` |
+| Electrical | 5 | `outlet`, `switch`, `thermostat`, `smoke-det`, `ceiling-fan` |
+| Appliances | 4 | `washer`, `dryer`, `water-heater`, `hvac-vent` |
+| Plants & Outdoor | 30 | `potted-plant`, `potted-plant-lg`, `tree`, `tree-large`, `palm-tree`, `bush`, `hedge-row`, `flower-bed`, `lawn`, `garden-path`, `patio`, `pergola`, `gazebo`, `fence-section`, `fence-gate`, `pond`, `fountain`, `fire-pit`, `pool`, `hot-tub`, `grill`, `outdoor-kitchen`, `driveway`, `hammock`, `swing-set`, `trampoline`, `shed`, `lounge-chair`, `garden-bench`, and more |
+| Storage | 5 | `closet-rod`, `shelving`, `storage-bench`, `shoe-cabinet`, `coat-rack` |
 
-Each furniture preset has an ID, default width and height (in plan units), and an SVG rendering. Drag items from the panel or use the CLI `add-furniture` command with the preset ID.
+Each furniture preset has an ID, default width and height (in plan units), and an SVG rendering. Drag items from the **FURNITURE LIBRARY** panel on the right, or use the CLI `add-furniture` command with the preset ID.
+
+```bash
+xapps floorplan-furniture   # list all presets with IDs and dimensions
+```
 
 ---
 
@@ -400,7 +408,7 @@ curl $XAPPS_API_BASE_URL/api/meta/floorplan/furniture
 An agent reads desk count and room requirements from a spreadsheet, then builds the floor plan:
 
 ```bash
-# Draw outer walls
+# Draw outer walls (30 x 20 ft)
 xapps add-wall "Office" --x1 0 --y1 0 --x2 30 --y2 0
 xapps add-wall "Office" --x1 30 --y1 0 --x2 30 --y2 20
 xapps add-wall "Office" --x1 30 --y1 20 --x2 0 --y2 20
@@ -409,11 +417,13 @@ xapps add-wall "Office" --x1 0 --y1 20 --x2 0 --y2 0
 # Add entrance
 xapps add-door "Office" --x 15 --y 20 --w 3
 
-# Place desks in a row
-for i in 0 1 2 3; do
-  xapps add-furniture "Office" desk --x $((3 + i * 7)) --y 8
-  xapps add-furniture "Office" office-chair --x $((4 + i * 7)) --y 11
-done
+# Place desks and chairs
+xapps add-furniture "Office" desk --x 3 --y 8
+xapps add-furniture "Office" office-chair --x 4 --y 11
+xapps add-furniture "Office" desk --x 10 --y 8
+xapps add-furniture "Office" office-chair --x 11 --y 11
+xapps add-furniture "Office" conf-table --x 3 --y 2
+xapps add-furniture "Office" whiteboard-w --x 0 --y 10
 
 # Label the room
 xapps add-floorplan-text "Office" "Open Workspace" --x 12 --y 4 --size 2

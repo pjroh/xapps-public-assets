@@ -63,9 +63,11 @@ xApps is a **multi-surface workbook**. Instead of opening a spreadsheet app, a w
 | Icon | Sheet type | Best for |
 |---|---|---|
 | 📊 | Spreadsheet | Calculations, reporting, structured data |
+| 🗃️ | Records | Typed tables, linked records, saved views, forms |
 | 📋 | Kanban Board | Workflows, backlogs, approvals |
 | 📅 | Calendar | Schedules, launches, editorial planning |
 | 📈 | Timeline | Roadmaps, project timing, milestones |
+| 📊 | Poll | Live votes, surveys, audience feedback |
 | 🖼️ | Gallery | References, portfolios, catalogs |
 | 🎨 | Design Canvas | Polished visual layouts on fixed artboards |
 | 🧠 | Whiteboard | Brainstorming, mapping, ideation |
@@ -73,10 +75,337 @@ xApps is a **multi-surface workbook**. Instead of opening a spreadsheet app, a w
 | 🏠 | Floor Plan | 2D layout and space planning |
 | 📊 | Dashboard | KPI and summary views |
 | 📄 | Document | Notes, briefs, SOPs, wiki pages |
-| 🗺️ | Map | Choropleths, point layers, spatial views |
+| ✍️ | Typewriter | Polished documents, rich text, page layout |
 | 📁 | File Viewer | Preview Office documents, CAD files, PDFs |
+| 🗄️ | Repository | Filesystem-backed document management |
+| 🗺️ | Map | Choropleths, point layers, spatial views |
+| 🎮 | Games | Built-in arcade games and high scores |
 
 > 💡 Spreadsheet formulas can pull data from many other sheet types, so your workbook can act like one connected system instead of isolated tabs.
+
+## 🏠 Home / Library
+
+The Home page is your file manager for all xApps workbooks. Open it by clicking the **xApps logo** in the top-left corner of any workbook.
+
+![Home / Library page showing workbook list, recent files, folders, and New Workbook button](/help-assets/screenshots/shell-home.png)
+
+### Library layout
+
+| Element | What it does |
+|---|---|
+| **Pinned** section | Star any workbook to keep it pinned at the top for quick access |
+| **Recent** section | The 5 workbooks you opened most recently |
+| **All files** section | Every workbook, sorted newest-modified first |
+| **Folder sidebar** | Navigate into sub-folders; create folders with `+ New Folder` |
+| **Trash** | Deleted workbooks land here; empty or restore from context menu |
+
+### Working with workbooks
+
+- **Open** — click the workbook name or the `Open` button to the right
+- **Create** — click **New Workbook** (top-right) to open the workbook composer; choose a blank workbook or a starter-kit template
+- **Pin / Unpin** — click the star icon on any workbook row
+- **Rename** — right-click a workbook or click `···` to get the context menu; choose `Rename`
+- **Move** — right-click a workbook and choose `Move to folder`; drag-and-drop is not available in the current version
+- **Delete** — right-click and choose `Delete`; workbooks move to Trash, not permanent deletion
+- **Restore** — open Trash, right-click a workbook, choose `Restore`
+- **Permanently delete** — right-click in Trash to permanently delete a workbook
+
+### Search in the Library
+
+The search field at the top filters workbooks by name and sheet type as you type. It does not search workbook content — use **Search Across Sheets** for that.
+
+### Multi-select
+
+Click the checkbox that appears on hover to select multiple workbooks. A bulk-delete action appears in the toolbar when files are selected.
+
+### Drag-and-drop import
+
+Drag a `.json` workbook file from Finder/Explorer onto the Library page to import it directly.
+
+### Presence dots
+
+If multiple users are in the same room, small colored avatar dots appear on workbook cards that are open in another session.
+
+## 🔝 Top Bar
+
+The top bar is the main navigation chrome shared by every sheet in xApps.
+
+![Top bar showing home link, workbook title, sheet tabs, menu bar, search, and right-side actions](/help-assets/screenshots/shell-topbar.png)
+
+### Top-bar zones (left to right)
+
+| Zone | What it contains |
+|---|---|
+| **Home link** | xApps logo (or workspace name) — click to return to the Library |
+| **Workbook title** | Editable inline; click to rename; saves automatically on blur |
+| **Save status indicator** | Shows "Live · FileName.json" when saved, or a modified indicator |
+| **Sheet tabs** | One tab per sheet; click to switch; drag to reorder (inside the tab strip) |
+| **`+` (Add sheet)** | Opens the sheet-type picker to add a new sheet |
+| **Menu bar** | Workbook · Sheet · Edit · Insert · View · Data · Tools · (surface tab) · Help |
+| **Search Across Sheets** | Full-text search across all sheet content; shortcut `Ctrl/Cmd + Shift + F` |
+| **Assistant button** | Opens or closes the AI assistant side-panel |
+| **Presence / account chip** | Shows live collaborator avatars; click your chip for account info |
+| **Activity Feed** | Clock icon — chronological log of workbook changes |
+| **Sheet Radar** | Satellite icon — cross-sheet dependency graph |
+| **Cheat Sheet** | Book icon — context-sensitive shortcuts and storage format reference |
+| **Settings** | Gear icon — opens the workspace settings pane |
+
+### Responsive collapse
+
+On narrow windows the menu bar collapses into a `···` overflow menu. All items remain accessible; nothing is hidden permanently.
+
+### Sheet tabs
+
+- **Click** a tab to switch to that sheet
+- **Double-click** a tab to rename the sheet inline
+- **Right-click** a tab for: rename, duplicate, move, convert, protect, delete
+- **Grouped tabs** — a parent tab with a disclosure arrow expands to show child sheets; click the group tab to open a sheet picker
+- **Mobile** — on small screens a **Sheets** pill appears in the bottom bar as a replacement for the tab strip
+
+## 📋 Menu Bar
+
+Every sheet in xApps renders the same canonical menu bar. Surface-specific entries appear in a dedicated tab named after the active surface (e.g., "Spreadsheet", "Canvas", "Kanban").
+
+### Workbook menu
+
+| Item | What it does |
+|---|---|
+| New Workbook | Create a new workbook (opens composer) |
+| Open Workbook... | Load a workbook file from the library |
+| Save Workbook | Save the current workbook (`Ctrl/Cmd + S`) |
+| Save Workbook As... | Save a copy under a new name |
+| Share Workbook | Set view / edit access for the saved file |
+| Export | Export the workbook or active sheet |
+| Workbook Properties | View and edit workbook-level metadata |
+
+### Sheet menu
+
+| Item | What it does |
+|---|---|
+| Insert Sheet | Add a new sheet (same as the `+` button) |
+| Duplicate Sheet | Copy the active sheet |
+| Rename Sheet | Rename inline |
+| Move Sheet | Reorder relative to other sheets |
+| Convert Sheet | Change the sheet type (where supported) |
+| Sheet Groups | Group multiple sheets under one parent tab |
+| Protect Sheet... | Lock the sheet with a password |
+| Delete Sheet | Remove the sheet (irreversible without undo) |
+| Configure Sheet Types... | Show or hide sheet types in the `+` picker |
+
+### Edit menu
+
+Standard clipboard and selection actions apply across all surfaces: **Undo** (`Ctrl/Cmd + Z`), **Redo** (`Ctrl/Cmd + Y`), **Cut**, **Copy**, **Paste**, **Duplicate**, **Select All**, **Deselect All**. Surface-specific additions appear below the baseline items.
+
+### Insert menu
+
+Surface-specific. For spreadsheets: rows, columns, charts, images, functions. For canvas/whiteboard: shapes, text, images, sticky notes. For presentations: slides, text boxes, shapes. Refer to the sheet-type sections for details.
+
+### View menu
+
+Controls visibility and display mode for the active surface: zoom controls, grid lines, rulers, full-screen, dark style toggle, and surface-specific view modes (e.g., board vs. list for Kanban, week/month/day for Calendar).
+
+### Data menu
+
+Spreadsheet-specific: filter rules, sort, Find & Replace, data validation, conditional formatting, and freeze rows/columns. Other sheet types expose relevant data tools here (e.g., import for Gallery, filter for Records).
+
+### Tools menu
+
+| Item | What it does |
+|---|---|
+| Automations... | Create and run workbook-native macros |
+| Triggers... | Manage reactive rules and background processes |
+| Agent Actions... | Manage right-click context menu agent actions |
+| Diagnostics | Open the diagnostics pane |
+
+### Help menu
+
+Links to the Help Center (this document), keyboard shortcuts, and release notes.
+
+## ➕ New Sheet Picker
+
+Click the **`+`** button at the left of the sheet tab strip to open the sheet-type picker.
+
+![The + New sheet picker showing Work, Design, Insight, and Files categories](/help-assets/screenshots/shell-add-sheet.png)
+
+Sheet types are grouped into categories:
+
+| Category | Sheet types |
+|---|---|
+| **Work** | Spreadsheet, Wiki/Doc, Typewriter, Kanban, Timeline, Calendar, Records |
+| **Design** | Canvas, Whiteboard, Gallery, Floor Plan, Slides/Presentation |
+| **Insight** | Dashboard, Map |
+| **Files** | Repository, File Viewer |
+| **Play** | Games |
+
+- **Default sheet type** is highlighted; change it in Settings → Defaults
+- **Configure visible types** — click `Configure visible types...` at the bottom to show or hide types from the list
+- Click any type to immediately insert a new sheet of that type
+
+## ⚙️ Settings Pane
+
+Open Settings with the **gear icon** in the top-right corner of any workbook.
+
+![Settings pane showing My Preferences and Workspace sections](/help-assets/screenshots/shell-settings.png)
+
+Settings are divided into two scopes:
+
+- **My Preferences** — per-user settings stored against your account; apply only to you
+- **Workspace** — admin settings that apply to everyone in the room
+
+### My Preferences: Appearance
+
+| Setting | Options | Effect |
+|---|---|---|
+| **Density** | Comfortable / Compact | Controls row height and padding throughout the app |
+| **Reduce motion** | Off / On | Minimizes transitions and animations globally |
+
+### My Preferences: Defaults
+
+| Setting | Options | Effect |
+|---|---|---|
+| **Default sheet type** | Records, Spreadsheet, Kanban, Canvas, Doc, Dashboard, Gallery, Calendar | Pre-selected type in the `+` sheet picker |
+| **Landing view** | Last workbook / Library | Where xApps opens when you arrive |
+
+### My Preferences: Regional
+
+| Setting | Options | Effect |
+|---|---|---|
+| **Time zone** | Browser default, US zones, UTC, Europe, Tokyo | Used for dates, timestamps, and calendar events |
+| **Date & number format** | Browser default, en-US, en-GB, de-DE, fr-FR, es-ES, pt-BR | Controls `Intl.DateTimeFormat` and `Intl.NumberFormat` output |
+| **First day of week** | Sunday / Monday | Used for Calendar and Timeline views |
+
+A live sample shows the current date/time and number `1,234,567.89` formatted with the active locale and time zone.
+
+### My Preferences: Assistant
+
+| Setting | Options | Effect |
+|---|---|---|
+| **Assistant panel on startup** | Open / Closed | Whether the AI assistant side-panel opens automatically |
+
+### Workspace: Branding
+
+| Setting | What it does |
+|---|---|
+| **Workspace name** | Text shown in the top-left instead of "XApps" |
+| **Accent color** | Color picker that updates buttons and active controls across the entire app |
+
+### Workspace: Storage
+
+| Setting | What it does |
+|---|---|
+| **Default folder for new workbooks** | Sub-folder path under the workbook root where new files are filed |
+| **Home workbook** | File that opens automatically when Landing view is set to last/home |
+| **Default new-workbook template** | Template applied when creating a workbook without choosing one |
+| **Host paths** | Read-only display: data dir, state file, workbook root, current workbook |
+
+### Workspace: Housekeeping
+
+| Setting | What it does |
+|---|---|
+| **Trash retention** | How long deleted workbooks stay in trash before purging (7/30/90 days or keep forever) |
+| **Empty trash now** | Permanently removes all workbooks currently in the trash |
+
+Admin-only controls show a lock indicator for non-admin users; the values are visible but not editable.
+
+## 💬 Assistant Side-Panel
+
+Click the **Assistant** button in the top bar (or its keyboard shortcut) to open the AI assistant side-panel.
+
+![Assistant side-panel open alongside an active workbook](/help-assets/screenshots/shell-assistant.png)
+
+The assistant answers questions in the context of the **current sheet**. Switching sheets marks a new context with a divider.
+
+- Type a message and press `Enter` or click **Send**
+- The assistant can read and describe sheet contents, suggest formulas, and help with CLI/API patterns
+- **Admin can disable** the assistant workspace-wide via Settings → Assistant → Enabled/Disabled
+- When disabled, the Assistant button is hidden for all users in the room
+
+## 🔍 Search Across Sheets
+
+Click **Search Across Sheets** in the top bar or press **`Ctrl/Cmd + Shift + F`** to search workbook content.
+
+![Search Across Sheets field in the top bar](/help-assets/screenshots/shell-search.png)
+
+- Searches text content in all sheets simultaneously
+- Results are grouped by sheet
+- Click a result to navigate to that sheet and location
+- The Help Center has its own separate search for finding help topics
+
+## ⚡ Command Palette (Shell)
+
+Open with **`Ctrl/Cmd + K`** from anywhere in the app.
+
+![Command palette dialog showing Workbook actions and sheet navigation](/help-assets/screenshots/shell-command-palette.png)
+
+The command palette is the fastest way to access any action without navigating menus:
+
+| Group | Items available |
+|---|---|
+| **Workbook** | Save workbook, Open workbook, New workbook, Starter kits, Share workbook, Sheet groups, Automations, Triggers, Agent Actions |
+| **Sheets** | Jump directly to any sheet by name |
+| **Recent** | Open recently accessed workbooks |
+| **Templates** | Apply a starter kit to the current workbook |
+
+Type to filter — the search matches action names and sheet names. Press `Enter` on the highlighted item or click it to run.
+
+## 🕐 Activity Feed (Shell)
+
+The Activity Feed is a chronological log of all changes across the workbook. Open it with the **clock icon** in the top bar.
+
+Tracking starts paused by default. Click **Resume** to begin logging for the current session.
+
+### Controls
+
+- **Start / Stop** — toggle activity logging
+- **Clear** — remove all recorded entries
+- **Filter by sheet** — click a sheet-name chip to see only that sheet's activity
+
+Each entry shows: sheet type icon, action name, detail text, sheet name, and timestamp. Entries are created for: sheet creation/deletion, card adds, event adds, widget adds, cell edits, and other surface mutations.
+
+## 🛰️ Sheet Radar (Shell)
+
+Sheet Radar shows a force-directed dependency graph of all sheets in the workbook. Open it with the **satellite icon** in the top bar.
+
+- **Nodes** — colored circles, one per sheet, sized by content volume
+- **Arrows** — point from the sheet containing the reference to the referenced sheet
+- **Colors** — match the sheet type (spreadsheet = blue, kanban = orange, doc = purple, etc.)
+- **Click a node** — navigates directly to that sheet
+- **Hover an edge** — shows the specific cell references or widget connections creating the dependency
+
+Sheet Radar detects cross-sheet formula references and dashboard widget data sources automatically.
+
+## 📋 Cheat Sheet (Shell)
+
+The Cheat Sheet is a context-sensitive quick-reference panel. Open it with the **book icon** in the top bar.
+
+It updates automatically when you switch sheets. Contents vary by sheet type:
+
+| Sheet type | Cheat Sheet shows |
+|---|---|
+| Spreadsheet | Cell reference format, formula syntax, shortcuts |
+| Canvas / Whiteboard | Object types, keyboard shortcuts, tool tips |
+| Gallery | Item storage format, field columns, formula pull patterns |
+| Dashboard | Widget configuration, data source format |
+| Presentation | Slide controls, object types |
+| Floor Plan | Measurement units, tool shortcuts |
+| Records | Table/field reference format, view types |
+
+## 🔧 Diagnostics Pane (Shell)
+
+Open Diagnostics from **Tools → Diagnostics** or from the command palette.
+
+The Diagnostics pane is a read-only snapshot of the running server internals — useful for debugging deployments and verifying connectivity:
+
+| Section | What it shows |
+|---|---|
+| **Runtime** | xApps version, Node version, platform, PID, hostname, uptime, memory (RSS, heap, external) |
+| **Deployment** | App name, profile, deployment mode, NODE_ENV, host:port, public base URL |
+| **Storage** | Data dir, state file, workbook root, current workbook file, workbook size |
+| **Workbook** | Current file, title, revision, active sheet, sheet count, sheet types |
+| **Collab** | Room name, number of connected users |
+| **Surfaces** | List of registered sheet-type modules |
+| **Environment** | Which environment variables are set/unset (values are redacted for security) |
+
 ## 📊 Spreadsheets
 
 ### Grid work, formulas, and lightweight analysis
@@ -130,7 +459,7 @@ Example dependent dropdown rule:
 ```json
 {
   "type": "list",
-  "dependsOn": "A",
+  "dependsOnRef": "A",
   "optionsByValue": {
     "Residential": ["Paint", "Flooring"],
     "Commercial": ["Permit", "Inspection"]
@@ -355,11 +684,38 @@ Standard arithmetic works in any formula:
 =A1 - B1
 ```
 
+## 🗃️ Records
+
+### Typed tables, linked records, and views
+
+Records sheets are for structured operational data that needs stronger shape than a plain grid. Use them for CRMs, asset inventories, project databases, intake queues, audits, and any table where fields have types, relations, saved views, validation, and history.
+
+> 🤖 Agent example: an agent can create records tables for accounts, contacts, and deals, add typed relation fields, seed sample records, build filtered views, and expose a form for human intake.
+
+### Core model
+
+- A records sheet can contain multiple tables.
+- Each table has typed fields, keyed records, saved views, relation edges, and display preferences.
+- Field types include text, long text, number, currency, percent, checkbox, date, datetime, email, URL, phone, rating, progress, single select, multi select, user, attachment, formula, relation, rollup, count, lookup, barcode, QR, and auto number.
+- Views include grid, kanban, calendar, gallery, form, and query views.
+- Deleted records are soft-deleted first and can be restored from the deleted-records route.
+
+### Forms, queries, and linked data
+
+- Form views collect new records from a user-facing layout without exposing the full grid.
+- Relation fields link records across tables; rollup, count, and lookup fields summarize linked records.
+- The query view supports SQL-style reads over records tables, including joins between related tables.
+- Records can embed in docs, dashboards, and canvas cards so a workbook can show the same table data in multiple contexts.
+
+### CLI, API, MCP, and toolkit coverage
+
+Records are available through the UI, SDK, CLI, REST API, MCP, and the MeshAgent toolkit. Use `xapps help records` or `xapps search records --json` for the current command catalog.
+
 ## 📋 Kanban Boards
 
 ### Drag work across stages
 
-Kanban sheets turn a workbook tab into a board with lists, cards, labels, due dates, and notes. They are best for sprint planning, content pipelines, approvals, and any workflow that moves from one state to another.
+Kanban sheets turn a workbook tab into a board with lists, cards, labels, due dates, notes, and sheet-specific card field layouts. They are best for sprint planning, content pipelines, approvals, CRM opportunity pipelines, and any workflow that moves from one state to another.
 
 > 🤖 Agent example: an agent can create cards from a project brief, move stale work into a `Blocked` list, update due dates from a timeline change, and summarize blocked cards into a doc page.
 
@@ -378,6 +734,13 @@ Each card can hold:
 - description
 - due date
 - labels
+- custom fields, such as start date, stop date, amount, account, stage, or probability
+
+### 🧩 Card fields
+
+Each kanban sheet can define its own card schema through the board's **Card fields** setting. Standard task fields can be hidden for that sheet, standard labels can be renamed through **Field labels**, and custom definitions live on the sheet as `kanbanCustomFields`. The visible layout is stored as `kanbanCardFieldLayout`; card values live on each card in `customFields`. This lets one board use normal task cards while another board uses CRM-style opportunity cards without changing the canonical stored columns.
+
+Card fields are exposed through the Kanban REST API, SDK helpers, CLI commands, MCP tools, and MeshAgent toolkit tools. Use `xapps kanban-custom-fields <board>`, `xapps set-kanban-custom-fields <board> <json>`, `xapps kanban-card-field-layout <board>`, and `xapps set-kanban-card-field-layout <board> <json>` for CLI access.
 
 ### 🖱️ Core interactions
 
@@ -516,6 +879,31 @@ When a predecessor task moves or changes duration, dependent tasks auto-shift to
 - Calendar for day-level scheduling
 - Spreadsheet for budget or status rollups
 - Dashboard for milestone summaries
+
+## 📊 Poll
+
+### Live questions, voting links, and results
+
+Poll sheets turn a workbook tab into a live polling or survey surface. Authors configure questions and lifecycle state from the workbook; voters use a focused `?mode=vote` link with the surrounding workbook chrome locked down.
+
+> 🤖 Agent example: an agent can scaffold a poll from an event brief, add choice, rating, ranking, and text questions, open voting, submit synthetic responses for a test run, then export the results.
+
+### What Poll supports
+
+- Question types for choice, multiple choice, rating, ranking, and text.
+- Draft, open, and closed lifecycle states.
+- Anonymous voting with cookie dedupe, or identified voting with `viewerId`.
+- Optional result visibility before vote, after vote, after close, or always.
+- CSV export and API/CLI/MCP access for setup, voting, and response reads.
+
+### Good uses
+
+- workshop decisions
+- audience Q&A
+- product research
+- event feedback
+- lightweight surveys inside a workbook
+
 ## 🖼️ Gallery
 
 ### Visual cards for assets, people, and references
@@ -1151,7 +1539,7 @@ Floor Plan supports per-layer visibility and lock toggles. When importing DXF fi
 
 ### Assemble live metrics from the rest of your workbook
 
-Dashboard sheets turn workbook data into a styled widget surface. They are best for executive summaries, KPI snapshots, launch status, revenue boards, and at-a-glance reporting.
+Dashboard sheets turn workbook data into a styled widget surface. They are best for executive summaries, KPI snapshots, CRM pipeline reviews, launch status, revenue boards, and at-a-glance reporting.
 
 > 🤖 Agent example: an agent can build an executive dashboard by reading source ranges, adding KPI cards and charts, and wiring each widget back to the sheets where the underlying data lives.
 
@@ -1160,13 +1548,15 @@ Dashboard sheets turn workbook data into a styled widget surface. They are best 
 Current widget styles include:
 
 - 🔢 KPI cards
+- 🔻 **Sales Funnel** — stage-by-stage CRM conversion view; configure label and value ranges or a rectangular stage/value range
+- 🧭 **Pipeline Stages** — dense CRM stage bars with value and share-of-total labels for pipeline reviews
 - 📊 Bar charts
 - 📈 Line charts
 - 🍩 Donut / pie charts
+- 🗺️ **Map** — linked geographic view from a Map sheet; the Map sheet owns geography, layers, choropleths, saved views, and regions
 - ⭕ Progress rings
 - 📋 Data tables
 - 📝 Text blocks
-
 - 🗺️ **Treemap** — Finviz-style proportional heatmap; configure label, size, and color columns with customizable min/max/neutral colors
 - 🎯 **Gauge** — SVG semi-circular speedometer dial with configurable min/max range, color threshold zones (red/yellow/green), animated needle, and optional prefix/suffix
 
@@ -1226,6 +1616,7 @@ Widgets pull from workbook data you already have elsewhere:
 - dense watchlist / scorecard walls
 
 That makes dashboards ideal for "single-pane-of-glass" reporting inside the same workbook instead of exporting to another tool.
+
 ## 📄 Docs
 
 ### Pages, briefs, SOPs, and knowledge entries
@@ -1385,6 +1776,31 @@ Docs pages work especially well when paired with other sheet types:
 - write a project brief, then link to a timeline, kanban board, and dashboard
 - keep renovation notes next to a floor plan, gallery, and budget spreadsheet
 - store campaign strategy beside a content calendar, presentation, and design canvas
+
+## ✍️ Typewriter
+
+### Word-processing pages inside the workbook
+
+Typewriter sheets are for polished page-based writing: proposals, reports, memos, long-form briefs, printable documents, and reviewed drafts. They use a Tiptap/ProseMirror editing stack with workbook-native save, collaboration, embeds, and import/export paths.
+
+> 🤖 Agent example: an agent can draft a report from spreadsheet metrics, embed a live kanban or dashboard snapshot, add headings and tables, then export the document for human review.
+
+### Editing and layout
+
+- Rich text editing with headings, lists, links, tables, images, blockquotes, code blocks, and task lists.
+- Page setup controls for margins, size, headers, footers, page numbers, and print output.
+- Surface embeds for spreadsheet ranges, kanban boards, dashboards, and charts.
+- Import/export flows for Markdown, HTML, DOCX, TXT import, and workbook-native content.
+- A full Typewriter command group is available for agents; run `xapps help typewriter`.
+
+### Good uses
+
+- executive memos
+- project plans
+- specifications
+- review documents
+- printable briefs
+
 ## 📁 File Viewer
 
 ### Preview uploaded files inside a workbook
@@ -1450,6 +1866,27 @@ xapps viewer-files <sheet>
 xapps active-viewer-file <sheet>
 xapps viewer-meta <sheet>
 ```
+
+## 🗄️ Repository
+
+### Filesystem-backed document management
+
+Repository sheets track files, folders, metadata, previews, and storage operations from inside a workbook. They are best when the workbook needs to reason about a real document set rather than only uploaded preview files.
+
+> 🤖 Agent example: an agent can scan a repository folder, track important files, categorize them, extract metadata, summarize contents, and write review state back to the workbook.
+
+### What Repository adds
+
+- Folder browsing with tracked vs untracked file state.
+- Stable file records with metadata, categories, status, and notes.
+- Inline preview paths for supported text, image, document, and code formats.
+- Storage operations for adding, updating, removing, refreshing, and categorizing files.
+- CLI, API, MCP, and toolkit coverage for agent workflows.
+
+### Repository vs File Viewer
+
+Use **File Viewer** when you want uploaded files mirrored into workbook rows for preview and formulas. Use **Repository** when the sheet should manage an external or mounted file tree with tracked records and durable file operations.
+
 ## 🗺️ Maps
 
 ### Interactive maps, choropleths, and spatial views
@@ -1609,6 +2046,25 @@ PUT    /api/sheets/:name/layers/:id
 DELETE /api/sheets/:name/layers/:id
 ```
 
+## 🎮 Games
+
+### Playable arcade sheets
+
+Games sheets provide a lightweight arcade surface inside the workbook. They are useful for demos, workshops, team breaks, and proving that a workbook sheet can host richer interactive runtime state while still saving per-sheet high scores.
+
+> 🤖 Agent example: an agent can create a games sheet, read high scores through the CLI/MCP path, and reset or report scores as part of a workshop setup.
+
+### Current games
+
+- Tetris
+- Snake
+- Space Invaders
+- Galaga
+
+### Agent-facing path
+
+Use `xapps help games` or the `games_scores` MCP tool to inspect high scores. The sheet itself is primarily UI-driven; score reads are the stable automation surface.
+
 ## 🔗 Template Variables
 
 Template Variables let you embed live spreadsheet values in text across any visual surface. Type `{{SheetName!CellRef}}` in a text box on Canvas, Presentation, Whiteboard, Doc, or Dashboard and it resolves to the current cell value at render time.
@@ -1744,7 +2200,7 @@ xApps now behaves as a **file-backed workbook app** by default.
 - the new/save dialogs can browse folders and create them in-place through server APIs
 - folder creation and workbook file listing now happen through server APIs, not browser-local assumptions
 - the `File` menu shows your **3 recent workbooks**
-- Docker saves workbook files under `/data/workbook` by default; API and CLI workbook names are relative to that folder
+- Docker saves workbook files under `/data` by default; API and CLI workbook names are relative to that folder
 
 ### 📥 Import / 📤 Export
 
@@ -1892,7 +2348,7 @@ File Viewer sheets accept uploads of many formats: `xlsx`, `xls`, `ods`, `csv`, 
 
 ## ⚡ Command Palette
 
-Open it with **`Ctrl/Cmd + K`**.
+Open it with **`Ctrl/Cmd + K`**. See the full reference in the **Command Palette (Shell)** section above for a screenshot and complete group listing.
 
 > 🤖 Agent example: a local assistant can map natural-language requests to the same high-value actions exposed through the command palette, then execute the underlying CLI or API operation directly.
 
@@ -2184,9 +2640,11 @@ For Canvas and Gallery targets, recognized metadata is also promoted into dedica
 
 ## 🔍 Search & Navigation
 
+See the full shell coverage in the **Search Across Sheets (Shell)** and **Command Palette (Shell)** sections near the top of this document.
+
 ### Search Across Sheets
 
-Use the **search field in the top menu bar** to search across workbook content.
+Use the **search field in the top menu bar** (or `Ctrl/Cmd + Shift + F`) to search across workbook content.
 
 > 🤖 Agent example: an agent can search across sheets before writing, find the authoritative source range or page, and avoid creating duplicate or conflicting project state.
 
@@ -2289,23 +2747,27 @@ The help dialog has its own built-in search so you can jump to the right help se
 
 ## 🕐 Activity Feed
 
-The Activity Feed is a chronological timeline of all changes across the workbook. Open it with the clock button in the top bar.
+See the full shell reference in the **Activity Feed (Shell)** section near the top of this document.
+
+The Activity Feed is a chronological timeline of all changes across the workbook. Open it with the **clock icon** in the top bar.
 
 > 🤖 Agent example: an agent can inspect the activity feed to understand what changed recently, confirm whether a write already happened, and summarize recent work for a human reviewer.
 
-Tracking starts paused by default. Use `Resume` in the Activity panel when you want to begin logging actions for the current session.
+Tracking starts paused by default. Click **Resume** to begin logging for the current session.
 
 ### Controls
 
 - **Start / Stop** — toggle activity logging on or off
 - **Clear** — remove all recorded activity entries
-- **Filter by sheet** — click a sheet-name filter button to show only activity for that sheet; click again to clear the filter
+- **Filter by sheet** — click a sheet-name chip to show only activity for that sheet; click again to clear the filter
 
-Each entry shows an icon, action description, detail text, sheet name, and timestamp. Activity is recorded automatically when sheets are created, modified, deleted, or when specific actions (like adding cards, events, or widgets) occur.
+Each entry shows an icon, action description, detail text, sheet name, and timestamp. Activity is recorded when sheets are created, modified, deleted, or when specific actions (adding cards, events, widgets, etc.) occur.
 
 ## 🛰️ Sheet Radar
 
-Sheet Radar is a visual dependency graph that shows how sheets in the workbook reference each other. Open it with the satellite button in the top bar.
+See the full shell reference in the **Sheet Radar (Shell)** section near the top of this document.
+
+Sheet Radar is a visual dependency graph that shows how sheets in the workbook reference each other. Open it with the **satellite icon** in the top bar.
 
 > 🤖 Agent example: an agent can use dependency information to see which dashboards, docs, or formulas depend on a source sheet before renaming fields or restructuring data.
 
@@ -2320,20 +2782,11 @@ Sheet Radar detects cross-sheet formula references (`'SheetName'!A1` patterns) a
 
 ## 📋 Cheat Sheet
 
-The Cheat Sheet is a quick-reference panel that shows context-sensitive help for the active sheet type. Open it with the **book icon** button in the top bar.
+See the full shell reference in the **Cheat Sheet (Shell)** section near the top of this document.
+
+The Cheat Sheet is a context-sensitive quick-reference panel. Open it with the **book icon** in the top bar. It updates automatically when you switch sheets, always showing tips relevant to your current context.
 
 > 🤖 Agent example: an agent can point a human collaborator to the cheat sheet after restructuring a surface so the local interaction model stays obvious and discoverable.
-
-Each sheet type shows relevant information:
-
-- **Spreadsheet** — cell reference format, formula syntax, keyboard shortcuts
-- **Canvas / Whiteboard** — object types, keyboard shortcuts, tool tips
-- **Gallery** — item storage format, field columns, formula references for pulling gallery data into spreadsheets
-- **Dashboard** — widget configuration, data source format
-- **Presentation** — slide controls, object types
-- **Floor Plan** — measurement units, tool shortcuts
-
-The cheat sheet updates automatically when you switch sheets, always showing tips relevant to your current context.
 
 ## 🧩 Workbook Type Configuration
 
@@ -2371,7 +2824,7 @@ xapps list
 
 MeshAgent room agents should run those commands from the deployed xApps runtime image, for example `registry.meshagent.com/powerboards/xapps:v2.3.11` when that is the room tag. A sibling container without that image does not have the xApps CLI runtime unless the room explicitly starts or switches into the xApps container.
 
-Set the API target with explicit `--base-url`, `MESHAGENT_ROOM_URL`, or `XAPPS_API_BASE_URL`; retired sheet-API URL variables are not read by the current CLI. When `MESHAGENT_ROOM_URL` is present, the CLI parses it as a URL, replaces its port with `3001`, and prefers it over `XAPPS_API_BASE_URL`:
+Set the API target with explicit `--base-url`, `XAPPS_INTERNAL_API_BASE_URL`, `MESHAGENT_ROOM_URL`, or `XAPPS_API_BASE_URL`; retired sheet-API URL variables are not read by the current CLI. In the packaged xApps Docker runtime, `/app/bin/xapps.js` seeds `XAPPS_INTERNAL_API_BASE_URL` to the same-runtime workspace API port; the workspace host does the same when launched directly. When that internal URL is unset and `MESHAGENT_ROOM_URL` is present, the CLI parses it as a URL, replaces its port with `3001`, materializes that value into `XAPPS_INTERNAL_API_BASE_URL` for the CLI process, and prefers it over `XAPPS_API_BASE_URL`:
 
 ```bash
 export MESHAGENT_ROOM_URL="http://10.28.5.94:8078"
@@ -2379,11 +2832,13 @@ export XAPPS_API_BEARER_TOKEN="$MESHAGENT_TOKEN"
 xapps list-workbooks --json
 ```
 
-The example room URL above resolves to `http://10.28.5.94:3001` for xApps API calls; the CLI replaces the port rather than appending a second port.
+The example room URL above resolves to `http://10.28.5.94:3001` for xApps API calls only when `XAPPS_INTERNAL_API_BASE_URL` is unset; the CLI replaces the port rather than appending a second port.
 
-The CLI has no localhost default. Use `--file <workbook>` when an automation must target one saved workbook without depending on the browser's active workbook; the CLI sends the same `X-XApps-File` API header used by REST callers.
+Private MeshAgent/IAP rooms rely on the upstream room/IAP boundary; xApps does not add its own Google sign-in gate there. Public rooms that need xApps-level Google sign-in set `XAPPS_DEPLOYMENT_MODE=public` (legacy `XAPPS_AUTH_MODE=google` also works). Same-runtime CLI/MCP/toolkit calls from the deployed xApps runtime are still accepted as internal agent calls in public mode.
 
-In Docker, saved workbook files live under `/data/workbook` by default. Do not add a `workbook/` prefix to CLI file names unless `xapps list-workbooks --json` returned that prefix; pass the returned `file` or `name` exactly.
+Use `--file <workbook>` when an automation must target one saved workbook without depending on the browser's active workbook; the CLI sends the same `X-XApps-File` API header used by REST callers.
+
+In Docker, saved workbook files live under `/data` by default. Do not add a `workbook/` prefix to CLI file names unless `xapps list-workbooks --json` returned that prefix; pass the returned `file` or `name` exactly.
 
 ### Discovery
 
@@ -2397,9 +2852,11 @@ xapps help spreadsheet format
 xapps help kanban     # Show one surface command group
 ```
 
-Use `xapps search` first for compact command discovery. It runs locally without an API base URL and returns only matching commands, examples, notes, and help paths. Use `xapps list --json` when an agent really needs the full registry.
+Use `xapps search --json <intent> --limit 3` first for compact command discovery. It runs locally without an API base URL and returns only matching commands, exact invocations, examples, notes, and help paths. Use `matches[].invocations[]` or `matches[].usage` exactly. Do not invent hyphenated command names by joining a group and command; group scope is a separate token, for example `xapps gallery items`, not `xapps gallery-items`.
 
-Current command groups include workbook, spreadsheet, kanban, calendar, canvas, whiteboard, presentation, floorplan, dashboard, gallery, fileviewer, map, repository, and games. Some sheet types are UI/API-only and do not register CLI commands; use `xapps --help` as the source of truth.
+Use `xapps list --json` when an agent really needs the full registry. The detailed typed catalog is in the top-level `commands[]` array; `groups[]` is only a summary.
+
+Current command groups include workbook, calendar, canvas, dashboard, doc, fileviewer, floorplan, gallery, games, kanban, map, poll, presentation, records, repository, spreadsheet, timeline, typewriter, and whiteboard. Use `xapps --help` and `xapps list --json` as the source of truth.
 
 ### Workbook Commands
 
@@ -2434,9 +2891,13 @@ xapps add-table "Budget" '{"name":"Expenses","rangeStart":"A1","rangeEnd":"C20",
 xapps sort-table "Budget" expenses Amount --direction desc
 xapps table-groups "Budget" expenses
 xapps set-sparkline "Budget" C2 B2:B12 --type bar
+printf '{"op":"spreadsheet.formatCell","ref":"A1","format":{"bg":"#ff0000"}}\n' | xapps spreadsheet batch "Budget" --stdin
 ```
 
 `xapps get` prints evaluated formula results. The raw stored formula is available from the cell API as `rawValue` when using `?evaluate=1`.
+Add `--json` to spreadsheet commands when agents need structured success output with `ok`, `message`, and command-specific fields.
+
+For high-volume edits, use `xapps mutate --stdin` or surface batches such as `xapps spreadsheet batch <sheet> --stdin`. They send validated semantic ops to the server-side Yjs path so many cell writes are applied in one Yjs transaction and JSON persistence is debounced.
 
 Structured table payloads support `id`, `name`, `rangeStart`, `rangeEnd`, `headerRow`, `style`, `columns`, `sortRules`, and `groupBy`. When `columns` is omitted, xApps derives table columns from the header row. Table sorting reorders only body rows so the header row stays in place, and grouped reads return records plus `count` and numeric `sums`.
 
@@ -2447,8 +2908,20 @@ In the spreadsheet UI, select a range and click **Format as Table**. Table heade
 ```bash
 xapps cards "Sprint Board" --status "In Progress"
 xapps add-card "Sprint Board" "Fix login bug" --list "To Do" --labels "P1,bug" --due "2026-04-15"
+xapps card-json "Sprint Board" TASK-42
 xapps add-card-comment "Sprint Board" TASK-42 "Ready for review." --author Alice --type progress
 xapps card-comments "Sprint Board" TASK-42
+xapps records-list-tables "CRM"
+xapps records-add-field "CRM" "Stage" --type singleSelect --options '{"choices":["Lead","Qualified","Won"]}'
+xapps records-create "CRM" '{"Name":"Acme","Stage":"Lead"}'
+xapps records-sql "CRM" 'SELECT * FROM CRM WHERE Stage = "Lead"'
+xapps poll-config "Workshop Poll" --json
+xapps add-question "Workshop Poll" --type single --prompt "Pick a direction" --option "A" --option "B"
+xapps set-poll-status "Workshop Poll" open
+xapps gallery items "Evidence" --json
+xapps gallery add-item "Evidence" "Post-fix screenshot" --image /uploads/fix.png --desc "Rendered state after the fix" --tags after,verified --json
+xapps gallery add-item "Evidence" "Local screenshot" --image /tmp/fix.png --upload --desc "Uploaded local image evidence" --tags after,verified --json
+xapps gallery-tag-items "Evidence" --rows 0,1 --tag verified --json
 xapps events "My Calendar" --from 2026-04-01 --to 2026-04-30
 xapps add-event "My Calendar" "Team Standup" --date 2026-04-10 --time 09:00 --color "#4285f4"
 xapps widgets "My Dashboard"
@@ -2459,6 +2932,10 @@ xapps add-sticky "Brainstorm" "Great idea!" --x 100 --y 200 --bg "#fff475"
 xapps canvas-templates
 xapps add-canvas-text "Design" "Headline" --x 100 --y 100 --size 48 --color "#fff"
 xapps viewer-files "Docs"
+xapps repo-files "Repository"
+xapps games-scores "Arcade"
+xapps typewriter wordcount "Report"
+xapps typewriter export "Report" md --out report.md
 xapps doc-add-page "Encyclopedia" "First Article" --icon 📜 --summary "Intro entry"
 xapps doc-add-block "Encyclopedia" page-2 --type heading2 --text "Background"
 xapps doc-import-markdown "Encyclopedia" --multi --file ./book.md --replace-pages
@@ -2470,8 +2947,9 @@ xapps doc-list-page-links "Encyclopedia" page-5
 
 | Variable | Purpose | Default |
 |---|---|---|
+| `XAPPS_INTERNAL_API_BASE_URL` | Same-runtime workspace API base URL, preferred inside the deployed xApps service runtime | seeded by `/app/bin/xapps.js` in Docker; otherwise unset |
 | `MESHAGENT_ROOM_URL` | MeshAgent room URL; CLI changes the port to `3001` for xApps API calls | unset |
-| `XAPPS_API_BASE_URL` | Workspace API base URL when `MESHAGENT_ROOM_URL` is unset | required unless room URL or `--base-url` is set |
+| `XAPPS_API_BASE_URL` | Public workspace API base URL when internal and room URLs are unset | required unless another base URL source is set |
 | `XAPPS_API_AUTHORIZATION` | Full Authorization header value | unset |
 | `XAPPS_API_BEARER_TOKEN` | Bearer token used when Authorization is unset | unset |
 | `XAPPS_API_COOKIE` | Cookie header for API requests | unset |
@@ -2479,7 +2957,7 @@ xapps doc-list-page-links "Encyclopedia" page-5
 ### Tips for AI Agents
 
 - In MeshAgent rooms, run inside the xApps runtime image; use `node /app/bin/xapps.js`
-- Set `MESHAGENT_ROOM_URL`; otherwise set `XAPPS_API_BASE_URL` or pass `--base-url`
+- Inside the xApps runtime image, use `node /app/bin/xapps.js`; otherwise set `MESHAGENT_ROOM_URL`, `XAPPS_API_BASE_URL`, or pass `--base-url`
 - Load the intended workbook before issuing sheet commands
 - Use `import-csv` for bulk data loading (much faster than individual `set` calls)
 - Use `clear-sheet` before `import-csv` for a clean reimport
@@ -2575,21 +3053,26 @@ Base URL: `${XAPPS_API_BASE_URL}/api`. OpenAPI spec: `/api/openapi.json`.
 | POST | `/api/sheets/:name/merge` | Merge range |
 | POST | `/api/sheets/:name/unmerge` | Unmerge range |
 
-### Kanban, Calendar, Timeline, Gallery, Dashboard, Doc Endpoints
+### Surface Endpoints
 
 Each sheet type exposes its own sub-endpoints:
 
 | Type | Endpoints |
 |---|---|
-| **Kanban** | `/cards`, `/cards/:row`, `/lists`, `/lists/:name`, `/lists/reorder` |
+| **Records** | `/records`, `/records/:recordId`, `/records/bulk`, `/records/deleted`, `/records/:recordId/restore`, `/fields`, `/fields/:fieldId`, `/tables`, `/tables/:tableId`, `/views`, `/views/:viewId`, `/sql` |
+| **Kanban** | `/cards`, `/cards/:rowOrId`, `/cards/:rowOrId/comments`, `/lists`, `/lists/:name`, `/lists/reorder` |
 | **Calendar** | `/events`, `/events/:row` |
 | **Timeline** | `/tasks`, `/tasks/:row` |
+| **Poll** | `/config`, `/status`, `/questions`, `/questions/:id`, `/questions/reorder`, `/questions/:id/options`, `/responses`, `/tally` |
 | **Gallery** | `/items`, `/items/:row` |
 | **Dashboard** | `/widgets`, `/widgets/:id` |
 | **Doc** | `/blocks`, `/blocks/:id`, `/pages`, `/pages/:id` |
+| **Typewriter** | Standard sheet reads/writes plus `/api/sheet-files` import/export helpers; use `xapps help typewriter` and the surface help for exact command and file formats. |
 | **Presentation** | `/slides`, `/slides/:id`, `/slides/:id/objects`, `/slides/:id/objects/:objId` |
 | **Canvas/Whiteboard/Floorplan** | `/objects`, `/objects/:rowOrId` |
 | **File Viewer** | `/viewer-files`, `/viewer-files/:row`, `/viewer-meta`, `/active-viewer-file`, `/viewer-files/upload`, `/viewer-files/:row/preview`, `/viewer-files/:row/download` |
+| **Repository** | `/files`, `/files/:rowOrId`, `/files/:rowOrId/content`, `/files/:rowOrId/preview-content`, `/files/:rowOrId/refresh`, `/files/refresh-all`, `/categories` |
+| **Games** | Standard sheet read/write paths for active game and high-score state |
 
 ### Curl Examples
 
@@ -2620,6 +3103,12 @@ curl -X POST "$XAPPS_API_BASE_URL/api/sheets/Market%20Heatmap/widgets" \
   -H 'Content-Type: application/json' \
   -H 'X-XApps-File: Stocks.json' \
   -d '{"type":"treemap","title":"S&P 500","config":{"tmLabels":"A2:A502","tmSizes":"D2:D502","tmColors":"I2:I502"},"gridW":12,"gridH":12}'
+
+# Add a dashboard map widget linked to a Map sheet
+curl -X POST "$XAPPS_API_BASE_URL/api/sheets/Revenue%20Dashboard/widgets" \
+  -H 'Content-Type: application/json' \
+  -H 'X-XApps-File: Sales.json' \
+  -d '{"type":"map","title":"Revenue by State","dataSource":{"sheetName":"Revenue Map"},"config":{"mapSource":{"kind":"sheet-view","sheetType":"map","sheet":"Revenue Map","mode":"embed"}},"gridW":6,"gridH":4}'
 
 # Add a Kanban card
 curl -X POST "$XAPPS_API_BASE_URL/api/sheets/Sprint%20Board/cards" \
@@ -2666,7 +3155,7 @@ Or start the workspace host and MCP host together under the supervisor:
 npm run start:with-mcp
 ```
 
-The server communicates via stdio. Internally it talks to the workspace API with `XAPPS_INTERNAL_API_BASE_URL` and `XAPPS_INTERNAL_API_TOKEN`; do not configure the MCP host with retired sheet-API URL variables.
+The server communicates via stdio. It talks to the workspace API with `XAPPS_INTERNAL_API_BASE_URL`. Same-runtime launches usually authenticate with `XAPPS_INTERNAL_API_TOKEN`; external launches can also use `XAPPS_API_AUTHORIZATION`, `XAPPS_API_BEARER_TOKEN`, `MESHAGENT_TOKEN`, or `XAPPS_API_COOKIE`. Do not configure the MCP host with retired sheet-API URL variables.
 
 ### When to Use MCP vs CLI vs API
 
@@ -2683,6 +3172,7 @@ The server communicates via stdio. Internally it talks to the workspace API with
 - `list_sheets`, `create_sheet`, `delete_sheet`, `rename_sheet`, `duplicate_sheet`
 - `get_sheet_settings`, `update_sheet_settings`
 - `get_workbook`, `create_new_workbook`, `create_workbook_file`, `set_workbook_title`
+- `apply_semantic_ops` for validated Yjs-backed bulk workbook mutations
 - `list_files`, `get_file`, `save_file`, `load_file`, `delete_file`
 - `get_file_sharing`, `update_file_sharing`
 - `list_starter_kits`, `apply_starter_kit`
@@ -2702,13 +3192,32 @@ The server communicates via stdio. Internally it talks to the workspace API with
 - `list_conditional_formats`, `replace_conditional_formats`, `create_conditional_format`
 - `set_cell_sparkline`, `merge_range`, `unmerge_range`
 
+**Records Tools:**
+- `records_list_tables`, `records_create_table`, `records_rename_table`, `records_delete_table`
+- `records_list_fields`, `records_add_field`, `records_update_field`, `records_delete_field`, `records_reorder_fields`
+- `records_list`, `records_get`, `records_create`, `records_patch`, `records_delete`, `records_bulk_update`, `records_bulk_delete`
+- `records_trash`, `records_restore`, `records_duplicate`, `records_history`
+- `records_comments`, `records_add_comment`, `records_edit_comment`, `records_delete_comment`
+- `records_list_views`, `records_add_view`, `records_update_view`, `records_delete_view`, `records_set_active_view`
+- `records_relation_preview`, `records_sql`
+
 **Kanban Tools:**
-- `list_kanban_cards`, `create_card`, `update_card`, `delete_card`
+- `list_kanban_cards`, `get_kanban_card`, `get_kanban_field_labels`, `set_kanban_field_labels`
+- `create_card`, `update_card`, `delete_card`
 - `list_kanban_lists`, `create_kanban_list`, `rename_kanban_list`, `color_kanban_list`, `delete_kanban_list`
 - `reorder_kanban_lists`, `save_kanban_view`, `apply_kanban_automation_presets`, `sync_kanban_companion_views`, `get_kanban_report`
 
 **Calendar Tools:**
 - `list_events`, `create_event`, `update_event`, `delete_event`
+
+**Timeline Tools:**
+- `timeline_tasks`, `timeline_add_task`, `timeline_update_task`, `timeline_delete_task`
+- `timeline_set_task_dependencies`, `timeline_clear_task_dependencies`, `timeline_set_task_milestone`, `timeline_report`
+
+**Poll Tools:**
+- `poll_config`, `poll_set_config`
+- `poll_add_question`, `poll_update_question`, `poll_delete_question`, `poll_reorder_questions`
+- `poll_add_option`, `poll_set_status`, `poll_submit_response`, `poll_responses`
 
 **Canvas Tools:**
 - `list_canvas_pages`, `set_canvas_artboard`
@@ -2717,6 +3226,7 @@ The server communicates via stdio. Internally it talks to the workspace API with
 **Dashboard Tools:**
 - `list_dashboard_widgets`, `get_dashboard_widget`
 - `create_dashboard_widget`, `update_dashboard_widget`, `delete_dashboard_widget`
+- toolkit helpers include `dashboard_add_map` for linked Map sheet widgets where MeshAgent toolkit tools are exposed
 
 **File Viewer Tools:**
 - `list_viewer_files`, `add_viewer_file`, `remove_viewer_file`
@@ -2762,7 +3272,7 @@ The server communicates via stdio. Internally it talks to the workspace API with
 - `list_objects`, `get_object`, `create_object`, `update_object`, `delete_object`
 - `upload_image_data_url`
 
-Doc and timeline currently opt out of MCP registration. Use their API routes or UI workflows until MCP runtimes are added.
+Typewriter currently opts out of stdio MCP registration; use its CLI, API-backed import/export paths, or UI workflow until MCP runtime tools are added.
 
 ### File Targeting
 
@@ -2780,14 +3290,16 @@ An AI assistant can build a complete dashboard in a few tool calls:
 2. `create_dashboard_widget` → KPI card for revenue from Budget sheet
 3. `create_dashboard_widget` → Bar chart from Sales sheet
 4. `create_dashboard_widget` → Treemap from Stock Data sheet
-5. `create_dashboard_widget` → Text block with executive summary
+5. `create_dashboard_widget` → Map widget linked to a Revenue Map sheet
+6. `create_dashboard_widget` → Text block with executive summary
 
 ### Tips for AI Agents Using MCP
 
 - Use `read_range` to inspect data before building charts/dashboards
 - Use `write_range` for bulk data population (much faster than individual cells)
 - Dashboard treemap widget needs: `tmLabels` (ticker column), `tmSizes` (market cap), `tmColors` (% change)
-- Kanban cards need at minimum: `title` and `status` (column name)
+- Dashboard map widgets should use `type:"map"` with `config.mapSource.kind:"sheet-view"` and `config.mapSource.sheetType:"map"` so the Map runtime remains the source of geographic behavior
+- Kanban card APIs should provide `title` and `status`; sheets can hide those fields in the browser editor, where new cards receive a fallback title and the target list status.
 - Always verify your writes with a `read_range` or `list_*` call
 
 ## 🧪 Advanced Patterns
@@ -2838,6 +3350,7 @@ A4: "Budget Used"    B4: =SUM(Budget!B2:B50)
    - KPI card: data source = `Revenue Data`, range = `B2` (a single summary cell)
    - Bar chart: data source = `Revenue Data`, label column = `A`, value column = `B`
    - Treemap: configure `tmLabels`, `tmSizes`, `tmColors` pointing to source columns
+   - Map: create a Map sheet for the geography, then add a dashboard map widget linked to that Map sheet
 
 The dashboard updates automatically when the source spreadsheet data changes.
 
@@ -3123,6 +3636,7 @@ Common causes and fixes:
 - For KPI widgets, the data source range should point to a single cell.
 - For chart widgets, the range should include both label and value columns.
 - For treemap widgets, configure `tmLabels`, `tmSizes`, and `tmColors` column ranges.
+- For map widgets, verify `config.mapSource.sheet` points to an existing Map sheet.
 
 ### “Automations not running”
 

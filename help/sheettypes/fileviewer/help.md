@@ -6,7 +6,7 @@ File Viewer sheets let you upload and preview documents, spreadsheets, presentat
 
 > 🤖 Agent example: an agent can load a markdown spec, inspect the live preview, switch into source editing, and keep the file readable for humans while preserving machine-facing workbook references.
 
-![File Viewer showing a live document preview inside the workbook shell](/help-assets/screenshots/fileviewer-sheet.png)
+![File Viewer showing a live document preview inside the workbook shell with Markdown file active and the file list on the left](/help-assets/screenshots/fileviewer-sheet.png)
 
 ---
 
@@ -19,12 +19,16 @@ File Viewer sheets let you upload and preview documents, spreadsheets, presentat
 - Section rail for Markdown headings
 - Zoom controls
 - Inline text editing for Markdown, JSON, JS, Python, and plain text files
+- Text content read/write API for programmatic file editing
 - Template variables in text content
 - Cross-sheet cell formula access to file metadata
+- Cell ref API for programmatic spreadsheet mirror reads
+- File upload via drag-and-drop, file picker, or HTTP POST to `/api/uploads`
 - PDF native rendering with thumbnail page rail
 - XLSX rendering with sheet tabs and styled cells
 - DOCX rendering with bullet and paragraph support
 - DXF architectural drawing preview
+- Cloud file pointers (Google Drive, OneDrive, opaque references)
 - Visual regression testing framework
 
 ---
@@ -45,10 +49,11 @@ File Viewer sheets let you upload and preview documents, spreadsheets, presentat
 ### Getting Started
 
 1. Create a new sheet and choose **File Viewer** from the sheet type menu.
-2. Upload a file by clicking the upload button or dragging a file onto the viewer.
+2. Upload a file by clicking the **Upload Files** button, dragging a file onto the viewer, or using the CLI `add-viewer-file` command.
 3. The file appears in the file list on the left. Click it to preview.
 4. Use the page rail (for PDFs, DOCX, PPTX) or section rail (for Markdown) to navigate within the file.
-5. Reference file metadata from any other sheet using cell formulas.
+5. For editable text files (Markdown, JSON, JS, Python, plain text), click **Edit source** in the toolbar to open the inline editor.
+6. Reference file metadata from any other sheet using cell formulas.
 
 ---
 
@@ -101,6 +106,8 @@ Spreadsheet files render as styled HTML tables with:
 - Cell styles: fonts, colors, borders, number formats
 - Merged cells
 - Column and row sizing
+
+![File Viewer rendering a CSV file as a styled table with column headers and row data](/help-assets/screenshots/fileviewer-upload.png)
 
 #### DOCX
 
@@ -299,6 +306,87 @@ curl -H 'X-XApps-File: MyWorkbook.json' $XAPPS_API_BASE_URL/api/sheets/Docs/meta
 # {"fileCount":2,"activeFile":{"id":"fv-def","name":"readme.md"},"activeRef":{"cellRange":"A2:E2","sourceCellRef":"D2"},"zoom":100}
 ```
 
+#### Get a single file
+
+```bash
+curl -H 'X-XApps-File: MyWorkbook.json' $XAPPS_API_BASE_URL/api/sheets/Docs/files/fv-abc
+# {"id":"fv-abc","name":"report.xlsx","ext":"xlsx","size":245760,"src":"/uploads/report-abc.xlsx","cellRange":"A1:E1","sourceCellRef":"D1"}
+```
+
+#### Read text content of a file
+
+Reads the raw text of an uploaded editable text file (`.md`, `.json`, `.js`, `.py`, `.txt`, etc.):
+
+```bash
+curl -H 'X-XApps-File: MyWorkbook.json' $XAPPS_API_BASE_URL/api/sheets/Docs/files/fv-def/content
+# {"ok":true,"id":"fv-def","ext":"md","editable":true,"text":"# Hello World\n...","contentLength":1024}
+```
+
+Returns `415 Unsupported Media Type` for binary formats (XLSX, DOCX, PDF, images).
+
+#### Write text content of a file
+
+Saves new text content for an uploaded editable text file. Auto-updates the file size in the spreadsheet mirror:
+
+```bash
+curl -X PUT $XAPPS_API_BASE_URL/api/sheets/Docs/files/fv-def/content \
+  -H 'X-XApps-File: MyWorkbook.json' \
+  -H "Content-Type: application/json" \
+  -d '{"text":"# Updated Heading\n\nNew content here."}'
+# {"ok":true,"id":"fv-def","editable":true,"size":38}
+```
+
+#### Read a spreadsheet mirror cell
+
+Returns the value mirrored into a cell of the sheet grid:
+
+```bash
+curl -H 'X-XApps-File: MyWorkbook.json' $XAPPS_API_BASE_URL/api/sheets/Docs/cells/A1
+# {"ref":"A1","value":"report.xlsx"}
+
+curl -H 'X-XApps-File: MyWorkbook.json' $XAPPS_API_BASE_URL/api/sheets/Docs/cells/C2
+# {"ref":"C2","value":4096}
+```
+
+#### Upload a file asset
+
+Upload raw file bytes. The server writes the file and returns its workbook-relative URL, which you then pass to `add-viewer-file` or the POST `/api/sheets/.../files` endpoint:
+
+```bash
+curl -X POST $XAPPS_API_BASE_URL/api/uploads \
+  -H "X-XApps-Upload-Name: readme.md" \
+  -H "Content-Type: text/plain; charset=utf-8" \
+  --data-binary @readme.md
+# {"ok":true,"name":"readme.md","url":"/uploads/readme.md"}
+
+# Then register it with the sheet:
+curl -X POST $XAPPS_API_BASE_URL/api/sheets/Docs/files \
+  -H 'X-XApps-File: MyWorkbook.json' \
+  -H "Content-Type: application/json" \
+  -d '{"name":"readme.md","src":"/uploads/readme.md","ext":"md","size":0}'
+```
+
+---
+
+### Cloud File Pointers
+
+File Viewer supports cloud-backed file references in addition to uploaded local files. A cloud file pointer stores a reference to a file on a connected provider (e.g. Google Drive, OneDrive) without copying the bytes into the workbook.
+
+Cloud pointers have a `cloudPointer` object in the file record with:
+
+| Field | Description |
+|---|---|
+| `visibility` | `"private-reference"`, `"provider-shared"`, `"workbook-copy"`, or `"opaque-reference"` |
+| `ref.provider` | Cloud provider identifier |
+| `ref.mountId` | Mount/drive identifier |
+| `ref.itemId` | File item identifier on the provider |
+| `ref.pathHint` | Human-readable path hint |
+| `capabilities` | Array of strings (e.g. `["write"]`) |
+
+An **opaque reference** (`visibility: "opaque-reference"`) stores only a `pointerId` without provider credentials — useful for workbooks shared across users with different provider access. The viewer shows a prompt to connect the provider when attempting to preview.
+
+When a cloud pointer has `write` capability and a valid parent item ID, the inline editor's **Save** action writes back to the cloud provider, not just the local upload directory.
+
 ---
 
 ### Agent / AI Workflow Recipes
@@ -377,6 +465,12 @@ Only files with editable text extensions are supported: `.md`, `.markdown`, `.tx
 
 **File metadata not accessible from formulas.**
 Verify the sheet name in your formula matches exactly (case-sensitive). The mirror ref is `='SheetName'!A1` for the first file's name, `='SheetName'!D1` for its source URL, etc. Column mapping: A=name, B=type, C=size, D=source, E=id.
+
+**Upload API returns 400 "Upload JSON body must include a non-empty `url` field."**
+This happens when the `Content-Type` header is `application/json`. The `/api/uploads` endpoint treats `application/json` as a remote-URL proxy request. Use `text/plain`, `text/markdown`, `text/csv`, `application/octet-stream`, or another non-JSON content type when uploading file bytes directly.
+
+**Content API returns 409 "Only uploaded local files can be opened as text through the workbook API."**
+The `/content` endpoint only reads files from the local `/uploads/` directory. Cloud file pointers must be fetched through the cloud provider API (`/api/cloud/...`), not the content endpoint.
 
 ---
 

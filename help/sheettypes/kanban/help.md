@@ -16,6 +16,7 @@ Behind the board, every card is stored as spreadsheet cell data, so other sheets
 
 - Customizable lists (columns) with color coding
 - Cards with title, description, labels, assignee, due date, color, cover image, checklist, and comments
+- Per-sheet field labels, so one board can say "Owner" and another can say "Sales person" while stored card fields stay canonical
 - Requested-by and created-by fields for tracking accountability
 - Drag-and-drop cards between lists and within lists
 - Drag-and-drop to reorder lists
@@ -40,6 +41,7 @@ Behind the board, every card is stored as spreadsheet cell data, so other sheets
 4. **Add a list.** Click "+ Add list" on the right side of the board, or use Insert > Add list from the menu.
 5. **Filter cards.** Use the filter bar at the top to search by text, filter by assignee, label, or due date.
 6. **Group cards.** Use the grouping dropdown to create swimlanes by assignee or label.
+7. **Customize field labels.** Click "Field labels" on the kanban toolbar to rename card fields for this sheet only.
 
 ---
 
@@ -49,7 +51,7 @@ Each card stores the following fields:
 
 | Field | Column | Description |
 |---|---|---|
-| Title | A (col 0) | Card name (required) |
+| Title | A (col 0) | Card name; the editor uses "Untitled card" when this field is hidden |
 | Status | B (col 1) | Which list the card belongs to |
 | Description | C (col 2) | Longer text description |
 | Labels | D (col 3) | Comma-separated label tags |
@@ -66,6 +68,18 @@ Each card stores the following fields:
 | Custom Fields | O (col 14) | JSON object for extension data |
 | Priority | P (col 15) | Priority label |
 | Comments | Q (col 16) | JSON array of card discussion comments |
+
+### Field Labels
+
+Each kanban sheet can override display labels for card fields without changing the stored API/card JSON keys. For example, a sales board can display "Sales person" for `assignee` and "Close Date" for `due`, while another board continues to display the defaults.
+
+Click "Field labels" on the board toolbar, edit the labels, and Save. Empty labels reset to defaults. The setting is stored on the sheet as `kanbanFieldLabels`; the resolved defaults are exposed as `kanbanResolvedFieldLabels` through the settings API.
+
+### Card Fields
+
+Each kanban sheet can choose which standard card fields are visible and can define its own custom card fields. Use this for domain cards such as CRM opportunities with fields like `startDate`, `stopDate`, `amount`, `account`, or `probability`.
+
+Click "Card fields" on the board toolbar, show or hide any standard field including Title and Status, add or delete custom field definitions, and Save. Standard fields remain stored in canonical row-backed columns for API compatibility, but hidden fields are not rendered in that sheet's card editor. Custom definitions are stored on the sheet as `kanbanCustomFields`, field visibility is stored as `kanbanCardFieldLayout`, and values are stored on each card in `customFields`. These settings are available through the card API, SDK, CLI, toolkit, and MCP.
 
 ---
 
@@ -129,8 +143,8 @@ The age in days is shown in the card footer. This helps identify stuck or forgot
 
 Click any card to open the full editor dialog. Features include:
 
-- **Title** -- required
-- **Status** -- dropdown of all lists
+- **Title** -- card name; can be hidden per sheet
+- **Status** -- dropdown of all lists; can be hidden per sheet
 - **Description** -- multi-line text area
 - **Labels** -- comma-separated input
 - **Assignee** -- free text
@@ -201,6 +215,13 @@ All commands use the pattern:
 xapps <command> --file <WorkbookName>
 ```
 
+#### Batch Semantic Ops
+
+```bash
+printf '{"op":"kanban.addCard","card":{"title":"Draft launch notes","status":"To Do"}}\n' | xapps kanban batch "Sprint Board" --stdin
+# Output: Applied 1 semantic op
+```
+
 #### List Cards
 
 ```bash
@@ -215,10 +236,67 @@ xapps cards "Sprint Board" --status "In Progress"
 #   #1 [In Progress] Design landing page
 ```
 
+#### Card JSON
+
+```bash
+xapps card-json "Sprint Board" TASK-42
+# Output:
+# {
+#   "row": 3,
+#   "id": "TASK-42",
+#   "title": "Implement search",
+#   "status": "To Do",
+#   "comments": []
+# }
+```
+
+#### Field Labels
+
+```bash
+xapps kanban-field-labels "Sprint Board"
+# Output:
+# {
+#   "kanbanFieldLabels": {},
+#   "kanbanResolvedFieldLabels": {
+#     "assignee": "Assignee",
+#     "due": "Due Date"
+#   }
+# }
+
+xapps set-kanban-field-labels "Sprint Board" '{"assignee":"Sales person","due":"Close Date"}'
+# Output: Kanban field labels updated: 2 overrides
+```
+
+#### Custom Card Fields
+
+```bash
+xapps kanban-custom-fields "Sales Pipeline"
+# Output:
+# {
+#   "kanbanCustomFields": []
+# }
+
+xapps set-kanban-custom-fields "Sales Pipeline" '[{"id":"startDate","label":"Start Date","type":"date"},{"id":"stopDate","label":"Stop Date","type":"date"},{"id":"amount","label":"Amount","type":"number"}]'
+# Output: Kanban custom fields updated: 3 fields
+```
+
+#### Card Field Layout
+
+```bash
+xapps kanban-card-field-layout "Sales Pipeline"
+# Output:
+# {
+#   "kanbanCardFieldLayout": []
+# }
+
+xapps set-kanban-card-field-layout "Sales Pipeline" '[{"id":"title","source":"builtin","visible":true},{"id":"priority","source":"builtin","visible":false},{"id":"amount","source":"custom","visible":true}]'
+# Output: Kanban card field layout updated: 3 entries
+```
+
 #### Add a Card
 
 ```bash
-xapps add-card "Sprint Board" "Implement search" --list "To Do" --desc "Full-text search for docs" --due 2026-04-15 --labels "feature,P1" --id TASK-42
+xapps add-card "Sprint Board" "Implement search" --list "To Do" --desc "Full-text search for docs" --due 2026-04-15 --labels "feature,P1" --custom-fields '{"startDate":"2026-06-01"}' --id TASK-42
 # Output: Card created (row 3, id=TASK-42)
 
 # Minimal card (uses first list by default):
@@ -235,6 +313,9 @@ xapps update-card "Sprint Board" 1 '{"status":"Done","labels":"feature,P1,shippe
 # Update by custom ID:
 xapps update-card "Sprint Board" TASK-42 '{"assignee":"Alice","due":"2026-04-20"}'
 # Output: Card TASK-42 updated (id=TASK-42)
+
+xapps update-card "Sales Pipeline" OPP-42 '{"customFields":{"startDate":"2026-06-01","stopDate":"2026-06-30","amount":12000}}'
+# Output: Card OPP-42 updated (id=OPP-42)
 ```
 
 #### Delete a Card
@@ -314,7 +395,7 @@ curl -H 'X-XApps-File: MyWorkbook.json' "$XAPPS_API_BASE_URL/api/sheets/Sprint%2
 curl -X POST $XAPPS_API_BASE_URL/api/sheets/Sprint%20Board/cards \
   -H 'X-XApps-File: MyWorkbook.json' \
   -H "Content-Type: application/json" \
-  -d '{"title":"New task","status":"To Do","description":"Details here","labels":"bug","due":"2026-04-15","assignee":"Bob","id":"TASK-99"}'
+  -d '{"title":"New task","status":"To Do","description":"Details here","labels":"bug","due":"2026-04-15","assignee":"Bob","customFields":{"startDate":"2026-06-01"},"id":"TASK-99"}'
 
 # Update a card (by row number or custom ID)
 curl -X PUT $XAPPS_API_BASE_URL/api/sheets/Sprint%20Board/cards/TASK-99 \
@@ -324,6 +405,20 @@ curl -X PUT $XAPPS_API_BASE_URL/api/sheets/Sprint%20Board/cards/TASK-99 \
 
 # Delete a card
 curl -X DELETE -H 'X-XApps-File: MyWorkbook.json' $XAPPS_API_BASE_URL/api/sheets/Sprint%20Board/cards/0
+
+# Read and replace custom card field definitions
+curl -H 'X-XApps-File: MyWorkbook.json' $XAPPS_API_BASE_URL/api/sheets/Sales%20Pipeline/custom-fields
+curl -X PUT $XAPPS_API_BASE_URL/api/sheets/Sales%20Pipeline/custom-fields \
+  -H 'X-XApps-File: MyWorkbook.json' \
+  -H "Content-Type: application/json" \
+  -d '{"kanbanCustomFields":[{"id":"startDate","label":"Start Date","type":"date"},{"id":"stopDate","label":"Stop Date","type":"date"},{"id":"amount","label":"Amount","type":"number"}]}'
+
+# Read and replace the visible card fields for one sheet
+curl -H 'X-XApps-File: MyWorkbook.json' $XAPPS_API_BASE_URL/api/sheets/Sales%20Pipeline/field-layout
+curl -X PUT $XAPPS_API_BASE_URL/api/sheets/Sales%20Pipeline/field-layout \
+  -H 'X-XApps-File: MyWorkbook.json' \
+  -H "Content-Type: application/json" \
+  -d '{"kanbanCardFieldLayout":[{"id":"title","source":"builtin","visible":true},{"id":"priority","source":"builtin","visible":false},{"id":"amount","source":"custom","visible":true}]}'
 
 # List all lists
 curl -H 'X-XApps-File: MyWorkbook.json' $XAPPS_API_BASE_URL/api/sheets/Sprint%20Board/lists
@@ -434,7 +529,7 @@ xapps update-card "Sprint 7" AUTH-1 '{"assignee":"Bob","labels":"backend,P0,esca
 ### Troubleshooting
 
 **1. Card not appearing on the board**
-A card must have a non-empty title (column A). If the title cell is empty, the card is invisible. Also verify the card's status (column B) matches one of the board's list names exactly.
+A card must have a non-empty stored title (column A). If a sheet hides Title in the card editor, new cards use "Untitled card" automatically. If the title cell is empty, the card is invisible. Also verify the card's status (column B) matches one of the board's list names exactly.
 
 **2. Drag and drop not working**
 Ensure you are dragging from the card body, not from the color picker or other interactive elements inside the card. Column drag requires starting from the column header area, not from cards within it.

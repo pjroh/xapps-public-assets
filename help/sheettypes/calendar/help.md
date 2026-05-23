@@ -8,7 +8,7 @@ Like all xApps sheet types, calendar data is stored as cells, so spreadsheet for
 
 > 🤖 Agent example: an agent can turn roadmap milestones into calendar events, clean up imported ICS noise, and generate a weekly digest while a human reviews the actual schedule visually.
 
-![Calendar sheet showing a month view with launch events and color-coded planning windows](/help-assets/screenshots/calendar-sheet.png)
+![Calendar sheet showing May 2026 month view with color-coded events including standups, launches, and reviews](/help-assets/screenshots/calendar-sheet.png)
 
 ---
 
@@ -18,11 +18,13 @@ Like all xApps sheet types, calendar data is stored as cells, so spreadsheet for
 - Events with title, date, optional time, description, and color
 - Color-coded events with preset palette
 - Double-click any date/time slot to create an event
-- Click events to edit
+- Click events to edit in a modal editor
 - Context menu for quick add, edit, and delete
-- Navigation: previous/next, jump to Today
+- Navigation: previous/next, jump to Today; view state persists across sessions
 - ICS calendar import (Google Calendar, Apple Calendar, Outlook)
-- Menu-driven view switching
+- Google Calendar overlay -- view and write-back to your personal Google calendars
+- Menu-driven view switching with keyboard shortcuts
+- Display preferences: locale, time zone, 12/24-hour clock, week start day
 - Cross-sheet formula integration
 - Undo/redo support
 - CLI and API for full programmatic control
@@ -46,24 +48,28 @@ Like all xApps sheet types, calendar data is stored as cells, so spreadsheet for
 
 Displays a 6-week grid (42 days) centered on the current month. Each day cell shows:
 - The day number (greyed out for days outside the current month)
-- All events for that day, color-coded, with optional time
-- "Today" is highlighted
+- All events for that day, color-coded, with optional time prefix
+- "Today" is highlighted with a colored circle
 
 Double-click any day cell to create an event on that date.
+
+![Week view showing Daily Standup, Sprint Planning, and 1:1 events in May 2026](/help-assets/screenshots/calendar-week-events.png)
 
 #### Week View
 
 Displays a 7-day column layout with a 24-hour time gutter on the left. Each column shows:
 - The day name and date in the header ("Today" is highlighted)
-- Hour slots from 00:00 to 23:00
+- Hour slots from 12:00 AM to 11:00 PM
 - Events placed in their corresponding hour slot
-- All-day events (no time set) appear at the top (hour 0)
+- All-day events (no time set) appear at the top (12:00 AM row)
 
-Double-click any hour slot to create an event at that date and time.
+Double-click any hour slot to create an event at that date and time. Multiple events in the same hour slot stack vertically.
 
 #### Day View
 
 Displays a single day with the same 24-hour layout as Week view but using the full width. Useful for detailed daily planning with many time-specific events.
+
+![Day view showing May 14 with the Marketing Campaign Launch at 9:00 AM](/help-assets/screenshots/calendar-day-view.png)
 
 ---
 
@@ -94,6 +100,8 @@ Click an event or double-click an empty date/time slot to open the editor:
 - **Color** -- visual color swatch picker with preset palette colors
 - **Delete** button (existing events only)
 - **Cancel** / **Save** buttons
+
+![Event editor showing Daily Standup with title, date, time, description and color picker](/help-assets/screenshots/calendar-event-editor.png)
 
 ---
 
@@ -147,9 +155,36 @@ The importer parses VEVENT entries and creates one row per event with title, dat
 
 ### Google Calendar Sync
 
-When the host is configured with Google OAuth, calendar sheets can show a per-viewer Google Calendar overlay and write events back to the signed-in viewer's Google account. Shared workbook data stays in the workbook; Google sessions, private source selections, and Google event links are stored outside workbook JSON and keyed by the current viewer identity.
+When the host is configured with Google OAuth, calendar sheets show a Google Calendar mode selector bar at the top with three options:
 
-For deployed MeshAgent rooms, store the Google OAuth client values as room secrets for the xApps service identity: `xapps-google-client-id` and `xapps-google-client-secret`. Public MeshAgent URLs automatically read those credentials and store each viewer's Google session in room secrets when a MeshAgent room connection is available; localhost keeps using local OAuth env values plus the encrypted local token file. Each viewer still completes their own Google OAuth connection, so Alice sees Alice's calendars and Bob sees Bob's calendars in the same workbook.
+| Mode | Button | Behavior |
+|---|---|---|
+| **Local only** | "Local only" | Shows only workbook events; Google sync disabled |
+| **Local + Google** | "Local + Google" | Overlays your Google calendars on top of workbook events |
+| **Google only** | "Google only" | Shows only your Google calendars (primary mode) |
+
+In **Local + Google** and **Google only** modes, the calendar makes live read requests to Google Calendar for the currently signed-in viewer. Each viewer connects their own Google account, so Alice sees Alice's calendars and Bob sees Bob's calendars in the same shared workbook.
+
+**Write-back:** In Google primary mode (`Google only`), creating, updating, or deleting events writes directly to the signed-in viewer's Google Calendar. In overlay mode, new events can be directed to Google or kept local using a per-event destination picker in the event editor.
+
+**Connecting Google:** Click the "Connect Google" button in the sync bar to begin the OAuth flow. After authorization, your Google calendars appear as an overlay. The connection is per-viewer and stored outside the workbook JSON.
+
+For deployed MeshAgent rooms, store the Google OAuth client values as room secrets for the xApps service identity: `xapps-google-client-id` and `xapps-google-client-secret`. With the production `xApps` deploy identity, create them with `meshagent room secret set --room=xapps --for-identity=xApps --id=xapps-google-client-id ...` and the matching client-secret command before using `meshagent deploy --env-secret`. Public MeshAgent URLs automatically read those credentials and store each viewer's Google session in room secrets when a MeshAgent room connection is available; localhost keeps using local OAuth env values plus the encrypted local token file.
+
+---
+
+### Display Preferences
+
+Each calendar sheet stores optional display preferences that control how dates and times are shown. These are per-sheet settings stored alongside the workbook data:
+
+| Preference | Sheet field | Default |
+|---|---|---|
+| Locale | `calendarLocale` | Browser locale (e.g. `en-US`) |
+| Time zone | `calendarTimeZone` | Browser time zone (e.g. `America/New_York`) |
+| 12/24-hour clock | `calendarUse24HourClock` | Derived from locale |
+| Week starts on | `calendarWeekStartsOn` | Derived from locale (0=Sun, 1=Mon) |
+
+If no preferences are set, the calendar derives sensible defaults from the viewer's browser locale and time zone automatically. US/CA/JP/PH locales default to week-starting Sunday; most others default to Monday.
 
 ---
 

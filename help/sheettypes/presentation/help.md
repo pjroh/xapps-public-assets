@@ -6,7 +6,7 @@ Presentation sheets give you a full slide editor with themes, slide templates, d
 
 > 🤖 Agent example: an agent can draft the first slide deck from workbook data, lay out the narrative, and leave the human presenter with editable slides rather than a blank canvas.
 
-![Presentation sheet showing editable slides, stage content, and workbook-native deck authoring](/help-assets/screenshots/presentation-sheet.png)
+![Presentation sheet showing the slide thumbnail rail, editable stage, objects panel, and speaker notes](/help-assets/screenshots/presentation-sheet.png)
 
 ---
 
@@ -16,18 +16,25 @@ Presentation sheets give you a full slide editor with themes, slide templates, d
 - 8 built-in themes (Clarity, Summit, Studio, Forest, Midnight, Coral, Slate, Aurora)
 - 14 slide templates (title, section, bullets, two-column, timeline, KPI, quote, big-number, image-text, process, team, agenda, comparison, thank-you)
 - 4 deck templates (Startup Pitch, Project Status, Training Workshop, Sales Proposal)
-- Text boxes with full formatting
-- Shapes: rectangle, rounded rectangle, circle, diamond, triangle, pill, arrow
-- Lines and arrows (horizontal, with configurable stroke)
-- Tables with stripe presets, cell fill, row/column operations
+- Text boxes with full formatting (font, size, color, bold, italic, underline, bullets, alignment, line height)
+- 16 shape types including rectangle, circle, diamond, triangle, pill, chevron, star, callout, and more
+- Object rotation (any angle, via inspector)
+- 6 line presets: diagonal, arrow, double-arrow, divider, dashed, dotted — with configurable arrowheads
+- Tables with per-cell/row/column formatting, stripe presets, border controls
 - Images (upload, URL, drag-drop, live-linked references)
-- Image editing sidebar (crop, flip, blur, filters, background erase)
+- Image editing sidebar (opacity, shadow, corners, blend mode, brightness, contrast, saturation, blur, B&W, sepia, clip shapes, fit modes, background erase, flip)
+- Live embeds — insert a live view of any workbook sheet onto a slide
 - Speaker notes per slide
-- Slide backgrounds (solid color)
+- Object inspector panel (position, size, rotation, color, typography, table cell formatting)
+- Context menu object actions (bring to front, send to back, duplicate, delete; duplicate/delete slide from thumbnail)
+- Slide reordering by drag-and-drop in the thumbnail rail
+- Slide backgrounds (solid color, right-click stage to set)
+- Undo/redo
+- Real-time collaboration (shared cursors and live drag presence)
 - Template variables in text boxes
 - PowerPoint (PPTX) import
 - PDF export
-- Fullscreen presenter mode
+- Fullscreen presenter mode (F5, with slide counter and navigation)
 
 ---
 
@@ -35,11 +42,13 @@ Presentation sheets give you a full slide editor with themes, slide templates, d
 
 1. Create a new sheet and choose **Presentation** from the sheet type menu.
 2. A default Title Slide is created automatically.
-3. Use **Slides > Apply deck template...** to start from a complete deck, or **Slides > Insert template slide...** to add individual polished slides.
+3. Use **Slides > Templates...** to start from a complete deck template, or **Insert > Add template slide...** to add individual polished slides.
 4. Click or double-click text objects to edit them.
-5. Use the toolbar to add shapes, images, and text boxes.
+5. Use the **Insert** menu or toolbar buttons to add shapes, images, lines, tables, and text boxes.
 6. Add speaker notes in the notes area below the stage.
-7. Press **Slides > Present** to enter fullscreen playback.
+7. Press `F5` or **View > Start presentation** to enter fullscreen playback.
+
+![Slide editor showing thumbnail rail, stage with sample pitch deck slide, and Objects panel](/help-assets/screenshots/presentation-editor.png)
 
 ---
 
@@ -58,7 +67,9 @@ Themes control the visual direction of the deck: background color, stage color, 
 | Slate | Neutral gray with slate accent |
 | Aurora | Dark stone with amber accent |
 
-Apply a theme from **Slides > Apply deck template...** or when inserting template slides. Each slide template adapts its colors to the active theme.
+Apply a theme from the **Slides** menu (Theme section) using the keyboard shortcut `Cmd/Ctrl + Shift + 1–8`, or from the **Slides > Templates...** dialog. Each slide template adapts its colors to the active theme.
+
+![Slides menu showing layout and theme options](/help-assets/screenshots/presentation-slides-menu.png)
 
 ---
 
@@ -125,14 +136,32 @@ Built-in shape types:
 | `triangle` | Triangle |
 | `pill` | Pill / Stadium |
 | `arrow` | Arrow |
+| `doubleArrow` | Double Arrow |
+| `chevron` | Chevron |
+| `hexagon` | Hexagon |
+| `star` | Star |
+| `parallelogram` | Parallelogram |
+| `trapezoid` | Trapezoid |
+| `wedgeCallout` | Callout |
+| `leftBrace` | Brace |
+| `punchedTape` | Punched Tape |
 
-Shapes support fill color, stroke color, stroke width, opacity, corner radius, and optional text labels. Select a shape and press `Enter` or click it again to edit the label text.
-
-Additional diagram primitives available on the stage: double arrow, chevron, hexagon, star, parallelogram, trapezoid, callout, brace, and punched tape.
+Shapes support fill color, stroke color, stroke width, border style (solid, dashed, dotted), opacity, and optional text labels. Select a shape and press `Enter` or click it again to edit the label text. In the inspector panel, use the **Rotation** field (-360 to 360 degrees) to rotate any shape.
 
 #### Lines and Arrows
 
-Horizontal lines and arrows with configurable stroke color, width, and style. Used in templates for dividers and timeline connections.
+Six line presets are available from **Insert > Add line**:
+
+| Preset | Description |
+|---|---|
+| Line | Freeform diagonal line |
+| Arrow Line | Diagonal line with end arrowhead |
+| Double Arrow | Horizontal line with arrows on both ends |
+| Divider | Horizontal solid rule |
+| Dashed Line | Horizontal dashed rule |
+| Dotted Line | Horizontal dotted rule |
+
+The line inspector lets you set stroke color, weight (1–24 px), dash style (solid, dashed, dotted, dash-dot), and start/end arrowheads independently.
 
 #### Tables
 
@@ -140,10 +169,13 @@ Tables support:
 
 - Add or remove rows and columns via the table inspector or right-click menu
 - Resize columns and rows by dragging internal guide handles
-- Cell fill color with **Fill row** and **Fill column** convenience actions
+- Cell fill color with **Format fill** targeting a cell, row, or column (set scope in the inspector)
+- Per-cell text color and bold toggle
 - Alternating stripe presets: Rows (blue mist, warm sand, mint), Columns (lilac, citrus, ocean)
+- Border color, width, and style (solid, dashed, dotted) via the inspector
+- Global default text color and font size for the whole table
 - Move a table by selecting it and dragging the **Move** grip
-- Resize a table by dragging the outer resize handles
+- Resize a table via the width and height fields in the inspector
 
 #### Images
 
@@ -167,9 +199,33 @@ When an image is selected, a sidebar panel opens with:
 | Shape & Fit | Clip shapes (circle, rounded rect, star, diamond, hexagon), fit modes (cover, contain, fill) |
 | Actions | Erase background, flip horizontal/vertical, reset to original |
 
+![Market Opportunity slide showing two-column layout with TAM/SAM/SOM data, speaker notes visible below the stage, and slide thumbnail rail](/help-assets/screenshots/presentation-slide-market.png)
+
+#### Live Embeds
+
+Use **Insert > Insert Embed...** to embed a live view of any other sheet directly on a slide. The embed shows the current data from the linked sheet and updates when that sheet changes. Supports Gallery, Records, Kanban, Canvas, and other sheet types.
+
+#### Object Inspector Panel
+
+When any object is selected, a panel opens on the right with:
+
+- **Transform**: X, Y, width, height (numeric), and rotation (degrees)
+- **Opacity**: 0–100% slider
+- **Text section** (text objects and shape labels): font family, font size, leading, text color, bold, italic, underline, bullets, alignment
+- **Shape section**: fill color, stroke color, stroke weight, border style
+- **Line section**: stroke color, weight, dash style, start/end arrowhead
+- **Image section**: full adjustment sliders (see Image Editing Sidebar below)
+- **Table section**: scope selector (cell/row/column), border controls, fill/text colors, bold, add/delete row and column
+
+Right-clicking any object on the stage reveals a context menu with **Bring to front**, **Send to back**, **Duplicate object**, and **Delete object**. For tables, the context menu also includes row/column operations. Right-clicking a slide thumbnail gives **Duplicate slide** and **Delete slide**.
+
+**Reordering slides:** Drag a thumbnail in the thumbnail rail to a new position to reorder slides. A drop-target highlight shows where the slide will land.
+
 #### Speaker Notes
 
 Each slide has a notes area below the stage. Type freeform text to use as speaker prompts during presentation.
+
+![Speaker notes area showing prompt text below the slide stage](/help-assets/screenshots/presentation-speaker-notes.png)
 
 ---
 
@@ -196,9 +252,18 @@ Variables resolve at render time, keeping slides in sync with workbook data. Use
 | Duplicate object | `Ctrl/Cmd + D` |
 | Select all | `Ctrl/Cmd + A` |
 | Undo | `Ctrl/Cmd + Z` |
-| Present fullscreen | Via **Slides > Present** menu |
+| Start presentation | `F5` or **View > Start presentation** |
 | Deselect | `Escape` |
 | Move selected | Arrow keys |
+| Insert title layout | `Cmd + 1` |
+| Insert title + body layout | `Cmd + 2` |
+| Insert section layout | `Cmd + 3` |
+| Insert two-column layout | `Cmd + 4` |
+| Insert quote layout | `Cmd + 5` |
+| Apply theme 1–8 | `Cmd + Shift + 1` through `Cmd + Shift + 8` |
+| Import PowerPoint | `Cmd + Shift + I` |
+
+![Fullscreen present mode showing slide with navigation controls](/help-assets/screenshots/presentation-present-mode.png)
 
 ---
 

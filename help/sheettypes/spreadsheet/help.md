@@ -6,7 +6,7 @@ Spreadsheet sheets are the analytical core of xApps. They provide a full-feature
 
 > 🤖 Agent example: an agent can import a CSV, normalize headers, build formulas, apply validation, and leave a human-ready review sheet in the same workbook.
 
-![Spreadsheet workspace with formulas, summaries, and formatted tracker rows](/help-assets/screenshots/spreadsheet-sheet.png)
+![Spreadsheet workspace with formulas, conditional formatting, sparklines, and currency data](/help-assets/screenshots/spreadsheet-sheet.png)
 
 ---
 
@@ -200,15 +200,20 @@ Use the **Insert Function** dialog (from the toolbar) to browse all functions by
 
 ### Formatting and Structure
 
+![Budget spreadsheet with currency format, conditional formatting highlights, and sparklines](/help-assets/screenshots/spreadsheet-formulas.png)
+
 #### Text Formatting
 
 Use the toolbar or context menu for:
-- **Bold**, **Italic**
+- **Bold** (`Ctrl/Cmd+B`), **Italic** (`Ctrl/Cmd+I`), **Underline** (`Ctrl/Cmd+U`), **Strikethrough**
+- Font size (8 through 36pt, selectable from the toolbar)
 - Text color (24 swatches + custom)
 - Background/fill color (24 swatches + clear option)
 - Text alignment (left, center, right)
 - Text wrap
 - Number formats (general, number, currency, percentage, date, etc.)
+
+> **Percent format displays the stored value × 100** — same convention as Excel and Google Sheets. To display **20%** the cell value must be **0.20**; to display **6.5%** the cell value must be **0.065**. Storing `20` and applying `format: percent` displays **2000%**, not **20%**. The CLI helps with this: `xapps set <sheet> <ref> 20%` (with the trailing `%`) auto-divides by 100, stores 0.20, and applies percent format in one call. The same coercion runs in `bulk-set` per cell. Plain numbers are stored verbatim — pass `20%` (string with `%`), not `20` (number).
 
 #### Borders and Fills
 
@@ -233,6 +238,31 @@ Add comments to any cell. Cells with comments show an indicator triangle. View, 
 #### Images in Cells
 
 Embed images in any cell by URL. Supports fit modes: `contain`, `cover`, or `original`.
+
+#### Zoom
+
+Control the zoom level from the View menu or the zoom control in the status bar. Presets run from 50% to 200% in steps; use **Zoom to Fit** to scale the data area to the available window.
+
+| Action | Shortcut |
+|---|---|
+| Zoom in | `Ctrl/Cmd+]` |
+| Zoom out | `Ctrl/Cmd+[` |
+| Reset to 100% | `Ctrl/Cmd+0` |
+
+---
+
+### Row and Column Operations
+
+Right-click a row or column header (or use the Edit menu) to access structural editing:
+
+| Action | How |
+|---|---|
+| Insert row above / below | Right-click row header → Insert → Row above / below |
+| Insert column left / right | Right-click column header → Insert → Column left / right |
+| Delete row | Right-click row header → Delete → Row |
+| Delete column | Right-click column header → Delete → Column |
+| Move row up / down | Right-click row header → Move row up / down |
+| Move column left / right | Right-click column header → Move column left / right |
 
 ---
 
@@ -260,7 +290,7 @@ One cell's dropdown options change based on another cell's value:
 ```json
 {
   "type": "list",
-  "dependsOn": "A",
+  "dependsOnRef": "A",
   "optionsByValue": {
     "Residential": ["Paint", "Flooring"],
     "Commercial": ["Permit", "Inspection"]
@@ -348,6 +378,8 @@ Create charts from selected data ranges. Supported types:
 - **Pie** chart
 - **Scatter** plot
 
+![Bar chart floating over a budget spreadsheet](/help-assets/screenshots/spreadsheet-chart.png)
+
 #### Chart Placement
 
 - **Floating overlay** -- chart appears on top of the grid
@@ -370,10 +402,14 @@ Inline mini-charts rendered directly in a cell:
 ### Data Tools
 
 - **Filter rules** in the toolbar to show/hide rows
-- **Find and Replace** within the sheet
-- **Fill handles** for range autofill
+- **Find and Replace** within the sheet (`Ctrl/Cmd+Shift+H`)
+- **Fill handles** for range autofill -- drag the blue square at the bottom-right of a selection to repeat or continue a series
 - **Row detail view** -- form-style editor for wide sheets with many columns
 - **Sort** by column values
+
+#### Embed Sheet View
+
+Insert a live read-only preview of any range from any sheet in the workbook into a cell. Use **Insert > Embed sheet view...** to open the dialog, pick a sheet and a range, then confirm. The embedded view renders a compact table that updates when the source data changes. This is useful for building dashboards where a cell area displays a summary from a different sheet without needing formulas.
 
 ---
 
@@ -391,10 +427,20 @@ Inline mini-charts rendered directly in a cell:
 | `Shift` + Click | Select range from current cell |
 | `Ctrl/Cmd` + `Z` | Undo |
 | `Ctrl/Cmd` + `Y` | Redo |
+| `Ctrl/Cmd` + `X` | Cut |
 | `Ctrl/Cmd` + `C` | Copy |
 | `Ctrl/Cmd` + `V` | Paste |
 | `Ctrl/Cmd` + `B` | Bold |
 | `Ctrl/Cmd` + `I` | Italic |
+| `Ctrl/Cmd` + `U` | Underline |
+| `Ctrl/Cmd` + `Shift` + `H` | Find and Replace |
+| `Ctrl/Cmd` + `Alt` + `M` | Insert Comment |
+| `Ctrl/Cmd` + `Shift` + `F` | Search all sheets |
+| `Ctrl/Cmd` + `]` | Zoom in |
+| `Ctrl/Cmd` + `[` | Zoom out |
+| `Ctrl/Cmd` + `0` | Reset zoom to 100% |
+| `Alt` + `ArrowUp` | Switch to previous sheet |
+| `Alt` + `ArrowDown` | Switch to next sheet |
 
 ---
 
@@ -404,6 +450,7 @@ All commands use the pattern:
 ```
 xapps <command> --file <WorkbookName>
 ```
+Add `--json` when an agent needs a machine-readable success envelope with `ok`, `message`, and command-specific fields.
 
 #### Cell Operations
 
@@ -441,6 +488,12 @@ xapps bulk-set "Budget" A1 '[["Name","Q1","Q2"],["Alice",1500,1800],["Bob",1200,
 # Output: Wrote 3 rows x 3 columns at A1:C3
 ```
 
+**Batch semantic ops through Yjs:**
+```bash
+printf '{"op":"spreadsheet.formatCell","ref":"A1","format":{"bg":"#ff0000"}}\n' | xapps spreadsheet batch "Budget" --stdin
+# Output: Applied 1 semantic op
+```
+
 #### Formatting
 
 **Format a single cell:**
@@ -464,6 +517,12 @@ The normal format payload is strict. Unknown keys are rejected before changes
 are saved. Do not use `fill`, `fill.color`, `bgColor`, `textColor`, or
 `numberFormat` with `format` or `range-format`; use `bg`, `color`, `format`,
 and `decimals` instead.
+
+> **`format: percent` is a multiplier.** A cell formatted as `percent` displays
+> `value × 100` followed by `%`. Store `0.20` to display `20%`, or pass `"20%"`
+> as a string to `set` / `bulk-set` and the CLI will auto-divide by 100 and
+> apply percent format. Storing the integer `20` with `format: percent` will
+> display `2000%`.
 
 #### Column Types
 
@@ -718,6 +777,17 @@ xapps export-csv "Budget" --range A1:C10 --out export.csv
 # Output: Exported 10 rows to export.csv
 ```
 
+#### Excel Import/Export
+
+Import and export Excel `.xlsx` files from the **File** menu (**Import Excel...** / **Export Excel...**) in the UI. Round-trip fidelity is best-effort — cell values, basic formats, and formulas are preserved; advanced Excel-specific features such as pivot tables or macros are not.
+
+#### Paste Special
+
+When pasting from the clipboard, the **Edit** menu provides two targeted paste modes:
+
+- **Paste values only** — pastes evaluated cell values, stripping all formulas and formatting
+- **Paste formatting only** — applies source formatting to the target cells without changing values
+
 #### Clear Sheet
 
 **Erase all cell data:**
@@ -896,7 +966,7 @@ done
 
 # Step 4: Add dependent dropdown -- Priority depends on Department
 for row in $(seq 2 50); do
-  xapps set-validation "Order Form" D${row} '{"type":"list","dependsOn":"A","optionsByValue":{"Engineering":["P0","P1","P2"],"Marketing":["High","Medium","Low"],"Sales":["Urgent","Normal"]},"fallbackItems":["Normal"],"showDropdown":true,"reject":true}'
+  xapps set-validation "Order Form" D${row} '{"type":"list","dependsOnRef":"A","optionsByValue":{"Engineering":["P0","P1","P2"],"Marketing":["High","Medium","Low"],"Sales":["Urgent","Normal"]},"fallbackItems":["Normal"],"showDropdown":true,"reject":true}'
 done
 ```
 
@@ -938,7 +1008,7 @@ Verify the sheet name is exactly correct (case-sensitive) and enclosed in single
 Ensure the rule is enabled (`"enabled": true`). Check that the range (`rangeStart` / `rangeEnd`) actually covers the cells you expect. Use `xapps conditional-formats "Sheet"` to inspect existing rules.
 
 **4. Validation dropdown not appearing**
-Set `"showDropdown": true` in the validation JSON. For dependent dropdowns, make sure `dependsOn` references a valid column letter (e.g., `"A"`) and that `optionsByValue` keys match the actual values in that column.
+Set `"showDropdown": true` in the validation JSON. For dependent dropdowns, make sure `dependsOnRef` references a valid column letter (e.g., `"A"`) and that `optionsByValue` keys match the actual values in that column.
 
 **5. Sparkline not rendering**
 Sparklines need numeric data in the referenced range. If cells contain text or are empty, the sparkline may not display. Check the range reference is valid and contains numbers.
@@ -951,6 +1021,20 @@ Formulas referencing a merged range may only see the top-left cell's value. Unme
 
 **8. Frozen panes not visible**
 Freeze panes only take effect when you scroll. If you freeze 1 row, scroll down to see row 1 stay pinned. Use `xapps freeze-panes "Sheet" 0 0` or `unfreeze-panes` to reset.
+
+---
+
+### Status Bar
+
+The status bar at the bottom of the spreadsheet shows live statistics for the current selection. When multiple cells are selected, the status bar displays:
+
+- **Count** -- number of non-empty cells in the selection
+- **Sum** -- sum of all numeric values
+- **Average** -- mean of all numeric values
+- **Median** -- median of all numeric values
+- **Min** and **Max** -- smallest and largest numeric values
+
+For a single cell, the status bar shows the cell reference and zoom controls. The status bar can be hidden via the View menu.
 
 ---
 

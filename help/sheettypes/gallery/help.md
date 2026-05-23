@@ -6,26 +6,28 @@ Gallery sheets are image-first visual collections for inspiration boards, produc
 
 > 🤖 Agent example: an agent can assemble a moodboard, tag assets by theme, add supporting links, and prepare a curated review gallery for a human to approve.
 
-![Gallery sheet showing visual reference cards with titles, tags, and image-first browsing](/help-assets/screenshots/gallery-sheet.png)
+![Gallery sheet showing 8 image cards with titles, tags, and toolbar controls](/help-assets/screenshots/gallery-sheet.png)
 
 ### Features
 
-- Masonry grid layout with responsive column count
+- Grid and Masonry card layouts with configurable column count (2, 3, 4, 5, or auto)
 - List/table view with configurable visible fields
-- Image items with title, description, tags, image URL, info link, image link
+- Image items with title, description, tags, image URL, info link, image link, and 1-5 star rating
 - Live image references from other visual sheets (Gallery, Canvas, Whiteboard, Presentation)
 - Tag-based filtering (click a tag to filter)
+- Star rating filter (show all, or 1★ through 5★ minimum)
 - Free-text search across title, description, and tags
-- Sorting by title (A-Z, Z-A) or tags
-- Grouping by tag with labeled sections
+- Sorting by title (A-Z or Z-A), date added (newest or oldest), tags, or tag count
+- Grouping by primary tag or by star rating
 - Checkbox-based multi-select with bulk actions (tag, delete, export CSV)
 - Cut, copy, paste of selected items
-- Detail panel with prev/next navigation and arrow key support
+- Detail panel (lightbox) with prev/next navigation and arrow key support
 - Detail-panel comments for human feedback on visual evidence
-- Fullscreen slideshow with auto-play
-- Drag-and-drop reordering of cards
+- Fullscreen lightbox (image-only) and fullscreen slideshow with auto-play
+- Drag-and-drop reordering of cards, including across group sections
 - Drag-and-drop file import from desktop
 - Clipboard paste to add images (Ctrl/Cmd+V)
+- Right-click context menu (Add item, Edit item, Delete item)
 - Web Clipper bookmarklet for clipping from any website
 - Configurable visible fields (image, description, tags, link)
 - Export as CSV (via server API) or PDF (print-ready HTML)
@@ -77,11 +79,22 @@ There are several ways to add images to a gallery:
 
 ### Views
 
-**Grid view** (default) -- Responsive masonry layout that adjusts column count based on available width. Cards show the image, title, description, and tags based on visible field settings. Cards have checkboxes for multi-select.
+**Grid view** (default) -- Card layout with images, title, description, and tags. Toggle between two card arrangements using the **Grid** and **Masonry** layout buttons:
+
+- **Grid layout** -- Fixed-height cards arranged in a uniform grid. All cards have equal height; images are cropped to fill.
+- **Masonry layout** -- Cards flow in columns at their natural image height, producing a staggered Pinterest-style arrangement. Switch via the **Masonry** button in the toolbar.
+
+![Gallery list view showing all items as table rows with thumbnails, descriptions, tags, and links](/help-assets/screenshots/gallery-list-view.png)
 
 **List view** -- Table layout with columns for title, image thumbnail, description, tags, and info link. Rows have checkboxes for multi-select. Columns respect the visible fields configuration.
 
-Toggle between views using the grid/list buttons in the toolbar.
+Toggle between views using the grid/list icon buttons in the toolbar.
+
+![Gallery masonry layout showing staggered image cards at natural heights](/help-assets/screenshots/gallery-masonry.png)
+
+### Grid Column Count
+
+Use the **View menu > Grid: Auto / 2 / 3 / 4 / 5** options to pin the number of columns in grid view. "Auto" (default) adapts to the available width.
 
 ### Visible Fields Configuration
 
@@ -100,24 +113,51 @@ Click any tag on a card or in the detail panel to filter the gallery to items wi
 
 Type in the search box to filter items by title, description, or tags. Search is debounced (250ms) and preserves cursor position.
 
+### Rating Filter
+
+The star filter dropdown in the toolbar limits the visible set to items meeting a minimum rating threshold:
+
+| Option | Shows |
+|---|---|
+| All ★ | All items regardless of rating |
+| 5★ | Only 5-star items |
+| 4★+ | Items rated 4 or 5 stars |
+| 3★+ | Items rated 3, 4, or 5 stars |
+| 2★+ | Items rated 2 stars or higher |
+| 1★+ | All rated items (same as All ★) |
+
+Click the stars directly on a card to set or change an item's rating. Ratings persist immediately.
+
+![Gallery rating filter showing only items with 4 or 5 stars](/help-assets/screenshots/gallery-rating-filter.png)
+
 ### Sorting and Grouping
 
 **Sort options** (via dropdown):
 
 - No sort (default order)
-- Title A to Z
-- Title Z to A
-- Tags (alphabetical)
+- Name (A → Z)
+- Name (Z → A)
+- Date Added (newest first)
+- Date Added (oldest first)
+- Tags (alphabetical by first tag)
+- Tag Count (items with the most tags first)
 
-**Group by tag** (via dropdown): Select a tag to create two sections -- items with that tag and "Other" items.
+**Group by** (via dropdown):
+
+- **Tag** -- Groups items into labeled sections by primary tag. Items with no tag appear under "Other". A **+ Add** button in each group header creates a new item pre-assigned to that tag.
+- **Rating** -- Groups items into five sections (5 Stars through 1 Star).
+
+Drag items between group sections to reassign their primary tag (or rating) without opening the editor.
+
+![Gallery items grouped by primary tag with labeled section headers and item counts](/help-assets/screenshots/gallery-grouping.png)
 
 Note: Drag reordering clears any active sort, since manual order takes priority.
 
 ### Detail Panel
 
-Click a card or list row to open a lightbox-style detail panel showing:
+Click a card body (or list row), or click the **⋯** info button on a card, to open the detail panel showing:
 
-- Full-size image
+- Full-size image pinned at the top (scrolls independently from metadata)
 - Title, description, tags
 - Info link and image source link
 - Clip metadata (brand, price, site name) if available
@@ -126,7 +166,18 @@ Click a card or list row to open a lightbox-style detail panel showing:
 - Download, Edit, and Close buttons
 - Previous/Next navigation arrows
 
+![Gallery detail panel showing Mountain Vista image with metadata and comments section](/help-assets/screenshots/gallery-detail.png)
+
 When an item has an image, the image stays pinned at the top of the detail panel while the title, metadata, and comments scroll beneath it.
+
+### Lightbox
+
+Click the image thumbnail on any card (or the **Lightbox** button in the toolbar) to open a fullscreen image-only lightbox view. The lightbox shows the full-resolution image and supports:
+
+- Left/Right arrow keys to navigate between items
+- Escape or click outside to close
+
+The Lightbox differs from the Detail Panel: it shows only the image with no metadata or comments, optimized for visual review.
 
 ### Slideshow
 
@@ -162,9 +213,21 @@ Available via the **Edit** menu:
 - **Paste** -- Inserts clipboard items as new gallery entries
 - **Delete Selected** -- Deletes selected items
 
+### Context Menu
+
+Right-click any card to open a context menu with:
+
+- **Add item** -- Opens the item editor to create a new item
+- **Edit item** -- Opens the editor for the card you right-clicked
+- **Delete item** -- Deletes the card immediately (with undo support)
+
+Right-clicking empty space (outside any card) shows only "Add item".
+
 ### Drag-to-Reorder
 
-In grid view, drag a card and drop it on another card to swap their positions. The drop target shows a visual indicator (top or bottom highlight). Reordering clears any active sort setting.
+In grid or list view, drag a card and drop it before or after another card to reorder. The drop target shows a visual indicator (top or bottom highlight). Reordering clears any active sort setting.
+
+When grouping is active, drag a card and drop it into a different group section to reassign it to that tag or rating without opening the editor.
 
 ### Export
 
@@ -174,28 +237,46 @@ In grid view, drag a card and drop it on another card to swap their positions. T
 
 ### Keyboard Shortcuts
 
-| Shortcut | Action |
-|---|---|
-| `Escape` | Clear selection (if items selected) or clear filters |
-| `Delete` / `Backspace` | Delete selected items (with confirmation) |
-| `Ctrl/Cmd + V` | Paste image from clipboard as new item |
-| Left Arrow (in detail) | Previous item |
-| Right Arrow (in detail) | Next item |
-| Escape (in detail) | Close detail panel |
-| Left/Right Arrow (in slideshow) | Navigate slides |
-| Space (in slideshow) | Toggle auto-play |
-| Escape (in slideshow) | Exit slideshow |
+| Shortcut | Context | Action |
+|---|---|---|
+| `Escape` | Grid/list | Clear multi-selection (if selected) or clear active filters |
+| `Delete` / `Backspace` | Grid/list | Delete selected items (confirmation dialog) |
+| `Ctrl/Cmd + V` | Grid/list | Paste image from clipboard as new item |
+| `Left Arrow` | Detail panel | Previous item |
+| `Right Arrow` | Detail panel | Next item |
+| `Escape` | Detail panel | Close detail panel |
+| `Left Arrow` | Lightbox / Slideshow | Previous item |
+| `Right Arrow` | Lightbox / Slideshow | Next item |
+| `Space` | Slideshow | Toggle auto-play (3-second interval) |
+| `Escape` | Lightbox / Slideshow | Exit |
 
 ### CLI Commands
 
-All CLI commands require `--file <WorkbookName>` and the gallery sheet name.
+All gallery item commands require the gallery sheet name. Use `--file <WorkbookName>` when the command should target a saved workbook instead of the currently loaded workbook.
 
 Pass `--json` for agent-friendly success output. Gallery CLI validation rejects malformed row lists, ids, ratings, JSON payloads, unsafe media/link URLs, missing flag values, duplicate rows, and invalid tag/comment payloads before sending a request.
+
+For discovery, run `xapps search --json gallery <intent> --limit 3` or `xapps help gallery <command>`. Use the exact invocation from help/search. Do not synthesize hyphenated names such as `gallery-items` or `gallery-add-item`; group scope is a separate token, for example `xapps gallery items`.
+
+Recommended agent forms:
+
+```bash
+xapps gallery items <sheet> --json
+xapps gallery item <sheet> <row-or-id> --json
+xapps gallery add-item <sheet> <title> --image <url-or-path> [--upload] --json
+xapps gallery update-item <sheet> <row-or-id> '<json>' --json
+xapps gallery delete-item <sheet> <row-or-id> --json
+xapps gallery-item-comments <sheet> <row-or-id> --json
+xapps add-gallery-item-comment <sheet> <row-or-id> "<message>" --author <name> --type <kind> --json
+xapps gallery-tag-items <sheet> --rows <row-csv> --tag <text> --json
+xapps gallery-delete-items <sheet> --rows <row-csv> --json
+xapps gallery-export-items <sheet> [--rows <csv>] [--out <file>] --json
+```
 
 **List items:**
 
 ```
-xapps items MyGallery --file MyWorkbook.json
+xapps gallery items MyGallery --file MyWorkbook.json
 ```
 
 Expected output:
@@ -209,7 +290,7 @@ Expected output:
 **Read one item:**
 
 ```
-xapps item MyGallery gal-abc123 --file MyWorkbook.json
+xapps gallery item MyGallery gal-abc123 --file MyWorkbook.json
 ```
 
 Expected output (JSON with all fields):
@@ -230,13 +311,24 @@ Expected output (JSON with all fields):
 **Add an item:**
 
 ```
-xapps add-item MyGallery "New Logo" \
+xapps gallery add-item MyGallery "New Logo" \
   --image "https://cdn.example.com/logo.png" \
   --desc "Final approved logo" \
   --tags "branding,final" \
   --info-link "https://brand.example.com" \
   --image-link "https://cdn.example.com/logo.png" \
   --rating 5 \
+  --file MyWorkbook.json
+```
+
+For a local image file, add `--upload`; the CLI uploads it through `/api/uploads` first and stores the returned workbook-relative URL:
+
+```bash
+xapps gallery add-item MyGallery "Local Screenshot" \
+  --image "/tmp/screenshot.png" \
+  --upload \
+  --desc "Rendered state after the fix" \
+  --tags "after,verified" \
   --file MyWorkbook.json
 ```
 
@@ -249,7 +341,7 @@ Item created (row 3, id=gal-xyz789)
 **Update an item:**
 
 ```
-xapps update-item MyGallery gal-abc123 \
+xapps gallery update-item MyGallery gal-abc123 \
   '{"title":"Product Shot A (Updated)","tags":"design, hero, featured","rating":5}' \
   --file MyWorkbook.json
 ```
@@ -289,7 +381,7 @@ Comment added to gallery item gal-abc123 (1 comment)
 **Delete an item:**
 
 ```
-xapps delete-item MyGallery gal-abc123 --file MyWorkbook.json
+xapps gallery delete-item MyGallery gal-abc123 --file MyWorkbook.json
 ```
 
 Expected output:

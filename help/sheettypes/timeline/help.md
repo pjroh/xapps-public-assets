@@ -6,7 +6,7 @@ Timeline sheets are interactive Gantt-style views for roadmaps, schedules, proje
 
 > 🤖 Agent example: an agent can create a delivery plan from a spec, add task dependencies and owners, then keep progress and dates aligned while a human reviews the schedule visually.
 
-![Timeline sheet showing delivery phases, assignees, dependencies, and progress bars over time](/help-assets/screenshots/timeline-sheet.png)
+![Timeline sheet showing a product roadmap with task phases, assignees, status badges, dependency arrows, and milestone diamonds in Week view](/help-assets/screenshots/timeline-sheet.png)
 
 ### Features
 
@@ -20,12 +20,14 @@ Timeline sheets are interactive Gantt-style views for roadmaps, schedules, proje
 - Grouping by assignee, status, or color (swimlanes)
 - Inline rename from the sidebar
 - Collapsible parent tasks with subtask counts
-- Today line indicator
+- Today line indicator with auto-scroll
 - Weekend highlighting (in Day view)
 - Overdue and critical-path flags
+- Resizable sidebar panel
 - Context menu with quick actions
 - Drag task bars to move dates, drag handles to resize
 - Right-click context menu for status, progress, duplicate, convert
+- Home-page hover popover with live task summary
 
 ### Getting Started
 
@@ -40,9 +42,9 @@ Timeline sheets are interactive Gantt-style views for roadmaps, schedules, proje
 
 Timeline supports three task types:
 
-- **Task** -- Standard work item rendered as a full horizontal bar. Has start/end dates, progress, and all metadata fields.
-- **Subtask** -- A child of a parent task. Rendered indented in the sidebar and as a thinner bar. Subtask dates are clamped within the parent's date range.
-- **Milestone** -- A single-date event rendered as a diamond. Milestones have no end date or progress. The end date is automatically set equal to the start date.
+- **Task** -- Standard work item rendered as a full horizontal bar (square icon in sidebar). Has start/end dates, progress, color, assignee, status, and all metadata fields.
+- **Subtask** -- A child of a parent task. Rendered indented in the sidebar (circle icon) and as a thinner bar on the chart. Subtask dates are clamped within the parent's date range when saved through the editor. Deleting a parent task also deletes all its subtasks.
+- **Milestone** -- A single-date event rendered as a diamond. Milestones have no end date or progress. The end date is automatically set equal to the start date. Tasks can be converted to milestones and back via the context menu or `set-task-milestone` command.
 
 ### Task Fields
 
@@ -61,6 +63,7 @@ Each task stores these fields:
 | Status | One of: `not-started`, `in-progress`, `blocked`, `done`, `completed` |
 | Parent | Row number of the parent task (for subtasks) |
 | Dependencies | Comma-separated list of task IDs this task depends on |
+| Collapsed | Whether a parent task's subtasks are hidden (toggled via the expand/collapse arrow) |
 
 ### Progress Tracking
 
@@ -78,7 +81,7 @@ Tasks can be linked with predecessor/successor relationships:
 
 - **Drag-to-link** -- drag from the dependency handle (small circle) on one task bar to another bar to create a dependency arrow.
 - **Editor** -- type comma-separated task IDs in the Dependencies field (e.g., `T1, T4, T8`).
-- **CLI** -- use the `--depends` flag when creating or updating tasks.
+- **CLI** -- use `set-task-dependencies <sheet> <id> <dep-id>...` to replace a task's dependencies, or `clear-task-dependencies <sheet> <id>` to remove all.
 
 Dependency arrows render as SVG paths between the linked task bars. When a predecessor and successor have a tight handoff (0-1 day gap), the arrow path adjusts for readability.
 
@@ -90,13 +93,17 @@ Auto-scheduling runs after every task save through the editor or drag interactio
 
 ### Zoom Levels
 
-Switch between three zoom levels using the toolbar buttons or the `View` menu:
+Switch between three zoom levels using the toolbar buttons (Day / Week / Month) or the `View` menu:
 
 | Zoom | Column Width | Best For |
 |---|---|---|
 | Day | 56px per day | Detailed daily planning, weekend visibility |
 | Week | 84px per week | Sprint-level planning (default) |
 | Month | 140px per month | High-level roadmaps and quarterly views |
+
+![Timeline in Month view showing the full roadmap with dependency arrows, milestones as diamonds, and month column headers](/help-assets/screenshots/timeline-zoom-month.png)
+
+Tasks are sorted by start date (top-level tasks first; subtasks appear immediately after their parent). The chart auto-scrolls to keep the current date visible when first loaded.
 
 ### Filtering
 
@@ -121,11 +128,13 @@ The group selector is in the toolbar next to the filters.
 ### Sidebar Interactions
 
 - Click a task row to open the full editor dialog
-- Click the pencil icon to inline-rename a task directly in the sidebar
-- Click the collapse/expand toggle on parent tasks to show or hide subtasks
-- Each row shows the task icon (square for task, circle for subtask, diamond for milestone), ID badge, assignee badge, status badge, and overdue/critical flags
+- Click the pencil (rename) icon that appears on hover to inline-rename a task directly in the sidebar; press **Enter** to confirm or **Escape** to cancel
+- Click the collapse/expand arrow on parent tasks to show or hide subtasks; the arrow and subtask count are shown only when subtasks exist
+- Each row shows the task icon (square for task, circle for subtask, diamond for milestone), the ID badge (e.g. T1), the assignee name badge, the status badge, and any overdue/critical flags
 
-The sidebar panel width is resizable by dragging the vertical resize handle between the sidebar and the chart area.
+![Timeline sidebar showing task rows with ID badges, assignee names, status badges, and critical/overdue flags](/help-assets/screenshots/timeline-sidebar.png)
+
+The sidebar panel width is resizable by dragging the vertical resize handle between the sidebar and the chart area. The minimum width is 220px and the maximum leaves at least 220px for the chart.
 
 ### Keyboard Shortcuts
 
@@ -141,18 +150,29 @@ The sidebar panel width is resizable by dragging the vertical resize handle betw
 
 Right-clicking on a task bar provides:
 
-- Edit task
-- Set status (not-started, in-progress, blocked, done, completed)
-- Add subtask (inherits parent dates and color)
-- Duplicate task
-- Convert to milestone / Convert to task
-- Set progress (0%, 25%, 50%, 75%, 100%)
-- Delete task
+- **Edit task** -- opens the full editor dialog
+- **Set status** -- quick-switch to `not-started`, `in-progress`, `blocked`, or `done`; setting `done` also sets progress to 100%
+- **Add subtask** -- creates a subtask inheriting the parent's dates and color
+- **Duplicate task** -- copies the task with a new ID and appends "(copy)" to the title
+- **Convert to milestone / Convert to task** -- toggles the task type; converting to milestone clears the end date and progress
+- **Set progress** -- quick-set to 0%, 25%, 50%, 75%, or 100%; setting 100% changes status to `done`
+- **Delete task** -- removes the task and all its subtasks
 
-Right-clicking on empty space provides:
+Right-clicking on empty chart space provides:
 
-- Add task
-- Add milestone
+- **Add task** -- opens the editor for a new task
+- **Add milestone** -- immediately creates a milestone for today's date
+
+### Home Page Popover
+
+When you hover over a timeline sheet on the workbook home page, a compact summary popover appears with:
+
+- Total task and milestone count
+- Number of completed items
+- Number of overdue items
+- Average progress percentage with a visual progress bar
+
+This is the same data returned by the `timeline-report` API endpoint, fetched live when you hover.
 
 ### CLI Commands
 
@@ -295,3 +315,70 @@ Search, status, and assignee filters combine with AND logic. Clear all filters u
 - Spreadsheet for budget or status rollups
 - Dashboard for milestone summaries
 - Kanban for sprint-level task management
+
+---
+
+### Command Line Interface
+
+Timeline ships eight CLI commands covering task authoring, dependency management, milestone helpers, and a one-shot board summary. Every UI mutation is also a scriptable CLI / MCP call.
+
+```bash
+xapps tasks <sheet> [--status <status>] [--assignee <name>] [--search <text>] [--type <task|subtask|milestone>] [--json]
+xapps add-task <sheet> <title> [--start <YYYY-MM-DD>] [--end <YYYY-MM-DD>] [--progress <n>] [--type <task|subtask|milestone>] [--parent <id>] [--assignee <name>] [--status <s>] [--color <hex>] [--id <task-id>]
+xapps update-task <sheet> <row-or-id> <json>                                                                # patch any subset of fields
+xapps delete-task <sheet> <row-or-id>
+xapps set-task-dependencies <sheet> <row-or-id> <task-id>...                                                # replace deps array
+xapps clear-task-dependencies <sheet> <row-or-id>
+xapps set-task-milestone <sheet> <row-or-id> [--at <YYYY-MM-DD>]                                            # type=milestone, end=start, progress=100
+xapps timeline-report <sheet> [--horizon-days <n>] [--status <status>] [--assignee <name>] [--type <task|subtask|milestone>] [--json]
+```
+
+Quick end-to-end example -- author a five-task roadmap, wire dependencies, get the report:
+
+```bash
+xapps create-sheet "Roadmap" --type timeline
+xapps add-task Roadmap "Design phase"  --start 2026-05-01 --end 2026-05-14 --progress 100 --status completed   --id phase-design
+xapps add-task Roadmap "Build server"  --start 2026-05-08 --end 2026-05-21 --progress 80  --status in-progress --id task-server
+xapps add-task Roadmap "Build CLI+MCP" --start 2026-05-15 --end 2026-05-28 --progress 50  --status in-progress --id task-cli
+xapps add-task Roadmap "Tests + docs"  --start 2026-05-22 --end 2026-06-04 --progress 0   --status not-started --id task-tests
+xapps add-task Roadmap "v0.2 release"  --start 2026-06-05 --end 2026-06-05 --type milestone --color "#7c3aed"  --id v02-launch
+xapps set-task-dependencies Roadmap task-server  phase-design
+xapps set-task-dependencies Roadmap task-cli     phase-design task-server
+xapps set-task-dependencies Roadmap task-tests   task-cli
+xapps set-task-dependencies Roadmap v02-launch   task-tests
+xapps timeline-report Roadmap
+```
+
+The report prints something like `5 items (4 tasks, 1 milestone); 1 complete; 0 overdue; 46% avg progress.` -- a standup-ready summary you can pipe into a Slack post or commit hook. `--json` returns the structured shape: `{ ok, taskCount, milestoneCount, overdueCount, completedCount, averageProgress, overdueTasks[], upcomingMilestones[], filters, horizonDays, summary }`.
+
+### MCP
+
+The MCP surface mirrors the CLI 1:1: `timeline_tasks`, `timeline_add_task`, `timeline_update_task`, `timeline_delete_task`, `timeline_set_task_dependencies`, `timeline_clear_task_dependencies`, `timeline_set_task_milestone`, `timeline_report`. Useful for agents that need to translate a planning conversation into a Gantt chart, or read out current state in a periodic standup loop.
+
+### REST API
+
+| Route                                                | Method  | Purpose                                       |
+|------------------------------------------------------|---------|-----------------------------------------------|
+| `/api/sheets/<timeline>/tasks`                       | GET     | List all tasks                                |
+| `/api/sheets/<timeline>/tasks`                       | POST    | Create a task or milestone                    |
+| `/api/sheets/<timeline>/tasks/<row-or-id>`           | GET     | Read one task                                 |
+| `/api/sheets/<timeline>/tasks/<row-or-id>`           | PUT     | Patch a task (any subset of fields)           |
+| `/api/sheets/<timeline>/tasks/<row-or-id>`           | DELETE  | Remove a task                                 |
+| `/api/sheets/<timeline>/timeline-report`             | GET     | One-shot summary                              |
+
+Tasks accept either a 1-based row index or a stable id (column J) for `<row-or-id>`. The persisted dependencies field is a CSV in column H, but the API normalizes `string[]` / CSV input on PUT and POST.
+
+### Task field reference
+
+| Field          | Type     | Notes                                                                 |
+|----------------|----------|-----------------------------------------------------------------------|
+| `id`           | string   | Stable id; minted with `T` prefix on POST when omitted               |
+| `title`        | string   | Required on POST                                                      |
+| `start`, `end` | string   | `YYYY-MM-DD`. For milestones, `end` should equal `start`              |
+| `progress`     | 0-100    | Integer; clamped to range                                             |
+| `type`         | string   | `task` (default), `subtask`, or `milestone`                           |
+| `parent`       | string   | Parent task id for subtasks                                           |
+| `dependencies` | string[] | Each entry is another task's id; persisted as a CSV string in col H  |
+| `assignee`     | string   | Free-text owner                                                       |
+| `status`       | string   | `not-started` / `in-progress` / `blocked` / `done` / `completed`     |
+| `color`        | string   | Hex (e.g. `#7c3aed`) -- overrides the default bar color               |

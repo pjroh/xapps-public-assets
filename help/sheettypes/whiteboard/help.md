@@ -6,7 +6,7 @@ Whiteboard sheets give you a boundless spatial canvas for brainstorming, system 
 
 > 🤖 Agent example: an agent can seed a workshop board with sticky notes, structure a decision area, and prepare a thinking space for the human team to move through live.
 
-![Whiteboard sheet showing sticky notes, freeform spatial thinking, and collaborative grouping](/help-assets/screenshots/whiteboard-sheet.png)
+![Whiteboard sheet showing sticky notes, shapes, mind map, and connectors in a collaborative brainstorm](/help-assets/screenshots/whiteboard-sheet.png)
 
 ---
 
@@ -15,24 +15,31 @@ Whiteboard sheets give you a boundless spatial canvas for brainstorming, system 
 - Sticky notes (plain and checklist)
 - Text blocks with full formatting
 - Shapes: rectangle, rounded rectangle, circle, diamond, triangle, hexagon, star, frame
+- Lines with 9 style variants (solid, dashed, dotted, arrow, double-arrow, and combinations)
 - Images (upload, URL, drag-drop, and live-linked references)
-- Connectors between objects
-- Orthogonal/elbow connectors for cleaner diagrams
+- Connectors between objects with straight and orthogonal/elbow routing
 - Frames for visual grouping
 - Multiple pages with independent pan/zoom
 - Layer system with visibility and lock controls
 - Board search, type filters, and tag filters
 - Object tags for find/filter workflows
 - Native mind-map nodes with parent/child relationships
+- Mind node metadata: icon, status, assignee, due date, notes, tags
+- Mind map outline import (paste indented text to build a whole map)
 - Mind-map connector styles: elbow or curved
-- Align and distribute actions for diagram cleanup
+- Align, distribute, and z-order actions for diagram cleanup
+- Style clipboard (copy/paste style between objects)
+- Image filters: brightness, blur, contrast, grayscale, saturation, sepia
+- Image flip (horizontal and vertical)
+- Border styles: solid, dashed, dotted
 - Process templates (SWOT, BMC, Eisenhower, and more)
 - Minimap navigation
-- Bulk actions (duplicate, delete, lock, unlock)
+- Bulk actions (duplicate, delete, lock, unlock, group/ungroup)
 - SVG export
 - Template variables in text content
 - Live image embeds from other sheets
 - Object locking
+- Web Clipper bookmarklet for saving images from any website
 - Zoom 10%--400%
 
 ---
@@ -45,6 +52,10 @@ Whiteboard sheets give you a boundless spatial canvas for brainstorming, system 
 4. Drag objects to arrange them freely on the infinite canvas.
 5. Use frames to visually group related objects.
 6. Add connectors between objects to show relationships.
+
+![Whiteboard left toolbar showing select, sticky, text, mind, image, shapes, connector, marquee, and pen tool buttons](/help-assets/screenshots/whiteboard-toolbar.png)
+
+The left toolbar buttons (top to bottom): **Undo/Redo**, **Select**, **Sticky**, **Text**, **Mind node**, **Image**, **Shapes flyout** (rect, rounded-rect, circle, diamond, triangle, hexagon, star, frame), **Connector flyout** (straight/orthogonal variants with arrow and line-style options), **Line flyout** (9 line styles), **Marquee select**, **Delete selection**.
 
 ---
 
@@ -59,6 +70,9 @@ Double-click empty canvas space to create a sticky note. Double-click an existin
 - Resize via drag handles
 - Rotation
 - Checklist mode for task-style notes
+- Shadow effect (toggled from the inspector panel)
+
+![Colorful sticky notes and shapes on the brainstorm board](/help-assets/screenshots/whiteboard-sticky-notes.png)
 
 #### Text Blocks
 
@@ -66,7 +80,9 @@ Freeform text objects with full styling: font size, color, weight, font family, 
 
 #### Shapes
 
-Eight shape types, each with configurable fill, stroke, stroke width, border style (solid, dashed, dotted), and optional text labels:
+Eight shape types, each with configurable fill, stroke, stroke width, border style (solid, dashed, dotted), and optional text labels.
+
+![Shapes including rounded rectangles, diamond, and circle with fill colors](/help-assets/screenshots/whiteboard-shapes.png)
 
 | Shape | Description |
 |---|---|
@@ -90,7 +106,14 @@ Add images by:
 - Pasting a URL
 - CLI with `add-wb-image`
 
-Image objects support opacity and fit mode (contain, cover) adjustments.
+Image objects support:
+
+- Opacity control (0--1)
+- Fit mode: contain, cover, fill, none, scale-down
+- Image filters: brightness, contrast, blur, grayscale, saturation, sepia
+- Flip horizontal and flip vertical
+- Clickable image links (`imageLink` style property)
+- Border style and stroke control (same as shapes)
 
 **Live image references:** Link a whiteboard image to a source image from a Gallery, Design Canvas, Whiteboard, or Presentation sheet. The whiteboard object renders the source image live and updates automatically when the source changes.
 
@@ -101,11 +124,40 @@ Image objects support opacity and fit mode (contain, cover) adjustments.
 
 If the source is deleted, the whiteboard shows a broken-source state until you relink or replace it.
 
+#### Lines
+
+The **Line** tool draws freeform line segments that are not semantically bound to other objects. Lines have independent endpoints you can reposition at any time.
+
+Line style options (selectable in the inspector or from the toolbar flyout):
+
+| Style | Description |
+|---|---|
+| `solid` | Plain solid line |
+| `dashed` | Evenly dashed line |
+| `dotted` | Dotted line |
+| `dot-dash` | Alternating dot and dash |
+| `arrow` | Solid line with arrowhead |
+| `double-arrow` | Arrowhead on both ends |
+| `dashed-arrow` | Dashed line with arrowhead |
+| `dotted-arrow` | Dotted line with arrowhead |
+| `dot-dash-arrow` | Dot-dash line with arrowhead |
+
+Use the inspector panel to adjust stroke color, weight, and line style after placing a line.
+
 #### Connectors
 
 Connect any two objects with a connector line. Use the connector tool to draw relationships between stickies, shapes, and other objects.
 
-For cleaner diagrams, connectors now support both straight and orthogonal/elbow routing. Orthogonal connectors render as segmented paths and stay compatible with SVG export.
+Connectors support:
+
+- **Straight routing** -- direct line between endpoints
+- **Orthogonal/elbow routing** -- segmented right-angle paths for cleaner diagrams
+- Arrow heads (toggled per connector)
+- Line style: solid, dashed, or dotted
+- Stroke color and width
+- Compatibility with SVG export in both routing modes
+
+A connector anchors to the source object. When the source moves, the connector route updates automatically.
 
 #### Mind Nodes
 
@@ -120,6 +172,28 @@ For cleaner diagrams, connectors now support both straight and orthogonal/elbow 
 - CLI and API can create nodes and trigger layout without relying on the browser UI
 
 Use mind nodes when you need a real editable mind map rather than a static whiteboard layout.
+
+**Mind node metadata.** Each mind node has an optional Details dialog (toolbar button or right-click) where you can set:
+
+- **Icon** -- a single emoji or character shown on the node
+- **Status** -- a workflow status (no status, in progress, done, blocked, etc.)
+- **Assignee** -- owner name for planning boards
+- **Due date** -- a date picker for scheduling
+- **Notes** -- a free-text area for context, decisions, or next steps
+- **Tags** -- comma-separated tags for search and filtering
+
+**Mind map outline import.** Import an entire mind map from a bulleted or indented text outline. Use two spaces or a tab to create the next level. Select an existing mind node first to append the outline under that branch; otherwise a new root is created automatically.
+
+```
+- Launch plan
+  - Research users
+  - Draft milestones
+- Risks
+  - Staffing
+  - Scope
+```
+
+Access the import dialog from the **Whiteboard** menu or the mind-map toolbar.
 
 #### Search, Filters, and Tags
 
@@ -539,6 +613,8 @@ Pass row indexes or stable IDs. `--group-id` lets agents reference an existing g
 
 Whiteboard ships a lightweight mind-map mode where stickies become nodes and connectors auto-route between them:
 
+![Native mind-map nodes with curved connectors showing Product Strategy root, Q3 Features, Q4 Roadmap, Tech Debt, and Team Growth branches](/help-assets/screenshots/whiteboard-mind-map.png)
+
 ```bash
 xapps wb-link-mind-nodes <sheet> <parent-row-or-id> <child-row-or-id> [--side <left|right>]
 xapps wb-set-mind-connector-style <sheet> <row-or-id> <elbow|curved>
@@ -547,3 +623,54 @@ xapps wb-set-mind-connector-style <sheet> <row-or-id> <elbow|curved>
 `wb-link-mind-nodes` adds a parent → child edge; `--side` controls whether the child sits to the left or right of the parent (the default auto-balances). `wb-set-mind-connector-style` swaps a single connector between right-angled `elbow` lines and smooth `curved` ones, useful when you want one critical edge to stand out.
 
 The mind-map flavor reuses the standard whiteboard layer / connector machinery, so you can mix mind-map nodes with other whiteboard objects on the same canvas.
+
+---
+
+### Web Clipper
+
+The Web Clipper lets you save images from any external website directly into a whiteboard (or Gallery) sheet without leaving the browser.
+
+**Setup:**
+
+1. Open the whiteboard and click the **Web Clipper** button in the toolbar (bookmark icon).
+2. A dialog opens with a blue **"Clip to XApps"** bookmarklet button.
+3. Drag that button to your browser's bookmarks bar.
+
+**Usage:**
+
+1. Visit any website with images you want to capture.
+2. Click **Clip to XApps** in your bookmarks bar.
+3. Click any image on the page to select it.
+4. Confirm the destination workbook and sheet, then click **Clip**.
+5. The image is downloaded and added to your whiteboard at the current viewport position.
+
+The clipper defaults to the last saved workbook and active compatible sheet. It works from any website because the bookmarklet runs in the context of the current tab and posts back to your xApps host.
+
+---
+
+### Inspector Panel
+
+The right sidebar inspector changes contextually based on the selected object type:
+
+| Object type | Inspector tabs |
+|---|---|
+| Sticky note | Style (color, text color, font size), Transform (rotation) |
+| Text block | Text (color, size, bold), Transform (rotation) |
+| Shape / mind node | Appearance (fill, border, style, width), Text (label color, size), Transform (rotation) |
+| Line | Stroke (color, weight, style/arrow type), Transform (rotation) |
+| Connector | Stroke (color, weight, style), Routing (straight/orthogonal), Arrow head toggle |
+| Frame | Transform (rotation) |
+| Image | Image (replace, flip H/V), Placement (fit mode), Transform (rotation, opacity, corner radius, shadow), Adjustments (brightness, contrast, saturation, blur, grayscale, sepia) |
+
+**Multi-selection inspector.** When two or more objects are selected, the inspector shows a combined panel with:
+
+- Tags (apply/clear across selection)
+- Fill and border color for mixed selections
+- Border style and width
+- Text color
+- Align/distribute and z-order dropdowns
+- Connect button (when exactly two objects are selected)
+- Lock / Unlock buttons
+- Paste Style (if the style clipboard has content)
+
+**Style clipboard.** Use **Copy Style** on any single object to store its visual properties. Then select one or more other objects and click **Paste Style** to apply the same fill, border, color, and font settings. Available for stickies, shapes, text blocks, and mind nodes.

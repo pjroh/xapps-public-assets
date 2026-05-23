@@ -8,6 +8,8 @@ Polls are useful for audience Q&A, product feedback, planning votes, retrospecti
 
 > 🤖 Agent example: an agent can scaffold a poll, add a few options, mark it open, submit synthetic responses for testing, then export the CSV — all without opening the GUI.
 
+![Poll](/help-assets/screenshots/poll-sheet.png)
+
 ---
 
 ### Features at a Glance
@@ -43,20 +45,23 @@ Polls are useful for audience Q&A, product feedback, planning votes, retrospecti
 
 ### Editor (admin) Layout
 
-- **Top bar:** status pill (draft / open / closed), editable title, **Share** button, lifecycle action (Open / Close / Reopen).
+- **Top bar:** status pill (draft / open / closed), editable title, **Save** / **Load** buttons (poll library), **Share** button, lifecycle action (Open / Close / Reopen).
 - **Description:** optional textarea shown to voters above the question.
-- **Questions section:** one card per question. Card has a type badge, question prompt input, options list, "Add an option" row.
-- **Add-question chips:** type picker. Visible in `draft` only (server enforces structural lockout once open).
-- **Live results section:** appears once the poll is `open`; shows per-question bars and an export button.
+- **Questions section:** one card per question. Card has a type badge, question prompt input, options list with color swatches, "Add an option" row. All fields are inline-editable — click to rename, Enter or blur to save, Escape to revert.
+- **Add-question chips:** type picker (Single / Multi / Rating / Yes/No / Text / Rank). Visible in `draft` only (server enforces structural lockout once open).
+- **Live results section:** appears once the poll is `open` or `closed`; shows per-question bars, counts, percentages, total responses, and an Export CSV button. The leader option is highlighted. Results sort by vote count automatically.
 
 ### Voter Layout
 
-- **Hero card:** poll title + optional description.
-- **Question card:** prompt at top, then type-specific affordance (option pills / star row / textarea / checkboxes).
-- **Auto submit (default):** tapping an option fires the vote immediately. **Explicit submit** mode shows a Submit button and waits for confirmation.
-- **After voting:** confirmation message + (if `showResults` allows) bar fill on each option.
+- **Hero card:** poll title + optional description. An optional cover image (`coverImageUrl`) or brand logo (`brandLogoUrl`) can be set via config.
+- **Progress dots (multi-question):** when a poll has more than one question, voters see a stepped flow — progress dots at the top, a Next / Back nav, and a Review screen before final submit.
+- **Question card:** prompt at top, then type-specific affordance (option pills / star row / textarea / checkboxes / drag list).
+- **Auto submit (default):** tapping an option fires the vote immediately. A brief haptic pulse fires on supported mobile browsers. **Explicit submit** mode shows a Submit button and waits for confirmation.
+- **After voting:** confirmation message + (if `showResults` allows) bar fill on each option showing percentage and count.
 - **Already-voted state:** picked option stays highlighted, results bars persist, second submit returns `409 already_voted` (unless `allowEditAfterSubmit` is true).
-- **Closed poll:** voting is disabled; the same options are shown as final-results bars.
+- **Closed poll:** voting is disabled; the same options are shown as final-results bars with a "This poll closed" banner.
+
+![Poll voter view](/help-assets/screenshots/poll-voter-view.png)
 
 ---
 
@@ -71,7 +76,7 @@ Polls are useful for audience Q&A, product feedback, planning votes, retrospecti
 | `text`    | Type into a textarea            | `{ text: string }` (≤ `textMax`)           |
 | `ranking` | Drag to reorder (follow-up)     | `{ orderedOptionIds: string[] }`           |
 
-Multi questions honor `multiMin` and `multiMax`. Rating questions honor `ratingScale.max` and `ratingScale.style` (`stars` / `nps` / `numeric`). Text questions honor `textMax`.
+Multi questions honor `multiMin` and `multiMax`. Rating questions honor `ratingScale.max` and `ratingScale.style` (`stars` / `nps` / `numeric`). Text questions honor `textMax`. Yes/No questions require options with IDs `yes` and `no` to be present — the GUI seeds them automatically when you tap the Yes/No chip; the CLI `add-question --type yesno` does not auto-seed them, so add them explicitly with `add-option` before opening the poll.
 
 ---
 
@@ -95,6 +100,10 @@ The Share dialog builds a deep link of the form:
 ```
 https://<host>/?sheet=<pollName>&mode=vote
 ```
+
+The dialog also renders a **QR code** (inline SVG, no external service) sized for projection screens. Voters scan with a phone camera to jump straight to the voter view.
+
+![Poll share dialog](/help-assets/screenshots/poll-share-dialog.png)
 
 Voters open this URL on a phone or laptop. The shell auto-detects voter mode and:
 
@@ -140,6 +149,33 @@ xapps set-poll-status Lunch open
 xapps submit-response Lunch '[{"questionId":"q-1","value":{"optionId":"opt-tacos"}}]'
 xapps poll-responses Lunch
 ```
+
+Multi-question retro example:
+
+```bash
+xapps create-workbook "Q2 Retro" --sheet poll:Survey
+xapps set-poll-config Survey '{"title":"Q2 Retrospective","showResults":"after-vote","anonymous":true}'
+
+# Single-choice question
+xapps add-question Survey --type single --prompt "How was the sprint?" --required \
+  --option "Excellent" --option "Good" --option "Okay" --option "Rough"
+
+# Star rating
+xapps add-question Survey --type rating --prompt "Rate goal clarity (1-5)" \
+  --required --rating-max 5 --rating-style stars
+
+# Yes/No — seed the options explicitly (CLI does not auto-seed yes/no)
+Q=$(xapps add-question Survey --type yesno \
+  --prompt "Did you feel safe raising blockers?" --required --json | jq -r .question.id)
+xapps add-option Survey "$Q" "Yes"
+xapps add-option Survey "$Q" "No"
+
+# Open and vote
+xapps set-poll-status Survey open
+xapps poll-responses Survey
+```
+
+> **Yes/No CLI pitfall:** the GUI seeds `yes` and `no` options automatically when you tap the Yes/No chip. The CLI `add-question --type yesno` does **not** — add them with `add-option` before opening, otherwise `submit-response` will reject answers with `optionId not found`.
 
 Run `xapps help poll <command>` for per-command flags.
 
@@ -236,10 +272,16 @@ Names are slugified (letters / digits / underscore stay; everything else collaps
 
 ### Live Results Transport
 
-The admin live-results panel uses two channels:
+![Live results panel](/help-assets/screenshots/poll-live-results.png)
 
-- **Server-sent events (SSE)** — `GET /api/sheets/<poll>/events` streams a `tally-update` event every time `/responses` accepts a vote, for sub-second updates without polling.
-- **Polling fallback** — every 6 seconds the admin re-fetches `/tally`. This catches a single dropped SSE event and keeps the panel honest if the EventSource connection ever stalls behind a proxy.
+The admin live-results panel uses the workbook Yjs room as its primary transport:
+
+- **Shared Yjs updates** — voter clients publish accepted tally updates to `shared-y-updates:poll:<pollDocId>` after `/responses` accepts a vote. Admin clients subscribe to the same channel for near-instant updates without opening a separate EventSource stream.
+- **Polling fallback** — every 6 seconds the admin re-fetches `/tally`. This reconciles REST-only votes, reconnect gaps, and old cached clients that do not publish the shared-Y update.
+- **Leader highlight** — the winning option is highlighted in the results panel and the list re-sorts by vote count automatically.
+- **Ranking (Borda score)** — ranking questions show Borda-score point totals rather than raw counts in the tally, giving a meaningful aggregate of voter orderings.
+- **Rating average** — rating questions show the computed average above the per-bucket bar chart.
+- **Text answers** — text questions show each submitted answer as a blockquote with a timestamp.
 
 You don't need to do anything to enable either; the admin pane wires both up automatically when the poll is `open`.
 
@@ -263,10 +305,22 @@ When the poll transitions `open → closed`, the server returns a `pendingAutoma
 
 ---
 
+### Stepped Multi-Question Flow
+
+When a poll has more than one question and the voter has not yet submitted, the voter view automatically switches to a **stepped** mode:
+
+- **Progress dots** at the top of the card show how many questions there are and which one is active (e.g. "1 of 6").
+- **Next / Back** buttons advance or retreat through questions. Next is disabled until the voter picks an answer on required questions.
+- **Per-step state is collected in memory** — answers from earlier steps are preserved as the voter navigates.
+- **Review screen** — after the last question, the voter sees a summary of all answers with an Edit link beside each one, then a single **Submit all** button that posts all answers in one request.
+- Once submitted, the flow resets to a single-question voted-state view for the first question.
+
+The stepped flow is entirely client-side; the server still receives a single `POST /responses` with all answers in one payload.
+
+---
+
 ### Known Follow-Ups
 
-- **Yjs transport for live results.** SSE works today, but a dedicated `shared-y-updates:poll:<pollDocId>` Y.Array channel for response appends is the long-term shape (matches the typewriter precedent, scales further).
-- **Multi-question stepped voter flow.** Already implemented — Phase 5 ships progress dots, Next/Back, and a Review screen.
-- **Voter ranking UI.** Already implemented — drag-reorder voter UI + Borda-score aggregation in `/tally`.
 - **Cross-surface integrations.** Kanban-on-close ships. Doc / typewriter live-embed of the results panel + dashboard widget for poll responses are still open.
-- **`browser-vote.ts` file split.** The voter file passed the 900-line guardrail and is currently whitelisted; splitting into single-question / stepped / ranking modules is a follow-up cleanup.
+- **Additional browser split cleanup.** `browser-admin.ts` and `browser-vote.ts` are now under the 900-line guardrail, but single-question / stepped-flow renderers can still be split further if future feature work adds size back.
+- **CLI yesno auto-seed.** `add-question --type yesno` does not seed yes/no options automatically; this is a known CLI ergonomics gap documented in the CLI section above.
