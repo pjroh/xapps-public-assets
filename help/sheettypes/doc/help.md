@@ -2,6 +2,71 @@
 
 ### Pages, briefs, SOPs, and knowledge entries
 
+Use **Wiki** for a collection of linked pages: a team handbook, project brief,
+decision log or research notebook. Choose **Typewriter** when the main result is
+a paginated document with headers, footers and detailed print layout.
+
+### Build your first useful Wiki
+
+1. Add a **Wiki** sheet and give it a topic, such as **Project Handbook**.
+2. Start with one overview page. Give it a clear title and short summary;
+   both help people find it from the page rail.
+3. Click in the body and write the purpose. Type `/` to choose a heading,
+   checklist, callout, table, image or embed. Use one heading per main section.
+4. Add separate pages for decisions, meeting notes and procedures. Keep related
+   pages in this sheet so the page rail remains the common navigation.
+5. Connect pages with `[[Page title]]` links. Add a linked sheet in **Settings**
+   when the page should lead readers to a board, schedule or spreadsheet.
+6. Save the workbook. Reopen the page from its rail entry and check its title,
+   links and sections without relying on your explanation.
+
+### Choose the right block
+
+| What the reader needs | Use | Example |
+|---|---|---|
+| A section they can jump to | Heading 1 or Heading 2 | Decisions, Next steps |
+| A task they can tick off | Checklist | Confirm the launch date |
+| A key point that stands out | Callout | The review is due Friday |
+| A compact comparison | Table | Option, benefit, owner |
+| A procedure or command | Code block | A reproducible command sequence |
+| Current workbook information | Live data embed | A budget range or registered sheet view |
+| Additional detail on demand | Toggle list | Supporting notes |
+
+### Turn meeting notes into a decision record
+
+Start a fresh page, then choose **Settings → Template → Meeting Notes** and
+**Apply Template**. Templates replace the active page structure, so apply one
+before writing the notes you want to keep. Record the decision, its reason and
+the owner of each follow-up. Use a checklist for actions and link the relevant
+Kanban or Timeline sheet. Add a summary such as “Approved the September pilot”
+so readers can identify the outcome from the rail.
+
+![Wiki page settings showing layout, template, tone, typography and linked pages](/help-assets/screenshots/doc-settings.png)
+
+*Settings applies to the current page. Applying a template and changing page
+appearance are separate actions.*
+
+### Find your way around a growing handbook
+
+The page-rail search finds pages by title and summary. **Outline** finds sections
+inside the open page. Use Collection layout in **Settings** when readers should
+browse a persistent list of pages alongside the reading pane.
+
+![Wiki Outline panel listing the Engineering Process page headings](/help-assets/screenshots/doc-outline.png)
+
+### When something looks wrong
+
+| Symptom | Check |
+|---|---|
+| A page is missing from the rail | Clear search and confirm the Wiki sheet. |
+| The outline is empty | Use heading blocks; bold paragraphs do not become outline entries. |
+| A Wiki link cannot find its target | Check the page title and the heading text after `#`. |
+| An embed is stale or broken | Open its source, check the range or view, then refresh or relink it. |
+| Export is unavailable | Save the workbook first; review fidelity warnings. |
+| A template replaced content | Use Undo while the editor has focus; use a new page for future templates. |
+
+### Feature reference
+
 Wiki sheets are the narrative layer of an xApps workbook. They are designed for:
 
 - project briefs
@@ -22,7 +87,6 @@ Each Wiki sheet is a small internal wiki workspace. Keep many related pages insi
 - use the page rail on the left to switch pages inline
 - the search box in the rail filters pages by title and summary
 - page operations target the active page
-- legacy `docTitle` / `docBlocks` fields still mirror the active page for compatibility
 
 ![Wiki sidebar showing five pages — Welcome, Onboarding Checklist, Communication Norms, Engineering Process, and Incident Response SOP](/help-assets/screenshots/doc-pages.png)
 
@@ -56,7 +120,7 @@ Wiki pages are block-based. Current block types include:
 - table
 - live data embed
 
-![Onboarding Checklist page showing heading, checklist todo blocks, and structured properties in the page header](/help-assets/screenshots/doc-blocks.png)
+![Onboarding Checklist page with the first task checked and the remaining tasks ready to complete](/help-assets/screenshots/doc-blocks.png)
 
 ### Inline formatting
 
@@ -82,11 +146,12 @@ Image blocks support:
 
 - sizing — small, medium, large, or full width
 - alignment — left, center, or right
-- drag-drop and paste to insert images directly
+- caption and accessible alt text
+- URL, drag-drop, and paste inputs copied into the workbook upload store before the block references them
 
 ### Live data embed blocks
 
-Insert a live data view from another sheet in the workbook using `/embed` or the Insert menu. The block renders a live snapshot of the linked sheet and updates when the workbook data changes.
+Insert a live data view from another sheet in the workbook using `/embed` or the Insert menu. Sources are validated as spreadsheet ranges or registered sheet views. Typed API/SDK/CLI/toolkit reads report whether the stored source fingerprint is current, stale, missing, or type-mismatched; refresh revalidates it without copying source data into the page.
 
 ### Callout blocks
 
@@ -106,7 +171,9 @@ Code blocks support syntax language labels (e.g. `bash`, `javascript`, `python`)
 
 ### Block comments
 
-Hover over any block to reveal the comment button. Comments support threaded discussions per block for feedback and review.
+Hover over a block and click its comment button to open the governed thread panel. Threads have stable server IDs, attributed authors and timestamps, replies, edit/delete permissions, and resolve/reopen state. Changes use the same revision-guarded API as Doc automation, so another client's update is shown before you retry instead of being overwritten.
+
+Agents use `doc-list-comments`, `doc-add-comment`, `doc-edit-comment`, `doc-delete-comment`, `doc-resolve-comment`, `doc-add-comment-reply`, `doc-edit-comment-reply`, and `doc-delete-comment-reply`. Mutations accept `--expected-revision` plus `--request-id` for safe retry.
 
 ### Block colors
 
@@ -118,8 +185,9 @@ Drag blocks to reorder them within a page.
 
 ### Export
 
-- **PDF export** — toolbar button or `Wiki` menu
-- **DOCX export** — toolbar button or `Wiki` menu (Word-compatible HTML)
+- **PDF export** — `Wiki -> Download PDF (.pdf)` returns a real server-produced `application/pdf` artifact
+- **DOCX export** — `Wiki -> Download Word (.docx)` returns a real OOXML package with the canonical DOCX MIME type
+- Exports require a saved workbook. Data-URI images, links, tables, headings, and lists are supported; unsupported external images and live embeds are reported as fidelity warnings.
 
 ### Wiki-style page shell
 
@@ -202,24 +270,57 @@ Wiki pages work especially well when paired with other sheet types:
 - keep renovation notes next to a floor plan, gallery, and budget spreadsheet
 - store campaign strategy beside a content calendar, presentation, and design canvas
 
+### Assisted writing
+
+Use the shared room **Assistant**, when available, to draft or revise Wiki
+content. Name the page, the workbook facts it should use and the result you
+want. Review the resulting text and links. Wiki has no separate Writing Copilot
+button; automation uses the guarded Doc editing tools described below.
+
 ---
 
 ### CLI Commands
 
-The Wiki / Doc surface ships 23 CLI commands. They share the same `xapps <command> <sheet> ...` pattern as the spreadsheet/kanban/canvas surfaces. The `<sheet>` is the wiki sheet name in the active workbook.
+The Wiki / Doc surface ships 67 CLI commands. They share the same `xapps <command> <sheet> ...` pattern as other xApps surfaces. The `<sheet>` is the wiki sheet name in the active workbook.
 
 Bad input is rejected before mutation. Page and block IDs must be non-empty, non-numeric strings without `/`; `--index` values must be non-negative integers; bool flags accept true/false-style values; JSON options must be the documented object shapes. With `--json`, CLI errors are emitted as structured error envelopes.
+
+Every page, block, link, metadata, and property write uses the guarded atomic mutation API. Mutating commands accept `--expected-revision <n>` and `--request-id <id>`. Omit both flags to have the SDK read the current revision and generate a one-attempt request id, or provide both for deterministic agent retries; supplying only one is rejected. Same-request/same-payload retries return the original result without another save. A stale revision or changed reuse of a request id fails with `409` and zero mutation.
+
+```bash
+xapps doc-mutation-state <sheet> [--json]
+xapps doc-mutation-outcome <sheet> <requestId> [--json]
+```
+
+`doc-mutation-state` returns the revision and active page id needed for a guarded write. `doc-mutation-outcome` retrieves the durable original result after a disconnect or restart.
 
 #### Pages
 
 ```bash
-xapps doc-add-page <sheet> <title> [--icon <emoji>] [--summary <text>] [--index <n>] [--set-active]
+xapps doc-add-page <sheet> <title> [--icon <emoji>] [--summary <text>] [--index <n>] [--set-active] [--id <pageId>]
 xapps doc-list-pages <sheet> [--json]
-xapps doc-get-page <sheet> <pageId> [--json]
+xapps doc-get-page <sheet> <pageId> [--offset <n>] [--limit <n>] [--json]
 xapps doc-rename-page <sheet> <pageId> --title <title> [--icon <emoji>] [--summary <text>]
 xapps doc-delete-page <sheet> <pageId>
 xapps doc-set-active-page <sheet> <pageId>
+xapps doc-reorder-page <sheet> <pageId> --index <n>
 ```
+
+`--id` on `doc-add-page` is a true idempotent upsert key: when a page with that id already exists, the call updates it in place (fields the call omits are preserved, `--index` is ignored) instead of erroring. JSON output carries `created` / `updated` markers.
+
+#### Templates, collections, search, and outline
+
+```bash
+xapps doc-list-templates <sheet> [--json]
+xapps doc-get-template <sheet> <templateId> [--json]
+xapps doc-apply-template <sheet> <templateId> <pageId>
+xapps doc-get-collection <sheet> [--json]
+xapps doc-configure-collection <sheet> --sheets <json-array> [--active-sheet <name>]
+xapps doc-search <sheet> <query> [--offset <n>] [--limit <n>] [--json]
+xapps doc-outline <sheet> <pageId> [--json]
+```
+
+Template application, page reordering, and collection configuration use the same guarded revision/request-id contract as other Doc writes. Search returns stable page/block locations with deterministic pagination; outline returns heading levels, block IDs, and positions.
 
 #### Page links (cross-page references)
 
@@ -237,11 +338,54 @@ xapps doc-list-page-links <sheet> <pageId> [--json]
 `--props` must be a JSON object. `--checked` accepts `true`, `false`, `1`, `0`, `yes`, `no`, `on`, or `off`.
 
 ```bash
-xapps doc-add-block <sheet> <pageId> --type <type> [--text <t>] [--checked] [--props <json>] [--index <n>]
-xapps doc-list-blocks <sheet> <pageId> [--json]
+xapps doc-add-block <sheet> <pageId> --type <type> [--text <t>] [--checked] [--props <json>] [--index <n>] [--id <blockId>]
+xapps doc-list-blocks <sheet> <pageId> [--offset <n>] [--limit <n>] [--json]
 xapps doc-update-block <sheet> <pageId> <blockId> [--text <t>] [--type <t>] [--checked <bool>] [--props <json>]
 xapps doc-delete-block <sheet> <pageId> <blockId>
 xapps doc-reorder-block <sheet> <pageId> <blockId> --index <n>
+```
+
+`--id` on `doc-add-block` is a true idempotent upsert key: when a block with that id already exists on the page, the call updates it in place — position preserved, `--index` ignored — instead of creating a duplicate id. JSON output carries `created` / `updated` markers. Block ids are unique per page; a write that would introduce a duplicate id is rejected with `doc_duplicate_block_id` (409).
+
+`doc-list-blocks` and `doc-get-page` accept `--offset <n>` / `--limit <n>` to window blocks **server-side** (the page GET takes `?offset=&limit=` query params, mirroring the MCP resources convention). The JSON output carries the pre-window total — `totalCount` on `doc-list-blocks`, `page.blocksTotal` on `doc-get-page` — so agents can page through long documents without fetching everything.
+
+#### Images and live embeds
+
+```bash
+xapps doc-upload-image <file-or-url> [--name <filename>] [--json]
+xapps doc-list-media <sheet> [--page <pageId>] [--json]
+xapps doc-insert-image <sheet> <pageId> <uploads-url> [--size small|medium|large|full] [--align left|center|right] [--alt <text>] [--caption <text>]
+xapps doc-update-image <sheet> <pageId> <blockId> [--src <uploads-url>] [--size <size>] [--align <align>] [--alt <text>] [--caption <text>]
+xapps doc-remove-image <sheet> <pageId> <blockId>
+xapps doc-insert-live-embed <sheet> <pageId> --source-sheet <sheet> [--kind range|sheet-view] [--range <A1:D10>] [--sheet-type <type>] [--options-json <json>]
+xapps doc-update-live-embed <sheet> <pageId> <blockId> [source options]
+xapps doc-refresh-live-embed <sheet> <pageId> <blockId>
+xapps doc-remove-live-embed <sheet> <pageId> <blockId>
+```
+
+Image commands accept only durable `/uploads/<file>` references; use `doc-upload-image` first for local bytes or remote URLs. Removing an image detaches the block and reports whether the shared asset became orphaned, but retains the asset until an explicit workbook asset-cleanup flow. Live embeds keep reference metadata and a source fingerprint, never a copied snapshot.
+
+#### Rich editing and tables
+
+These typed commands use the same revision-guarded, one-save transaction as page/block writes. Inline offsets address rendered text; mark IDs and inserted block IDs are stable retry targets. Invalid ranges, block types, and table coordinates reject the full transaction without partial edits.
+
+```bash
+xapps doc-format-inline <sheet> <pageId> <blockId> --start <n> --end <n> --mark <bold|italic|underline|strikethrough|code> [--mark-id <id>]
+xapps doc-link-inline <sheet> <pageId> <blockId> --start <n> --end <n> --href <url> [--mark-id <id>]
+xapps doc-remove-inline-mark <sheet> <pageId> <blockId> <markId>
+xapps doc-insert-rich-block <sheet> <pageId> --type <type> [--text <text>] [--after-block <id>] [--id <id>]
+xapps doc-convert-block <sheet> <pageId> <blockId> --type <type>
+xapps doc-set-callout <sheet> <pageId> <blockId> [--icon <emoji>] [--background <hex>]
+xapps doc-set-toggle <sheet> <pageId> <blockId> [--body <text>] [--open <bool>]
+xapps doc-set-code <sheet> <pageId> <blockId> [--language <name>] [--text <code>]
+xapps doc-set-block-background <sheet> <pageId> <blockId> --color <hex-or-empty>
+xapps doc-set-checklist <sheet> <pageId> <blockId> --checked <bool>
+xapps doc-set-table-cell <sheet> <pageId> <blockId> --row <n> --column <n> --text <text>
+xapps doc-insert-table-row <sheet> <pageId> <blockId> --index <n> [--values <json>]
+xapps doc-delete-table-row <sheet> <pageId> <blockId> --index <n>
+xapps doc-insert-table-column <sheet> <pageId> <blockId> --index <n> [--values <json>]
+xapps doc-delete-table-column <sheet> <pageId> <blockId> --index <n>
+xapps doc-set-table-header <sheet> <pageId> <blockId> --enabled <bool>
 ```
 
 #### Metadata
@@ -260,29 +404,41 @@ xapps doc-clear-property <sheet> <key>
 
 ```bash
 # Single-page import — append blocks to an existing page
-xapps doc-import-markdown <sheet> <pageId> --file ./article.md
+xapps doc-import-markdown <sheet> <pageId> --input ./article.md
 # Single-page replace
-xapps doc-import-markdown <sheet> <pageId> --file ./article.md --replace
+xapps doc-import-markdown <sheet> <pageId> --input ./article.md --replace
 # Multi-page wiki import — split on # headings, two-pass [[Title]] resolution
-xapps doc-import-markdown <sheet> --multi --file ./constitution.md --replace-pages
+xapps doc-import-markdown <sheet> --multi --input ./constitution.md --replace-pages --yes --request-id constitution-v3
 # Pipe Markdown via stdin
 cat note.md | xapps doc-import-markdown <sheet> <pageId>
 
 # Export
 xapps doc-export-markdown <sheet> [<pageId>] [--out path.md]
+xapps doc-export-artifact <sheet> <docx|pdf> --out artifact.ext [--scope page|all] [--page-id id] [--verify]
 ```
+
+The Markdown source flag is `--input` (or stdin). The global `--file` flag selects the **target workbook** — it cannot name the Markdown source.
+
+In single-page mode, omitting `<pageId>` imports into the sheet's **active page**; the output echoes the resolved page id (`usedActivePage: true` in JSON). Pass an explicit `<pageId>` to target any other page.
+Single-page append preserves every existing block ID, allocates new `block-N` IDs from the page's monotonic `nextBlockId`, and treats the parsed Markdown as the stable request intent. Repeating the identical command with the same `--request-id` after a dropped response returns `replayed: true` without appending the content twice; changed Markdown under that ID is rejected without modifying the page.
 
 #### JSON import / export
 
 ```bash
-xapps doc-import-doc-json <sheet> bundle.json [--replace-pages]
+xapps doc-import-doc-json <sheet> bundle.json [--replace-pages --yes|--replace-all --yes] [--upsert-by-title] [--request-id id] [--json]
+cat bundle.json | xapps doc-import-doc-json <sheet> --stdin --json
+xapps doc-import-doc-json --schema --json
 xapps doc-export-doc-json <sheet> [--out bundle.json]
 ```
 
-The JSON shape is `{ meta?: {...}, pages: [{ title, icon?, summary?, blocks: [{ type, text, checked?, props? }] }] }`.
-Import validates page titles, optional page IDs, linked page arrays, block types, table rows, boolean fields, and property objects before creating or replacing pages.
+The JSON shape is `{ meta?: {...}, pages: [{ id?, title, icon?, summary?, properties?, linkedPages?, blocks: [{ type, text, checked?, props?, rows? }] }] }`.
+Import is one API transaction: it validates every page title, optional page ID, cross-link, block, table row, boolean, metadata field, and property object before changing the live sheet, then persists all pages with one save. A late conflict leaves the previous document unchanged. `--request-id` supplies a stable idempotency key; retry the exact same command and payload after a dropped response to receive `replayed: true` without another write. Reusing that ID with changed content is rejected.
+Use `--schema --json` to print the accepted block types and a minimal valid manifest — it is a static output and needs no configured API base URL. Valid block types include `heading1`, `heading2`, `paragraph`, `bulleted`, `todo`, `quote`, `divider`, `code`, `callout`, `toggle`, `image`, and `table`.
+Use `--replace-all --yes` as the agent-friendly form for replacing the complete existing page set; `--yes` is mandatory because unmatched pages are deleted. The first existing page ID is reused so imports cannot trip the server's "Page ID cannot be changed" guard. Use `--upsert-by-title` when the incoming manifest should update matching pages by title while preserving their existing page IDs.
 
 Prefer `doc-import-doc-json` over `doc-import-markdown` when you need explicit block types — the markdown importer collapses ambiguous content into single paragraphs, while the JSON importer preserves the exact block type for every item.
+
+The Wiki menu also provides **Import Markdown or JSON** and **Export Markdown or JSON**. Imports validate and preview before committing through the same atomic server API, require a second confirmation before replacement, and expose an idempotent replay receipt. Source may be pasted or loaded from workbook files; dropped files are stored there first. Exports read saved server state and can be copied or saved back to workbook files.
 
 #### Markdown mapping (single source of truth)
 
@@ -320,38 +476,46 @@ properties:
 
 ### Agent recipe — build a wiki from one Markdown file
 
+Choose the authorized saved workbook and its actual storage target before running the examples. Set `XAPPS_API_BASE_URL` to that host. This helper keeps every operation in the same scope (replace the example file and `local` together when needed):
+
 ```bash
-# Create a fresh workbook with a Wiki sheet
-xapps create-workbook MyWiki --sheet doc:Encyclopedia
-
-# Author content as a single Markdown file with # per page; the importer
-# splits, applies frontmatter, and resolves [[Title]] cross-references in
-# two passes.
-xapps doc-import-markdown MyWiki --multi --file ./encyclopedia.md --replace-pages
-
-# Verify
-xapps doc-list-pages MyWiki
-xapps doc-list-page-links MyWiki page-2
+xapps_scoped() {
+  xapps --base-url "${XAPPS_API_BASE_URL:?Set the authorized host URL}" \
+    --file 'MyWorkbook.json' --workbook-storage-target local "$@"
+}
 ```
 
-This replaces what previously took dozens of HTTP POSTs with two CLI calls.
+Create a new workbook only when needed; for an existing workbook, use its existing Wiki sheet. Creation uses lifecycle `--storage-target` and authoring uses `--workbook-storage-target`.
+
+```bash
+xapps --base-url "$XAPPS_API_BASE_URL" create-workbook MyWorkbook \
+  --storage-target local --sheet doc:Encyclopedia
+xapps_scoped doc-import-markdown Encyclopedia --multi --input ./encyclopedia.md --request-id encyclopedia-content-1 --json
+xapps_scoped doc-list-pages Encyclopedia --json
+# Use a stable page ID returned by the import/list response.
+xapps_scoped doc-get-page Encyclopedia "$IMPORTED_PAGE_ID" --json
+```
+
+`Encyclopedia` is the sheet; `MyWorkbook.json` is the saved file. Author useful narrative early in a bulk import and read back page/block content. For repeatable updates to existing pages, prefer the JSON upsert recipe below; replacement options delete unmatched pages and require that intended replacement scope.
 
 ### Agent recipe — build a multi-page wiki from a JSON manifest
 
+Choose the authorized saved workbook and its actual storage target before running the examples. Set `XAPPS_API_BASE_URL` to that host. This helper keeps every operation in the same scope (replace the example file and `local` together when needed):
+
 ```bash
-# Create workbook
-xapps create-workbook TeamHandbook --sheet doc:Handbook
-
-# Import pages with explicit block types, icons, summaries, and properties
-xapps doc-import-doc-json Handbook handbook.json --replace-pages
-
-# Add cross-page links from the home page to all others
-xapps doc-add-page-link Handbook page-1 page-2 page-3 page-4
-
-# Style the wiki
-xapps doc-set-meta Handbook --icon "📖" --accent-color "#4f46e5" --font-family "Inter" --page-width "980px"
-
-# Verify
-xapps doc-list-pages Handbook
-xapps doc-get-page Handbook page-1
+xapps_scoped() {
+  xapps --base-url "${XAPPS_API_BASE_URL:?Set the authorized host URL}" \
+    --file 'MyWorkbook.json' --workbook-storage-target local "$@"
+}
 ```
+
+Prepare `handbook.json` with stable page IDs, explicit block types and cross-links using `doc-import-doc-json --schema --json`. Use the existing `Handbook` sheet in the scoped workbook.
+
+```bash
+xapps_scoped doc-import-doc-json Handbook handbook.json \
+  --upsert-by-title --request-id handbook-content-1 --json
+xapps_scoped doc-list-pages Handbook --json
+xapps_scoped doc-get-page Handbook page-1 --json
+```
+
+Preserve the exact request ID and file content after an uncertain response. Upsert preserves page identity while updating matching titles; review title changes before importing so they do not accidentally create new pages. Read the imported blocks, not only page counts, before reporting the narrative complete.

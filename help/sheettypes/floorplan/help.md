@@ -2,6 +2,55 @@
 
 ### Space planning, layout, and interior design
 
+Use **Floor Plan** to arrange a space with measured walls, openings, furniture
+and annotations. Keep photographs in Gallery, decisions in Wiki and costs in
+Spreadsheet alongside the plan.
+
+### Draw a room in the right order
+
+1. Set the measurement unit and scale before drawing so the rulers and
+   furniture dimensions make sense for your project.
+2. Choose **Walls** and click successive endpoints to trace the room. Add
+   internal walls after the outer outline is clear.
+3. Choose **Door** or **Window** and place it near its wall. Openings anchor
+   to walls; place the wall first.
+4. Drag furniture from the library. Select it to move, resize or rotate it,
+   checking its actual dimensions rather than visual size alone.
+5. Add room labels and **Measure** lines. Use notes for assumptions and questions.
+6. Use **Fit** to review the complete plan. Save the workbook, then export DXF
+   for geometry interchange or PNG/print output for a visual review.
+
+![Selected office furniture with editing handles in the floor plan](/help-assets/screenshots/floorplan-selection.png)
+
+### Units, scale and zoom are different
+
+| Control | Changes | Example |
+|---|---|---|
+| Unit | Measurement system, converting plan coordinates | Feet to meters |
+| Scale | Pixels per plan unit | How units map onto the drawing |
+| Zoom | Your view of the plan | Inspect a door more closely |
+| Furniture dimensions | Object size in plan units | Desk width and depth |
+
+Use measurement annotations to confirm geometry. A higher zoom percentage does
+not make a room physically larger.
+
+### Bring in an existing drawing
+
+Use DXF import for vector geometry. Review the preview's converted, ignored and
+invalid entities, layers and warnings before applying it. Use a reference image
+for a visual starting point, then establish dimensions from known measurements.
+A photograph is not a measured floor plan.
+
+### Organize alternatives and handoff
+
+Keep structure, furniture and annotations on useful layers. Hide a layer to
+simplify the view or lock it to prevent accidental selection. Duplicate furniture
+to explore arrangements, then remove discarded alternatives before export.
+The workbook keeps the editable model; PNG/PDF is a visual snapshot and DXF
+preserves supported drawing geometry.
+
+### Feature reference
+
 Floor Plan sheets provide a 2D architectural canvas for drawing walls, placing doors and windows, arranging furniture from a built-in library, adding annotations, and exporting to DXF. Everything is drawn to scale with configurable units and snap-to-grid precision.
 
 > 🤖 Agent example: an agent can lay out an initial room plan, place doors and furniture, and leave a scaled arrangement that a human can fine-tune for the real space.
@@ -23,12 +72,13 @@ Floor Plan sheets provide a 2D architectural canvas for drawing walls, placing d
 - Configurable scale and wall thickness
 - Snap-to-grid and snap-to-geometry
 - Layer system with visibility and lock toggles
-- DXF import and export
+- Atomic DXF preview/import and workbook-scoped DXF export
+- Browser-rendered PNG and browser print / Save as PDF
 - Zoom and pan with rulers
 - Coordinate readout
 - Multi-select, group/ungroup, duplicate
 - Rotation for all objects
-- Floor plan templates (Studio, 2-Bedroom, Open Office)
+- Canonical starter templates (Studio Apartment, One Bedroom, Office Suite)
 
 ---
 
@@ -47,7 +97,7 @@ Floor Plan sheets provide a 2D architectural canvas for drawing walls, placing d
 
 ### Tools
 
-![Floor Plan toolbar showing Select, Walls, Door, Window, Line, Rect, Circle, Measure, Text, Note, Image, and layer controls](/help-assets/screenshots/floorplan-toolbar.png)
+![Floor Plan toolbar showing drawing, opening, annotation, unit and ruler controls](/help-assets/screenshots/floorplan-toolbar.png)
 
 | Tool | Key | Use |
 |---|---|---|
@@ -61,6 +111,32 @@ Floor Plan sheets provide a 2D architectural canvas for drawing walls, placing d
 | Line | Toolbar | Draw polylines on the canvas |
 | Rectangle | Toolbar | Draw rectangular shapes |
 | Circle | Toolbar | Draw circle shapes |
+
+---
+
+### Addressable Geometry and Automation
+
+Walls, room labels, measurements, polylines (including imported lines and rectangles), circles, arcs, ellipses, splines, and block inserts have stable object IDs and support list, get, create, update, delete, duplicate, translate, and atomic batch operations. DXF block definitions remain supporting import data; each visible insert is addressed by its own immutable ID and `blockName`.
+
+```bash
+xapps floorplan-objects "My Plan" --kind circle --json
+xapps floorplan-create-geometry "My Plan" circle --data '{"cx":10,"cy":8,"radius":3}'
+xapps floorplan-translate-object "My Plan" <object-id> --dx 2 --dy -1
+xapps floorplan-batch-objects "My Plan" --operations '[{"op":"create","object":{"kind":"wall","x1":0,"y1":0,"x2":12,"y2":0}}]'
+```
+
+Mutation commands accept `--request-id`, `--expected-revision`, and `--expected-fingerprint` for exact replay and conflict-safe automation.
+
+Doors and windows use stable wall anchors and must be placed or moved through the opening commands. Measurements and precision settings have matching typed commands:
+
+```bash
+xapps add-door "My Plan" --x 5 --y 0 --w 3
+xapps floorplan-move-opening "My Plan" <opening-id> --x 8 --y 0
+xapps add-measurement "My Plan" --x1 0 --y1 0 --x2 3 --y2 4
+xapps clear-measurements "My Plan"
+xapps set-floorplan-ruler-scale "My Plan" 2.5
+xapps floorplan-convert-coordinates "My Plan" --from-unit ft --to-unit m --values 1,10 --json
+```
 
 ---
 
@@ -93,7 +169,7 @@ Windows work like doors and snap to nearby walls. Properties:
 
 ### Furniture Library
 
-103 furniture presets organized into 12 categories:
+112 furniture presets organized into 12 categories. The UI, API, SDK, CLI, MCP, and hosted toolkit all read this same canonical catalog:
 
 | Category | Count | Preset IDs (CLI) |
 |---|---|---|
@@ -107,13 +183,14 @@ Windows work like doors and snap to nearby walls. Properties:
 | Lighting | 6 | `floor-lamp`, `table-lamp`, `ceiling-light`, `chandelier`, `recessed`, `wall-sconce` |
 | Electrical | 5 | `outlet`, `switch`, `thermostat`, `smoke-det`, `ceiling-fan` |
 | Appliances | 4 | `washer`, `dryer`, `water-heater`, `hvac-vent` |
-| Plants & Outdoor | 30 | `potted-plant`, `potted-plant-lg`, `tree`, `tree-large`, `palm-tree`, `bush`, `hedge-row`, `flower-bed`, `lawn`, `garden-path`, `patio`, `pergola`, `gazebo`, `fence-section`, `fence-gate`, `pond`, `fountain`, `fire-pit`, `pool`, `hot-tub`, `grill`, `outdoor-kitchen`, `driveway`, `hammock`, `swing-set`, `trampoline`, `shed`, `lounge-chair`, `garden-bench`, and more |
+| Plants & Outdoor | 39 | `potted-plant`, `potted-plant-lg`, `tree`, `tree-large`, `palm-tree`, `bush`, `hedge-row`, `flower-bed`, `lawn`, `garden-path`, `patio`, `pergola`, `gazebo`, `fence-section`, `fence-gate`, `pond`, `fountain`, `fire-pit`, `pool`, `hot-tub`, `grill`, `outdoor-kitchen`, `driveway`, `hammock`, `swing-set`, `trampoline`, `shed`, `lounge-chair`, `garden-bench`, and more |
 | Storage | 5 | `closet-rod`, `shelving`, `storage-bench`, `shoe-cabinet`, `coat-rack` |
 
 Each furniture preset has an ID, default width and height (in plan units), and an SVG rendering. Drag items from the **FURNITURE LIBRARY** panel on the right, or use the CLI `add-furniture` command with the preset ID.
 
 ```bash
-xapps floorplan-furniture   # list all presets with IDs and dimensions
+xapps floorplan-furniture                              # list all presets
+xapps floorplan-furniture --search table --category Office
 ```
 
 ---
@@ -122,7 +199,7 @@ xapps floorplan-furniture   # list all presets with IDs and dimensions
 
 | Setting | Description | Default |
 |---|---|---|
-| Unit | `ft` (feet) or `m` (meters) | ft |
+| Unit | `ft` (feet) or `m` (meters); changing it converts plan coordinates | ft |
 | Scale | Pixels-per-unit conversion factor | 20 |
 | Wall thickness | Width of wall segments in plan units | 0.4 |
 
@@ -196,27 +273,47 @@ Floor Plan supports a per-layer visibility and lock system:
 - When importing DXF files, the importer creates matching layers automatically so you can toggle architectural layers on and off
 - Useful for separating structural, furniture, electrical, and annotation layers
 
+Layer, stable-id arrange, and viewport operations are available through the API, SDK, CLI, MCP, and hosted toolkit with guarded replay semantics:
+
+```bash
+xapps floorplan-layers "My Plan" --json
+xapps floorplan-add-layer "My Plan" Furniture --color "#2563eb"
+xapps floorplan-update-layer "My Plan" Furniture --rename FF&E --locked false
+xapps floorplan-move-to-layer "My Plan" FF&E --ids <id>,<id>
+xapps floorplan-arrange "My Plan" group --ids <id>,<id>
+xapps floorplan-arrange "My Plan" translate --ids <id>,<id> --dx 2 --dy -1
+xapps floorplan-delete-layer "My Plan" FF&E --destination Default
+xapps set-floorplan-viewport "My Plan" --scale 0.08 --center-x 10 --center-y 6
+```
+
+Viewport scale and center are durable plan state. The cursor coordinate readout is session-local derived state.
+
 ---
 
 ### DXF Import and Export
 
 #### Import
 
-Import DXF reference plans into a floor plan sheet from the File menu:
+Choose **File → Import DXF…** to upload the source and request a server-side preview. The preview reports converted, ignored, and invalid entities and layers plus the exact replace diff; Cancel is read-only. Apply binds the exact DXF text to the preview identity, current revision, and fingerprint, then saves atomically and reloads the persisted plan. Invalid supported entities and sources with no convertible content are blocked before mutation.
 
-- Architectural layers work best
-- Use layer visibility to tame noisy source files
-- The importer creates matching layers from the DXF file
-- Re-import after importer changes if an earlier import looked wrong
-- Imported colored walls are auto-converted to polylines
+The browser flow uses explicit **Replace** semantics. Automation can choose `replace` or `merge`: replace clears every object collection, imported block definition, and current layer before applying the converted source; merge preserves existing objects, layers, block definitions, and viewport while appending converted content. Apply supports request replay, revision/fingerprint conflict detection, and persistence rollback.
+
+DXF `LINE`, `LWPOLYLINE`, `POLYLINE`, `SOLID`, and `3DFACE` entities become editable Floor Plan polylines. Import does not infer semantic walls from layer names or colors. Arcs, circles, ellipses, splines, inserts, text, dimensions, blocks, and layers use their matching supported Floor Plan forms; unsupported/non-printing content is reported as ignored instead of silently dropped.
+
+```bash
+xapps floorplan-preview-dxf "My Plan" source.dxf --mode replace --json
+xapps floorplan-apply-dxf "My Plan" source.dxf --mode replace --preview-id <preview-id> --json
+```
 
 #### Export
 
-Export your floor plan as a DXF file for use in CAD software:
+DXF export is a workbook-scoped server artifact with `application/dxf`, a deterministic attachment filename, and API/SDK/CLI/MCP/toolkit parity:
 
 ```bash
 xapps floorplan-export-dxf "My Plan" --out floorplan.dxf
 ```
+
+PNG and PDF have an explicit browser-only boundary. **Export PNG…** renders the current SVG in the browser and sends the generated PNG through the workbook download path. **Print / Save as PDF…** opens an uploaded print HTML view and invokes the browser print dialog; the browser's **Save as PDF** option produces the PDF. The server, SDK, CLI, MCP, and toolkit do not advertise or return generated PNG/PDF bytes.
 
 ---
 
@@ -230,7 +327,15 @@ Three built-in templates provide starting points:
 | One Bedroom | Bedroom, kitchen, living room, bathroom |
 | Office Suite | Conference room, desk clusters, reception area |
 
-Templates include walls, doors, windows, and pre-placed furniture.
+Templates include walls, doors, windows, pre-placed furniture, and a default viewport. Choosing one opens a deterministic replace preview before anything changes. Cancel is read-only; Apply uses the preview token and atomically clears every existing object collection, imported block definition, and custom layer before saving the canonical template. Automation can instead choose `merge`, which preserves all existing collections, layers, block definitions, and viewport while appending template walls, openings, and furniture.
+
+```bash
+xapps floorplan-templates "My Plan" --json
+xapps floorplan-preview-template "My Plan" studio --mode replace --json
+xapps floorplan-apply-template "My Plan" studio --mode replace --approval-token <token-from-preview>
+```
+
+The same list/get/preview/apply contract is available through the API, SDK, MCP, and hosted toolkit. Apply also accepts the standard request-id, revision, and fingerprint guards for safe replay, conflict detection, and rollback.
 
 ---
 
@@ -245,6 +350,8 @@ Templates include walls, doors, windows, and pre-placed furniture.
 | Undo | `Ctrl/Cmd + Z` |
 | Pan canvas | Middle mouse button drag |
 | Zoom | Scroll wheel or zoom input |
+
+Toolbar controls, catalog items, canvas objects, object-property dialogs, and Layer Manager are keyboard reachable. Dialogs focus their first control, `Escape` closes them, and focus returns to the stable-id object or opener. Unavailable live embeds are announced as status messages. At widths up to 768px, the furniture catalog becomes a usable bottom strip and the toolbar scrolls horizontally instead of clipping controls.
 
 ---
 
@@ -316,9 +423,24 @@ xapps add-floorplan-note "My Plan" "Measurement" --text "Verify wall length" --a
 #### add-floorplan-image -- Add a reference image
 
 ```bash
+# Local and remote inputs are materialized into the active workbook upload namespace.
 xapps add-floorplan-image "My Plan" ./blueprint.png --upload --x 0 --y 0 --w 30 --h 20 --opacity 0.3
 # Object created (8, id=img-yza567)
 ```
+
+#### Typed annotations and sibling-sheet embeds
+
+```bash
+xapps floorplan-annotations "My Plan" --json
+xapps floorplan-create-annotation "My Plan" label --data '{"x":12,"y":8,"name":"Office"}'
+
+xapps floorplan-live-embed-sources "My Plan" --json
+xapps floorplan-add-live-embed "My Plan" sheet-data --mode snapshot --range A1:D20 --x 4 --y 4 --w 18 --h 12
+xapps floorplan-refresh-live-embed "My Plan" embed-abc123
+xapps floorplan-open-live-embed "My Plan" embed-abc123 --json
+```
+
+Annotation and embed mutations use the same request-id, revision, and fingerprint guards as other Floor Plan mutations. Reference images must already exist under the active workbook's `/uploads/workbooks/<creationNonce>/images/` namespace. Embed discovery returns supported sibling sheets only; refresh reports `available`, `empty`, or `unavailable` while retaining the last typed snapshot.
 
 #### set-floorplan-unit -- Set measurement units
 
@@ -352,6 +474,19 @@ xapps floorplan-export-dxf "My Plan"
 # Output: (DXF text)
 ```
 
+#### floorplan-preview-dxf / floorplan-apply-dxf -- Preview and atomically import DXF
+
+```bash
+xapps floorplan-preview-dxf "My Plan" office.dxf --mode replace --json
+# Inspect previewId, converted/ignored/invalid counts, layers, diff, and warnings.
+
+xapps floorplan-apply-dxf "My Plan" office.dxf --mode replace --preview-id <preview-id> --json
+# Optional exact replay/conflict controls:
+# --request-id <id> --expected-revision <n> --expected-fingerprint <sha256>
+```
+
+Apply must receive the same file bytes, source filename, mode, and current preview identity. Use `--mode merge` in both commands to preserve existing plan content.
+
 ---
 
 ### API Endpoints
@@ -365,11 +500,11 @@ curl -X POST $XAPPS_API_BASE_URL/api/sheets/My%20Plan/objects \
   -H "Content-Type: application/json" \
   -d '{"kind":"wall","x1":0,"y1":0,"x2":20,"y2":0}'
 
-# Add furniture
-curl -X POST $XAPPS_API_BASE_URL/api/sheets/My%20Plan/objects \
+# Add furniture (read /state first and use its revision/fingerprint)
+curl -X POST $XAPPS_API_BASE_URL/api/sheets/My%20Plan/furniture/placements \
   -H 'X-XApps-File: MyWorkbook.json' \
   -H "Content-Type: application/json" \
-  -d '{"kind":"furniture","id":"sofa-3","name":"3-Seat Sofa","x":5,"y":14,"w":7,"h":3,"rotation":0}'
+  -d '{"requestId":"place-sofa-1","expectedRevision":0,"presetId":"sofa-3","x":5,"y":14,"rotation":0}'
 
 # Add a door
 curl -X POST $XAPPS_API_BASE_URL/api/sheets/My%20Plan/objects \
@@ -393,71 +528,60 @@ curl -X PUT $XAPPS_API_BASE_URL/api/sheets/My%20Plan/settings \
 curl -H 'X-XApps-File: MyWorkbook.json' $XAPPS_API_BASE_URL/api/sheets/My%20Plan/dxf -o floorplan.dxf
 ```
 
+DXF import uses `POST /api/sheets/{name}/dxf/import/preview` followed by `POST /api/sheets/{name}/dxf/import/apply`. Both carry the active `X-XApps-File` workbook scope; apply adds `requestId`, `expectedRevision`, `expectedFingerprint`, and the exact `previewId`, `dxf`, `sourceName`, and `mode` from preview.
+
 #### List furniture presets
 
 ```bash
 curl $XAPPS_API_BASE_URL/api/meta/floorplan/furniture
+
+# Sheet-scoped search/category/recent ordering
+curl "$XAPPS_API_BASE_URL/api/sheets/My%20Plan/furniture/catalog?search=table&category=Office"
 ```
 
 ---
 
 ### Agent / AI Workflow Recipes
 
-#### Recipe 1: Generate an office layout from a requirements list
-
-An agent reads desk count and room requirements from a spreadsheet, then builds the floor plan:
+The recipes use an existing authorized `MyWorkbook.json` in `local` storage. Replace that file and storage target together for your actual workbook, and set `XAPPS_API_BASE_URL` to its authorized host. Commands that extract structured receipts also require `jq`.
 
 ```bash
-# Draw outer walls (30 x 20 ft)
-xapps add-wall "Office" --x1 0 --y1 0 --x2 30 --y2 0
-xapps add-wall "Office" --x1 30 --y1 0 --x2 30 --y2 20
-xapps add-wall "Office" --x1 30 --y1 20 --x2 0 --y2 20
-xapps add-wall "Office" --x1 0 --y1 20 --x2 0 --y2 0
-
-# Add entrance
-xapps add-door "Office" --x 15 --y 20 --w 3
-
-# Place desks and chairs
-xapps add-furniture "Office" desk --x 3 --y 8
-xapps add-furniture "Office" office-chair --x 4 --y 11
-xapps add-furniture "Office" desk --x 10 --y 8
-xapps add-furniture "Office" office-chair --x 11 --y 11
-xapps add-furniture "Office" conf-table --x 3 --y 2
-xapps add-furniture "Office" whiteboard-w --x 0 --y 10
-
-# Label the room
-xapps add-floorplan-text "Office" "Open Workspace" --x 12 --y 4 --size 2
+xapps_scoped() {
+  xapps --base-url "${XAPPS_API_BASE_URL:?Set the authorized host URL}" \
+    --file 'MyWorkbook.json' --workbook-storage-target local "$@"
+}
 ```
 
-#### Recipe 2: Annotate an imported blueprint
+Floor Plan has no surface-local provider client. Any generated design uses shared provider governance and returns through deterministic guarded spatial contracts.
+
+Use the existing `Office` Floor Plan sheet. Read its canonical `/state` to confirm units before authoring; the example boundary measures 30 by 20 in that current unit system. Changing a unit label does not resize existing objects. Prepare and review this entire batch before applying it:
 
 ```bash
-# After DXF import, add notes to key areas
-xapps add-floorplan-note "Office" "Fire Exit" --text "Verify exit width meets code" --x 28 --y 18 --open
-xapps add-floorplan-note "Office" "Server Room" --text "Needs dedicated HVAC" --x 25 --y 5
-
-# Add measurement lines for verification
-# Export annotated version
-xapps floorplan-export-dxf "Office" --out annotated-office.dxf
+curl --fail-with-body --silent --show-error \
+  -H 'X-XApps-File: MyWorkbook.json' -H 'X-XApps-Workbook-Storage-Target: local' \
+  "$XAPPS_API_BASE_URL/api/sheets/Office/state" > office-before.json
+FLOORPLAN_REVISION=$(jq -er '.revision' office-before.json)
+FLOORPLAN_FINGERPRINT=$(jq -er '.fingerprint' office-before.json)
+jq '.state.settings' office-before.json
+cat > office-boundary.json <<'JSON'
+[{"op":"create","object":{"id":"office-north","kind":"wall","x1":0,"y1":0,"x2":30,"y2":0}},{"op":"create","object":{"id":"office-east","kind":"wall","x1":30,"y1":0,"x2":30,"y2":20}},{"op":"create","object":{"id":"office-south","kind":"wall","x1":30,"y1":20,"x2":0,"y2":20}},{"op":"create","object":{"id":"office-west","kind":"wall","x1":0,"y1":20,"x2":0,"y2":0}}]
+JSON
 ```
 
-#### Recipe 3: Furniture layout optimization
-
-An agent can try multiple furniture arrangements and export each for comparison:
+After checking the actual settings and intended geometry, apply the authorized layout once:
 
 ```bash
-# Layout A: Traditional
-xapps add-furniture "Living" sofa-3 --x 5 --y 10
-xapps add-furniture "Living" coffee-table --x 7 --y 14
-xapps add-furniture "Living" tv-stand --x 5 --y 18
-xapps floorplan-export-dxf "Living" --out layout-a.dxf
-
-# Clear and try Layout B
-xapps add-furniture "Living" sofa-3 --x 3 --y 12 --rotation 90
-xapps add-furniture "Living" armchair --x 10 --y 10
+xapps_scoped floorplan-batch-objects Office --operations "$(cat office-boundary.json)" \
+  --expected-revision "$FLOORPLAN_REVISION" --expected-fingerprint "$FLOORPLAN_FINGERPRINT" \
+  --request-id office-boundary-1 --json > office-boundary-receipt.json
+xapps_scoped floorplan-objects Office --json
+xapps_scoped floorplan-object Office office-north --json
+xapps_scoped floorplan-export-dxf Office --out office-boundary.dxf
 ```
 
----
+Use the returned stable object IDs for later revisions. Additional furniture, openings or annotations are distinct intents: read fresh state and invoke their advertised guarded domain command, or include supported typed objects in a reviewed batch. Do not append an unguarded placement loop. Compare alternatives in separately named sheets and retain the original geometry; an add command never clears the previous arrangement.
+
+Keep every prepared payload, revision, request ID and receipt until verification completes. After uncertain delivery, retry the identical mutation with its original guard; do not rerun the preparation steps with a fresh revision. On `409`, reread, reconcile and create a new ID only for a newly decided intent. Read commands can run independently; writes against shared state run sequentially or as one atomic batch.
 
 ### Troubleshooting
 
@@ -468,7 +592,7 @@ Doors and windows snap to nearby walls. Place them close to an existing wall seg
 Check the current unit and scale settings. If you switched from feet to meters (or vice versa) after placing objects, existing items keep their original size values. Adjust scale or re-place items as needed.
 
 **DXF import shows too many layers and lines.**
-Architectural DXF files can be noisy. Use the layer visibility toggles to hide non-essential layers (hatching, dimensions, annotation layers from the source). The importer creates matching layers from the DXF file.
+Architectural DXF files can be noisy. Inspect the preview's ignored/invalid counts and warnings before Apply, then use layer visibility to hide non-essential imported layers. Imported CAD lines intentionally remain thin editable polylines rather than becoming semantic walls.
 
 **Cannot select or move an object.**
 The object may be on a locked layer. Open the layer manager and unlock the relevant layer. Also check that you are using the Select tool (not Wall or another drawing tool).

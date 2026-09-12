@@ -10,7 +10,7 @@ The **Repository** sheet type is a document management surface for files plus st
 - category-specific metadata fields (Contract, Invoice, HR, Insurance, Proposal, Report, General)
 - inline preview for common file types (PDF, images, more)
 - API, CLI, and MCP coverage for row records and storage operations
-- cloud-mount integration so files can live on `xApps files`, `My xApps storage`, or any connected cloud provider
+- cloud-mount integration so files can live on the canonical `xApps storage` root or any connected cloud provider
 
 > 🤖 Agent example: an agent can track an incoming contract, run AI extraction, populate the category fields, flag errors, and leave the human reviewer with the file preview and saved metadata side by side.
 
@@ -36,12 +36,24 @@ The **Repository** sheet type is a document management surface for files plus st
 
 ### Getting Started
 
+Use **Repository** when the file and its metadata need to stay together. Use **File Viewer** when you mainly want to read a document, or **Gallery** for browsing and reviewing images. A Repository row is a managed reference to stored bytes; its description and extracted fields are not the source file itself.
+
 1. **Add a Repository sheet.** Click the `+` button in the sheet tab bar and pick **Repository**. The sheet opens with the filesystem browser visible on the left and the side panel on the right.
 2. **Upload or link a file.** Use the **Insert → Upload File** menu (or drop a file onto the sheet) to push it into the storage overlay; or **Insert → Add URL Reference** to record an external link instead.
 3. **Pick a category.** When the row is created, the right side panel offers a category dropdown. Picking one (e.g. *Contract*) reveals the category-specific metadata fields (parties, effective date, expiration date, etc.).
 4. **Fill in metadata.** Type into the side-panel fields; values write straight to the cell-backed columns and are visible in the grid.
 5. **Preview the file.** Click the row; the **Preview** tab in the side panel renders PDFs / images inline, or shows an open/download button.
 6. **Refresh after a change.** Use **Data → Refresh Selected Metadata** to re-stamp `lastRefreshedAt`. Use **Refresh All Metadata** for a bulk pass.
+
+### Review an incoming document
+
+Upload the file, select it in the list, and inspect **Preview** before categorizing it. Switch to **Metadata**, choose the category, and record the fields that matter for the project. For a contract, check the parties and dates against the document; for an invoice, check amounts and references. AI extraction produces values to review, not a substitute for reading the source.
+
+Use search and category filters to return to the document later. Clear filters when a recently uploaded file seems missing. If a preview format is unsupported, use the available open/download action instead of treating an empty preview as a lost file. Check the storage location and upload result before uploading a second copy.
+
+### Understand refresh and removal
+
+Refreshing metadata updates its refresh state; it does not certify that every field is correct. Inspect any extraction error and compare saved values with the current source. Before removing a file or its tracking record, read the action's confirmation carefully: deleting stored bytes and removing a metadata reference have different consequences.
 
 ---
 
@@ -110,7 +122,7 @@ Spreadsheet-style `Sheet!A1` references still apply to normal grid cells. Stable
 
 ### Preview and Metadata
 
-![Repository preview tab showing a tracked file's download fallback for a URL-based document](/help-assets/screenshots/repository-preview.png)
+![Repository Preview tab rendering a real sample PDF beside its tracked category and file list](/help-assets/screenshots/repository-preview.png)
 
 - PDFs preview inline.
 - Images preview inline.
@@ -176,16 +188,18 @@ xapps repo-refresh-all <sheet>
 ```
 
 **CLI notes:**
-- Use `--workbook "MyFile.json"` or `--file "MyFile.json"` to target a specific workbook when the CLI default isn't the workbook you intend.
+- Agent calls always specify `--file "MyFile.json"` and `--workbook-storage-target <target>` plus the authorized base URL. Never rely on the CLI default or a title to distinguish same-named workbooks.
 - `--category` in `add-repo-file` accepts lowercase category IDs: `contract`, `invoice`, `hr`, `insurance`, `proposal`, `report`, `general`. The category can also be changed later via `update-repo-file`.
 - `update-repo-file` patches top-level file properties (name, category, description, status). Use `set-repo-file-metadata` to patch category-specific fields by field name (e.g. `{"Parties":"...", "Effective Date":"..."}`) or by column letter (e.g. `{"J":"...", "K":"..."}`). The field-name form requires the category to already be set correctly on the file row.
 - `repo-refresh` / `repo-refresh-all` stamp `lastRefreshedAt` only; they do not re-download or re-analyze content.
 
+Use the stable returned file ID for later updates, not a row number.
+
 **Example — add a contract and set metadata:**
 ```bash
-xapps --file MyRepo.json add-repo-file Library https://example.com/msa.pdf \
+xapps --base-url "$XAPPS_API_BASE_URL" --file MyRepo.json --workbook-storage-target local add-repo-file Library https://example.com/msa.pdf \
   --name "Vendor MSA 2024" --category contract
-xapps --file MyRepo.json set-repo-file-metadata Library repo-<id> \
+xapps --base-url "$XAPPS_API_BASE_URL" --file MyRepo.json --workbook-storage-target local set-repo-file-metadata Library repo-<id> \
   '{"Parties":"ACME Corp","Effective Date":"2024-01-01","Expiration Date":"2026-12-31"}'
 ```
 
@@ -195,7 +209,13 @@ xapps --file MyRepo.json set-repo-file-metadata Library repo-<id> \
 
 ### Storage Access Note
 
-Repository storage browsing is mount-backed now. The Repository UI reads and mutates `xApps files`, `My xApps storage`, and connected cloud providers through `/api/cloud`, while `/api/sheets/:name/files*` manages tracked metadata rows only.
+Repository storage browsing is mount-backed now. The Repository UI reads and mutates one canonical `xApps storage` root plus connected cloud providers through `/api/cloud`, while `/api/sheets/:name/files*` manages tracked metadata rows only. On Docker deployments the native provider directory stays beneath `/data`; Repository does not expose unrelated workbook, credential, history, or Yjs internals from the raw data root.
+
+When the MeshAgent service-account secrets-v2 backend is selected, Google Drive connection state is one of `connected`, `disconnected`, `reconnect_required`, `revoked`, `corrupt`, or `unavailable`. **Connect Google Drive** and **Reconnect Google Drive** use the shared generation-bound Google grant route; **Disconnect** removes only the viewer's Drive feature and preserves Calendar when Calendar is still connected. The retired `POST /api/cloud/mounts` connect flow and `/api/cloud/google-drive/*` OAuth routes return `410` and never fall back to legacy credentials.
+
+When secrets-v2 is not selected, Repository still shows Google Drive as an optional disconnected source. A validated xApps Google sign-in session activates the selector-off unified Drive grant after consent. The server keeps the Google subject private, binds the mount to the server-derived human identity, and disables only Drive's locally enabled scopes on disconnect so a connected Calendar remains available.
+
+Every cloud request is bound to the active saved workbook file and its effective storage target (`local`, `meshagent-room`, or `mac-local`) by the shell's frozen scoped-cloud capability. Repository cannot override that scope through query fields, request options, or headers. This keeps same-named workbooks in different roots isolated and preserves the signed workbook/sheet route through connect and reconnect.
 
 That said, `/repository/...` asset URLs are still capability-style URLs, not password-protected document access. Treat them as shareable file links, not as strong access control for sensitive documents.
 

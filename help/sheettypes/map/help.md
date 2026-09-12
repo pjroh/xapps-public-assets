@@ -1,16 +1,72 @@
 ## Maps
 
-The **Map** sheet is a geography-first sheet type powered by **MapLibre GL JS**. It supports choropleths, point overlays, public data layers, raster tile overlays, place search, region selection, and workbook-linked map views.
+The **Map** sheet puts workbook data on a geographic map. Use it for launch
+regions, customer locations, delivery routes or regional comparisons. It
+supports colored regions, point markers, ordered routes, public data,
+place search and reusable workbook-linked views.
+
+### Make your first data map
+
+1. Prepare a Spreadsheet with headers. For regions, use columns such as
+   `country` and `value`; for points, use `name`, `lat` and `lon`.
+2. Add a **Map** sheet. Choose **Base geography** for the area to show.
+3. In **Layers**, add a Region layer for areas or a Point layer for locations.
+   Select the source sheet and include its header row in the range.
+4. Check the mapped feature or point count on the layer card. An empty map
+   often means the source columns or join values need attention.
+5. Choose a basemap and palette that make the data readable. Enable **Labels**
+   when names matter, then inspect representative regions or pins.
+6. Save a view to return to this camera and selection or embed it elsewhere.
+
+### Choose the right data shape
+
+| You have… | Layer | Minimum useful source |
+|---|---|---|
+| Values by country or state | Region | `country` or `state`, plus `value` |
+| Geographic coordinates | Point | `lat`, `lon`; add `name` for labels |
+| Addresses without coordinates | Point with geocoding | Address/location field |
+| A sequence of stops | Route | Ordered location data |
+
+Example regional source:
+
+| country | value |
+|---|---:|
+| United States | 48 |
+| United Kingdom | 21 |
+| Germany | 16 |
+
+Numeric region values use a log-scaled palette. Read the legend: equal visible
+color steps do not imply equal numeric steps.
+
+### Diagnose a blank or incomplete map
+
+- **No background:** basemaps need external tile services. Check the connection
+  or another basemap before changing source data.
+- **Regions have no color:** verify geography, source range, headers and names.
+  Supported aliases include USA, UK and U.S. state abbreviations.
+- **An existing range looks empty just after opening the workbook:** open its
+  source Spreadsheet tab, return to Map, then use the layer's **Edit source →
+  Save changes**. This loads the source and refreshes its column bindings.
+- **Pins are misplaced:** check latitude/longitude order, signs and decimal
+  degrees. Coordinates avoid address ambiguity.
+- **An address is missing:** inspect geocoding progress and failed addresses.
+  Add city/country context or use known coordinates.
+- **A layer is missing:** check visibility, opacity, zoom bounds and stack order.
+- **3D has no height:** use an active numeric Region layer; 3D is region
+  extrusion, not a generic buildings view.
+
+Public data and overlays depend on upstream services and their update cadence.
+Check source and timestamp before using a view to make a decision.
 
 > 🤖 Agent example: create a map sheet called `Launch Regions`, set the geography to `us-states`, add a region layer from `Pipeline!A1:B20`, and switch the basemap to `dark`.
 
 ![Map sheet showing world choropleth and city point markers](/help-assets/screenshots/map-sheet.png)
 
-### What Ships Today
+### Feature reference
 
 - **Basemaps**: Streets, Satellite, Terrain, Dark, Light
 - **Starter geography**: World Countries and U.S. States
-- **Layer types**: Region layers (choropleth) and point layers (pins / routes)
+- **Layer types**: Region layers (choropleth), point layers (pins), and ordered route layers
 - **Public data buttons**: World Bank, USGS, REST Countries
 - **Live tile overlays**: Railways, Sea Marks, Hiking Trails, Cycling Routes
 - **3D toggle**: region extrusions when a numeric region layer is active
@@ -39,7 +95,11 @@ xapps set-map-basemap <map-sheet> dark
 
 Valid styles: `streets`, `satellite`, `terrain`, `dark`, `light`.
 
-![Map with dark basemap and region labels enabled](/help-assets/screenshots/map-dark-labels.png)
+Basemaps come from external providers. If tiles are blank or display a provider
+message such as “API key required”, choose **Streets** and check the host's
+provider configuration. Changing the basemap does not change your layer data.
+
+![Map with Streets basemap and region labels enabled](/help-assets/screenshots/map-labels.png)
 
 ### Geography Views
 
@@ -67,10 +127,10 @@ xapps set-map-view <map-sheet> us-states
 
 The left panel **Layers** section shows all data layers. The section header displays a count badge and quick-add buttons. Each layer card shows:
 
-- Layer name and type (Region layer / Point layer / Addresses → pins)
+- Layer name and type (Region / Point / Route)
 - Number of mapped features or pinned points
 - Source range reference
-- Hide/Show, Up, Down, Remove actions
+- Opacity, color, zoom bounds, source editing, Hide/Show, Up, Down, and Remove actions
 - Geocoding progress bar and failed-address list (address layers only)
 
 ![Layers panel showing point layer and region layer cards](/help-assets/screenshots/map-layers-panel.png)
@@ -107,12 +167,15 @@ CLI to create:
 xapps add-map-layer "My Map" '{
   "name": "GDP by Country",
   "type": "region",
-  "source": { "sheet": "Data", "range": "A1:B50" },
-  "style": { "palette": "greens" }
+  "source": { "kind": "sheet-range", "sheet": "Data", "range": "A1:B50", "headerRow": true,
+    "binding": { "kind": "region", "joinField": "country", "valueField": "value" } },
+  "style": { "kind": "region", "palette": "greens" }
 }'
 ```
 
-![U.S. states choropleth with sunset palette and labels](/help-assets/screenshots/map-choropleth.png)
+![U.S. states choropleth with sample population values and labels](/help-assets/screenshots/map-choropleth.png)
+
+![Region layer source dialog selecting State Data and its header range](/help-assets/screenshots/map-source.png)
 
 ### Point Layers
 
@@ -129,7 +192,7 @@ Recognized columns:
 | `value` / `metric` / `amount` | popup value |
 | `color` / `fill` | per-point hex color |
 | `size` / `radius` | point radius (4–18 px) |
-| `order` / `sequence` / `seq` | route ordering — enables a connecting line |
+| `order` / `sequence` / `seq` | route ordering for a Route layer |
 | `image` / `thumbnail` / `photo` | popup image |
 | `status` / `state` / `stage` | status badge with semantic colors |
 
@@ -143,16 +206,29 @@ Recognized columns:
 | `blocked`, `error`, `failed`, `cancelled` | Red |
 | `review`, `in review`, `testing` | Purple |
 
-If an `order` column is present the runtime renders a connecting route line between points in ascending order.
-
 CLI to create:
 
 ```bash
 xapps add-map-layer "My Map" '{
   "name": "Offices",
   "type": "point",
-  "source": { "sheet": "Cities", "range": "A1:F9" },
-  "style": { "color": "#0f766e" }
+  "source": { "kind": "sheet-range", "sheet": "Cities", "range": "A1:F9", "headerRow": true,
+    "binding": { "kind": "point", "mode": "coordinates", "latitudeField": "lat", "longitudeField": "lng" } },
+  "style": { "kind": "point", "color": "#0f766e" }
+}'
+```
+
+### Route Layers
+
+Route layers require coordinate or address fields plus an `order`, `sequence`, `step`, or `rank` column. They render a first-class ordered line with optional points.
+
+```bash
+xapps add-map-layer "My Map" '{
+  "name": "Delivery route",
+  "type": "route",
+  "source": { "kind": "sheet-range", "sheet": "Stops", "range": "A1:D20", "headerRow": true,
+    "binding": { "kind": "route", "mode": "coordinates", "latitudeField": "lat", "longitudeField": "lng", "orderField": "order" } },
+  "style": { "kind": "route", "color": "#0f766e", "width": 4 }
 }'
 ```
 
@@ -295,6 +371,7 @@ These spatial formulas are available in spreadsheet cells:
 **Insert**
 - Add region layer
 - Add point layer
+- Add route layer
 
 **View**
 - Toggle legend
@@ -310,14 +387,21 @@ These spatial formulas are available in spreadsheet cells:
 ### REST API
 
 ```text
+GET    /api/sheets/:name/state
 GET    /api/sheets/:name/config
 PUT    /api/sheets/:name/config
 GET    /api/sheets/:name/layers
 POST   /api/sheets/:name/layers
+POST   /api/sheets/:name/layers/reorder
 GET    /api/sheets/:name/layers/:id
 PUT    /api/sheets/:name/layers/:id
 DELETE /api/sheets/:name/layers/:id
+POST   /api/sheets/:name/batch
 ```
+
+Every mutation body carries `requestId` and `expectedRevision`, plus optional
+`expectedFingerprint`. Successful responses return the new canonical state,
+revision, fingerprint, receipt, and replay status.
 
 Config fields accepted by `PUT /api/sheets/:name/config`:
 
@@ -327,34 +411,69 @@ Config fields accepted by `PUT /api/sheets/:name/config`:
 - `mapLegendVisible` — boolean
 - `mapLabelsVisible` — boolean
 - `map3DEnabled` — boolean
-- `mapViewMode` — `choropleth` or others
-- `mapZoom`, `mapPanX`, `mapPanY` — camera numbers
+- `mapViewMode` — `choropleth` or `categorical`
+- `mapGlCenter`, `mapGlZoom`, `mapGlPitch`, `mapGlBearing` — canonical MapLibre camera state
 - `mapSelectedRegionIds` — array of feature ID strings
 - `mapManualFills` — map of feature ID → hex color
 
 ### CLI
 
 ```bash
+xapps map-state <sheet>
 xapps map-config <sheet>
 xapps set-map-config <sheet> <json>
 xapps map-layers <sheet>
+xapps map-layer <sheet> <layer-id>
 xapps add-map-layer <sheet> <json>
 xapps update-map-layer <sheet> <layer-id> <json>
 xapps delete-map-layer <sheet> <layer-id>
+xapps reorder-map-layers <sheet> <layer-ids-csv>
+xapps batch-map <sheet> <operations-json>
 xapps set-map-view <sheet> <geography>
 xapps set-map-basemap <sheet> <style>
 xapps add-public-data <sheet> <source-id>
 ```
 
-### MCP
+Mutation commands accept `--request-id`, `--expected-revision`, and optional
+`--expected-fingerprint`. When omitted, the CLI reads current state and creates
+a fresh guarded mutation. `--json` emits one deterministic result object. Automatic fresh IDs are convenient for a new intent, not for replay after an uncertain response.
+
+Choose the authorized saved workbook and its actual storage target before running the examples. Set `XAPPS_API_BASE_URL` to that host. This helper keeps every operation in the same scope (replace the example file and `local` together when needed):
+
+```bash
+xapps_scoped() {
+  xapps --base-url "${XAPPS_API_BASE_URL:?Set the authorized host URL}" \
+    --file 'MyWorkbook.json' --workbook-storage-target local "$@"
+}
+```
+
+Read `map-state` first and substitute its actual revision below. Keep this exact command and payload for an uncertain-delivery retry:
+
+```bash
+xapps_scoped map-state Geography --json
+xapps_scoped set-map-config Geography '{"mapLegendVisible":true}' \
+  --expected-revision "$MAP_REVISION" --request-id map-legend-review-1 --json
+xapps_scoped map-state Geography --json
+```
+
+Keep the exact payload, expected revision and request ID after uncertain delivery; retry that same intent. On a revision conflict, reread and reconcile before creating a new intent and request ID.
+
+### MCP / toolkit
 
 ```text
-get_map_config
-update_map_config
-list_map_layers
-create_map_layer
-update_map_layer
-delete_map_layer
+map_get_state
+map_get_config
+map_update_config
+map_set_view
+map_set_basemap
+map_list_layers
+map_get_layer
+map_create_layer
+map_add_public_data
+map_update_layer
+map_delete_layer
+map_reorder_layers
+map_batch
 ```
 
 ### Stored State
@@ -388,6 +507,6 @@ The runtime uses these sheet-level fields:
 
 - Uploaded GeoJSON / shapefile ingestion UI is not yet available.
 - Embeds in other sheets are linked summary cards, not fully interactive live instances.
-- Layer editing is done via JSON / source-range flows; there is no graphical layer-form editor.
+- The UI edits layer source, visibility, order, opacity, color, and zoom bounds; advanced fields remain JSON/API-driven.
 - Custom tile provider and terrain source registry is not exposed.
 - Time-slider / temporal mapping workflows are not yet implemented.

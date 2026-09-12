@@ -1,6 +1,49 @@
 # 📚 xApps Help Center
 
-xApps is a workbook for people and AI agents whose work does not fit into a single surface. One file can hold a spreadsheet for numbers, a kanban board for workflow, a calendar for timing, a document for notes, a canvas for polished visuals, and a whiteboard for fast thinking. Instead of bouncing between separate tools, you keep the whole project in one place, let the sheets reference each other, and let human and machine workflows operate on the same saved workbook.
+## Workbook and Service Basics
+
+xApps brings your project's data, tasks, writing, designs, and files into a workbook with different kinds of sheets. Start with the job you need to do, add the sheets that support it, and return to the same saved workbook as the project grows.
+
+Workbook content and connected services have different homes. Spreadsheet cells, boards, documents, and sheet configuration save with the workbook. **Chat conversations and Agent Work records belong to the connected room.** Live meetings and Terminal processes depend on their services; saving a workbook does not save a running call or shell process.
+
+### Find your next step
+
+| I want to… | Open this guide | What you will learn |
+|---|---|---|
+| Start a project | Your First Workbook | Create, choose storage, add sheets, and reopen |
+| Choose between similar sheets | Choose the Right Sheet | Spreadsheet or Records; Wiki or Typewriter; Canvas or Whiteboard |
+| Track delivery | Kanban Boards | Cards, owners, stages, checklists, and evidence |
+| Schedule with other people | Calendar | Events and Find a time availability requests |
+| Analyze a dataset | Records / Spreadsheets | Typed records, views, relations, formulas, and charts |
+| Find missing work | Find and Recover Your Work | Storage location, search, Trash, and Version History |
+| Collaborate in a room | Work Together | Workbook access, human Chat, Assistant, and Agent Work |
+
+Use the Help search field for a feature or task. Choose a result in the left column, then use **On this page** to jump within a long guide. Screenshots illustrate the controls discussed immediately beside them; sample workbook names and data are examples.
+
+### One roof, one file
+
+Most tools each own one slice of the work and make you stitch the slices together by hand — export here, re-import there, copy a number from the spreadsheet into the slide, keep five tabs in sync. xApps collapses that. A single workbook can hold:
+
+- **Numbers and data** — Spreadsheet, Records, Dashboard
+- **Work and timing** — Kanban, Calendar, Timeline, Poll
+- **Writing and knowledge** — Wiki, Typewriter
+- **Visual and spatial work** — Design Canvas, Whiteboard, Gallery, Presentation, Floor Plan, Map
+- **Files and operations** — Repository, File Viewer, Meeting, Terminal, Agent Work
+
+Workbook-backed sheets save together. Supported formulas and references connect their data; connected room services keep their own durable records. You can start with one tab and add other sheets when the project needs them.
+
+### Agent-friendly by design — a first-class priority, not bolted on
+
+xApps treats AI agents as first-class operators. **Published durable operations are available through the supported CLI, REST API, MCP, MeshAgent toolkit and workbook automation contracts against the same saved workbook.** Browser-session gestures, provider availability and explicit manifest opt-outs have narrower boundaries. The file is the contract: humans use the interface, agents use the programmatic surfaces, and both read and write the same state.
+
+- **Discoverable** — `xapps search <terms>`, `xapps help <group>`, and `xapps list --json` expose the full, machine-readable command catalog for every sheet type.
+- **Verifiable** — use the command’s advertised guards and `--verify` where supported; `--json` gives structured output but does not by itself prove persistence.
+- **Uniform** — supported durable operations share semantic contracts across their published channels; session-only controls remain in the browser.
+- **Composable** — triggers, processes, and agent actions let machine workflows run inside the workbook, right next to the people.
+
+For agent discovery, search the relevant surface, inspect its current command schema, then open its help page below. Package `surface.manifest.json` capability flags and named opt-outs define availability; `tools/surface-area/README.md` explains coverage accounting. Supply the saved workbook file and effective storage target before reading or writing. This Help Center remains product reference material; repository process lives in `AGENTS.md`.
+
+That is why an agent can scaffold an entire multi-surface workspace — spreadsheet, doc, kanban, dashboard, repository — in a single pass, then hand a finished, structured project to a human for judgment and polish.
 
 ### Why xApps feels different
 
@@ -22,14 +65,16 @@ Think of xApps as a project space, not just a spreadsheet. A typical workbook mi
 | Document | Notes, SOPs, meeting writeups |
 | Canvas / Whiteboard | Concepts, layouts, reviews, early thinking |
 | Dashboard / Presentation | Readouts, status, storytelling |
+| Meeting / Terminal / Agent Work | Calls, command sessions, agent runs, evidence |
 
 ### What to do in your first few minutes
 
 1. Create or open a workbook.
 2. Add two or three different sheet types, not just a spreadsheet.
-3. Save the workbook as a real file so it can be reopened, shared, and clipped into.
-4. Use `Ctrl/Cmd + K` to open the command palette and explore actions quickly.
-5. Treat the workbook like a living project hub instead of a single-purpose document.
+3. Save the workbook as a real file so it can be reopened, shared, clipped into, and protected with Workbook Access.
+4. Choose **Room**, **Private**, or **Shared** access intentionally. Private and Shared workbooks live only in **MeshAgent room storage** and require a stable authenticated principal; Mac/PC storage supports Room-visible workbooks.
+5. Use `Ctrl/Cmd + K` to open the command palette and explore actions quickly.
+6. Treat the workbook like a living project hub instead of a single-purpose document.
 
 ### Human + agent model
 
@@ -37,11 +82,105 @@ Think of xApps as a project space, not just a spreadsheet. A typical workbook mi
 - Agents are best for scaffolding, bulk edits, imports, analysis, and repeatable setup.
 - The workbook is the shared contract: people use the interface; agents use the CLI, API, MCP, triggers, processes, and agent actions.
 
+### Native mobile gateway and Deployment Center
+
+The native xApps client uses the authenticated, versioned `/api/mobile/v1` gateway for room-scoped work. It reuses the selected MeshAgent project and room, installation identity, and the room service already connected to xApps; it does not ask the phone to hold room credentials or create a second room connection.
+
+Deployment Center reads fresh authority before showing service status, bounded operational logs, approved artifact metadata, or deployment actions. Preview is a separate step from deploy, restart, or rollback, and every mutation carries the visible deployment and authority revisions plus one stable request id. Retrying the exact request converges on the same durable receipt; changing a previously used request is rejected. References returned to the app are identifiers that require fresh authorization, never signed URLs, provider responses, credentials, or full log streams.
+
+The served operations are:
+
+- `GET /api/mobile/v1/deployments/authority` — fresh project, room, and service capability authority.
+- `GET /api/mobile/v1/deployments` — authorized deployment inventory.
+- `GET /api/mobile/v1/deployments/{deploymentId}` — one focused deployment projection.
+- `POST /api/mobile/v1/deployments/{deploymentId}/intents/{requestId}` — an idempotent preview or authorized lifecycle intent whose URL, header, and body request ids must match.
+
+Deployment changes publish a content-free `deployment_center` realtime invalidation. The app then refreshes only Deployment Center instead of reloading the workbook, Chat, files, or room bootstrap.
+
 ### Where to go next
 
 - Read **Welcome to xApps** for the practical quick start.
 - Jump to a sheet type on the left if you already know what you want to build.
 - Use the search box to find commands, features, or specific workflows fast.
+
+## Your First Workbook
+
+### Create something you can return to
+
+1. Open **Home / Library** with the xApps logo. Choose **New Workbook**.
+2. Give the workbook a recognizable project name. Choose a blank workbook or a starter template, then the sheets you actually need.
+3. Check the storage destination. **Mac/PC** belongs to the connected host or available computer; **MeshAgent room storage** belongs to the selected room. Identical filenames in different destinations are different workbooks.
+4. Choose the access mode. **Room** is visible to the room. **Private** and **Shared** require MeshAgent room storage and an authenticated account. Shared access needs the intended members.
+5. Create the workbook. Add or switch sheets through the sheet navigator and **+** control. Give sheets useful names such as Budget, Delivery, and Brief.
+6. Make a small change, allow the save to finish, return to Library, and reopen the same file from the same destination. Confirm your change is there before inviting others or beginning a large import.
+
+### A useful first project: a launch plan
+
+Start with three sheets. In **Wiki**, write the brief and success criteria. In **Kanban**, add a card for each deliverable with an owner, due date, and checklist. In **Spreadsheet**, track the budget and calculate totals. Add **Calendar** or **Timeline** when dates become important; add **Gallery**, **Repository**, or **Presentation** when you have assets or a review to share.
+
+The sheets are separate views of related work. A Kanban card does not automatically become a Calendar event, and a table does not automatically become a dashboard. Use each sheet's documented data binding, reference, or automation controls when you want a connection.
+
+### Return to the introduction
+
+Use **Help → Welcome tour** to reopen the guided start. You can skip it at any time. Completing or skipping it is remembered by this browser; opening a direct link to an existing workbook does not require stepping through it.
+
+## Choose the Right Sheet
+
+| Your starting material | Choose | Choose the alternative when… |
+|---|---|---|
+| Numbers and calculations | Spreadsheet | Use Records for typed fields, linked records, forms, and saved views |
+| A structured collection | Records | Use Spreadsheet for cell-by-cell formulas and freeform grids |
+| Tasks moving through stages | Kanban | Use Timeline for overlapping dates and milestones |
+| Events and finding a time | Calendar | Use Meeting for the actual call, lobby, notes, and attendance |
+| A knowledge base with pages | Wiki | Use Typewriter for a polished document with page layout |
+| A poster or fixed layout | Design Canvas | Use Whiteboard for an open workspace of ideas and connections |
+| A story told slide by slide | Presentation | Use Dashboard for widgets tied to changing data |
+| Images to browse and review | Gallery | Use Repository for managed source files and metadata |
+| A document to inspect | File Viewer | Use Typewriter to author text; preview does not imply source-file editing |
+| Geographic data | Map | Use Floor Plan for walls, rooms, and furniture |
+| A conversation with people | Chat | Use Assistant for an AI request; use Agent Work to inspect dispatched work |
+| A command session | Terminal | Its process runs on the host or selected connector, not inside the workbook file |
+
+Other choices include **Poll** for voting and **Games** for the built-in arcade. The Add Sheet menu is the current catalog. A sheet may require a configured service even when it is available to add.
+
+## Find and Recover Your Work
+
+### A workbook is missing from Library
+
+Check the selected storage destination, room, folder, and search text first. Clear a filter before assuming a file was removed. A workbook in room storage will not appear under an unrelated Mac/PC destination. Private or Shared files are visible only with the required account and access.
+
+### A sheet or an edit is missing
+
+Confirm the workbook name and storage target, then use the sheet navigator and search. Check whether the sheet is grouped or hidden. If the wrong content is visible, wait for loading or saving to settle before retrying a change. Record any displayed error; repeatedly importing or pasting can create duplicate work.
+
+Open **Version History** to inspect saved snapshots. Preview the relevant version and use **Restore this sheet** only after confirming the target sheet and content. A sheet restore affects the focused sheet; it does not restore live Terminal processes or room Chat history. For a deleted workbook, check **Trash** in Library and restore the intended file instead of creating a replacement with the same name.
+
+### A feature is unavailable
+
+| Symptom | Check first |
+|---|---|
+| Calendar cannot connect to Google | Whether the host has Google configured and your account is connected |
+| Meeting cannot join | Room connection, media service availability, and browser microphone/camera permissions |
+| Terminal has no connector | Connector online state, selected stable identity, target command, and storage capability |
+| Assistant cannot complete a request | Provider/agent availability and the request's visible error or approval state |
+| Chat cannot load | Selected room, authenticated account, and the connection/request error |
+| Agent Work is empty | Room/dataset readiness, workbook scope, filters, and whether work has been indexed |
+
+Use **Diagnostics** when the problem persists. Include the action, workbook and storage destination, visible error, and approximate time when asking for support. Keep credentials and private conversation content out of shared reports.
+
+## Work Together
+
+### Choose the right conversation
+
+**Chat / xChat** is for human collaboration: channels, direct messages, threads, files, reactions, and search in the connected room. **Assistant** is the AI panel for requesting help with the workbook. **Agent Work** shows tracked objectives, work items, runs, issues, and evidence. An online terminal connector is a separate capability; its presence does not prove a Chat participant or AI provider is ready.
+
+### Share a workbook deliberately
+
+Choose **Workbook Access**, confirm the file and destination, and select the appropriate Room, Private, or Shared access. Send colleagues a link to the saved workbook they can access. A copied link does not grant membership or change permissions. Room Chat has its own conversation scope; copying the workbook does not copy the room's messages.
+
+### Review an agent's result
+
+Give the agent a concrete outcome and identify the saved workbook and storage target. Inspect the resulting sheets, review evidence and any reported failures, and distinguish completed work from queued or running work. For bulk changes, verify a small representative result before expanding the request. Use the surface's current CLI/API reference when automating; examples are not permission to change unrelated data.
 
 ## 👋 Welcome to xApps
 
@@ -53,10 +192,11 @@ xApps is a **multi-surface workbook**. Instead of opening a spreadsheet app, a w
 
 1. Use the **`+`** button or the **`Sheet`** menu to insert a new sheet.
 2. Save your work as a real workbook file with **`File -> Save Workbook`** or **`Save Workbook As...`**.
-3. Use the **top search bar** to search across sheets.
-4. Use **`Ctrl/Cmd + K`** to open the command palette.
-5. Use **sheet groups** if you want multiple related sheets to live under one parent tab.
-6. On phones, use the **Sheets** pill in the bottom bar to switch sheets without relying on the tab strip.
+3. Use **Workbook Access** to keep the file room-visible, owner-only private, or limited to selected members.
+4. Use the **top search bar** to search across sheets.
+5. Use **`Ctrl/Cmd + K`** to open the command palette.
+6. Use **sheet groups** if you want multiple related sheets to live under one parent tab.
+7. On phones, use the **Sheets** pill in the bottom bar to switch sheets without relying on the tab strip.
 
 ### 🧩 Sheet types at a glance
 
@@ -68,6 +208,7 @@ xApps is a **multi-surface workbook**. Instead of opening a spreadsheet app, a w
 | 📅 | Calendar | Schedules, launches, editorial planning |
 | 📈 | Timeline | Roadmaps, project timing, milestones |
 | 📊 | Poll | Live votes, surveys, audience feedback |
+| 💬 | Chat | Channels, DMs, threads, files, agents, reactions, and Huddles |
 | 🖼️ | Gallery | References, portfolios, catalogs |
 | 🎨 | Design Canvas | Polished visual layouts on fixed artboards |
 | 🧠 | Whiteboard | Brainstorming, mapping, ideation |
@@ -79,9 +220,14 @@ xApps is a **multi-surface workbook**. Instead of opening a spreadsheet app, a w
 | 📁 | File Viewer | Preview Office documents, CAD files, PDFs |
 | 🗄️ | Repository | Filesystem-backed document management |
 | 🗺️ | Map | Choropleths, point layers, spatial views |
+| 🎥 | Meeting | Workspace-native video calls with notes and attendance |
+| 🖥️ | Terminal | A real xterm.js terminal session inside the workbook |
+| 🗂️ | Agent Work | Room-wide objectives, agent runs, issues, activity, and evidence |
 | 🎮 | Games | Built-in arcade games and high scores |
 
 > 💡 Spreadsheet formulas can pull data from many other sheet types, so your workbook can act like one connected system instead of isolated tabs.
+
+> 💬 The dedicated [Chat Sheet / xChat guide](sheettypes/chat/help.md) covers conversations, threads, files, search, privacy, agents, and Huddles (voice/video hangouts), with screenshots and practical workflows.
 
 ## 🏠 Home / Library
 
@@ -103,12 +249,19 @@ The Home page is your file manager for all xApps workbooks. Open it by clicking 
 
 - **Open** — click the workbook name or the `Open` button to the right
 - **Create** — click **New Workbook** (top-right) to open the workbook composer; choose a blank workbook or a starter-kit template
+- **Choose access** — the composer offers **Room**, **Private**, and **Shared** modes. Choosing Private or Shared selects **MeshAgent room storage** and disables Mac/PC storage for that create. These modes also require a stable authenticated principal; if the host cannot identify you, create as Room or connect through the room/IAP identity first.
 - **Pin / Unpin** — click the star icon on any workbook row
 - **Rename** — right-click a workbook or click `···` to get the context menu; choose `Rename`
 - **Move** — right-click a workbook and choose `Move to folder`; drag-and-drop is not available in the current version
 - **Delete** — right-click and choose `Delete`; workbooks move to Trash, not permanent deletion
 - **Restore** — open Trash, right-click a workbook, choose `Restore`
 - **Permanently delete** — right-click in Trash to permanently delete a workbook
+
+Deleting a folder moves its planned workbook children to Trash and keeps their attachments recoverable. If a child changes or a new child appears during deletion, the operation preserves that content and reports a conflict or pending finalization. Restore uses the original nested path when available, otherwise a collision-safe sibling; it keeps access and attachments but gives the restored workbook a fresh creation identity. Old queued automation deliveries do not silently restart as part of that restored identity.
+
+Home retains the deletion or restore request id while an operation is pending. A lost response does not prove that nothing changed: retry the same intent to reconcile its durable receipt. CLI automation can supply `delete-workbook <file> --storage-target <target> --request-id <id> --yes`, with optional `--expected-source-creation-nonce`, `--expected-source-fingerprint`, and `--expected-source-revision` guards. MCP `delete_file` accepts the corresponding `storageTarget`, `requestId`, and source guards. Ordinary files go to Trash; permanent deletion applies only to existing Trash entries. The explicit REST contracts are `POST /api/files/{file}/delete`, `POST /api/folders/{folder}/delete`, and `POST /api/files/{file}/restore`.
+
+After reopening Home, use the pending-operation resume control to finish an interrupted deletion or restore. It reuses the original request and requires the server's existing operation record; it does not silently start a new operation against a replacement workbook. A conflict keeps the pending intent and explains the problem. API callers can use `resumeOnly=true` on those POST routes for the same no-new-plan guarantee; current access and source checks still apply.
 
 ### Search in the Library
 
@@ -117,6 +270,10 @@ The search field at the top filters workbooks by name and sheet type as you type
 ### Multi-select
 
 Click the checkbox that appears on hover to select multiple workbooks. A bulk-delete action appears in the toolbar when files are selected.
+
+### Access filters
+
+The Library has an **Access** filter for **All**, **Room**, **Private**, and **Shared**. Private workbooks you do not own or belong to are hidden from the list instead of showing a disabled card.
 
 ### Drag-and-drop import
 
@@ -143,8 +300,9 @@ The top bar is the main navigation chrome shared by every sheet in xApps.
 | **`+` (Add sheet)** | Opens the sheet-type picker to add a new sheet |
 | **Menu bar** | Workbook · Sheet · Edit · Insert · View · Data · Tools · (surface tab) · Help |
 | **Search Across Sheets** | Full-text search across all sheet content; shortcut `Ctrl/Cmd + Shift + F` |
-| **Assistant button** | Opens or closes the AI assistant side-panel |
+| **Assistant button** | Opens or closes the AI assistant chat panel |
 | **Presence / account chip** | Shows live collaborator avatars; click your chip for account info |
+| **Version History** | Circular-arrow icon — browse saved versions, preview prior sheet state, and restore the focused sheet |
 | **Activity Feed** | Clock icon — chronological log of workbook changes |
 | **Sheet Radar** | Satellite icon — cross-sheet dependency graph |
 | **Cheat Sheet** | Book icon — context-sensitive shortcuts and storage format reference |
@@ -174,7 +332,8 @@ Every sheet in xApps renders the same canonical menu bar. Surface-specific entri
 | Open Workbook... | Load a workbook file from the library |
 | Save Workbook | Save the current workbook (`Ctrl/Cmd + S`) |
 | Save Workbook As... | Save a copy under a new name |
-| Share Workbook | Set view / edit access for the saved file |
+| Workbook Access... | Set Room, Private, or Shared access for the saved file |
+| Version History | Browse saved versions and restore the focused sheet from a prior version |
 | Export | Export the workbook or active sheet |
 | Workbook Properties | View and edit workbook-level metadata |
 
@@ -206,7 +365,7 @@ Controls visibility and display mode for the active surface: zoom controls, grid
 
 ### Data menu
 
-Spreadsheet-specific: filter rules, sort, Find & Replace, data validation, conditional formatting, and freeze rows/columns. Other sheet types expose relevant data tools here (e.g., import for Gallery, filter for Records).
+Spreadsheet-specific: filter rules, sort, Find & Replace, data cleanup, External data, Timeline view, Macros & scripts, data validation, conditional formatting, and freeze rows/columns. Other sheet types expose relevant data tools here (e.g., import for Gallery, filter for Records).
 
 ### Tools menu
 
@@ -215,11 +374,29 @@ Spreadsheet-specific: filter rules, sort, Find & Replace, data validation, condi
 | Automations... | Create and run workbook-native macros |
 | Triggers... | Manage reactive rules and background processes |
 | Agent Actions... | Manage right-click context menu agent actions |
-| Diagnostics | Open the diagnostics pane |
+| Diagnostics | Open the diagnostics and runtime-health pane |
 
 ### Help menu
 
-Links to the Help Center (this document), keyboard shortcuts, and release notes.
+Choose **Help for this sheet** to open the guide for the active sheet. The command palette offers the same action. **Help Center** opens the full searchable reference, and **Welcome tour** reopens the guided start.
+
+Empty Dashboard, Gallery, Records, and File Viewer sheets include an optional guide beside their first-content controls. Close the guide to continue where you left off: add a widget, gallery item, or field, or choose a document to upload.
+
+## 🔐 Workbook Access
+
+Workbook Access controls who can discover and open saved workbook files.
+
+| Mode | Who can see/open it |
+|---|---|
+| **Room** | Anyone with access to the workspace room |
+| **Private** | The owner only |
+| **Shared** | The owner plus selected people with Viewer, Editor, or Admin roles |
+
+Private and Shared workbooks can be created only in **MeshAgent room storage** and require a **stable authenticated principal**. Mac/PC storage supports Room-visible creation only. If you see the notice "A stable authenticated principal is required to create a private workbook," the app can run but cannot yet attach the new private file to a durable user identity. Connect through the MeshAgent room/IAP identity, sign in where configured, or create the workbook as Room-visible.
+
+Private workbooks also force link sharing off. If a workbook contains public or legacy upload references, xApps attempts to migrate safe assets into workbook-scoped uploads before making it private; unresolved assets are listed in the Workbook Access dialog.
+
+Owners and admins can open **Workbook Access** from the command palette or Workbook menu to change access mode, add members, review pending access requests, and approve or deny requesters.
 
 ## ➕ New Sheet Picker
 
@@ -231,11 +408,12 @@ Sheet types are grouped into categories:
 
 | Category | Sheet types |
 |---|---|
-| **Work** | Spreadsheet, Wiki/Doc, Typewriter, Kanban, Timeline, Calendar, Records |
+| **Work** | Spreadsheet, Wiki, Typewriter, Kanban, Timeline, Calendar, Records, Agent Work Center, Meeting, Terminal |
 | **Design** | Canvas, Whiteboard, Gallery, Floor Plan, Slides/Presentation |
 | **Insight** | Dashboard, Map |
 | **Files** | Repository, File Viewer |
 | **Play** | Games |
+| **Other** | Poll |
 
 - **Default sheet type** is highlighted; change it in Settings → Defaults
 - **Configure visible types** — click `Configure visible types...` at the bottom to show or hide types from the list
@@ -263,7 +441,7 @@ Settings are divided into two scopes:
 
 | Setting | Options | Effect |
 |---|---|---|
-| **Default sheet type** | Records, Spreadsheet, Kanban, Canvas, Doc, Dashboard, Gallery, Calendar | Pre-selected type in the `+` sheet picker |
+| **Default sheet type** | Manifest-provided defaultable sheet types, including Records, Spreadsheet, Kanban, Design Canvas, Wiki, Dashboard, Gallery, Calendar, and Agent Work | Pre-selected type in the `+` sheet picker |
 | **Landing view** | Last workbook / Library | Where xApps opens when you arrive |
 
 ### My Preferences: Regional
@@ -280,7 +458,7 @@ A live sample shows the current date/time and number `1,234,567.89` formatted wi
 
 | Setting | Options | Effect |
 |---|---|---|
-| **Assistant panel on startup** | Open / Closed | Whether the AI assistant side-panel opens automatically |
+| **Assistant panel on startup** | Open / Closed | Whether the AI assistant chat panel opens automatically |
 
 ### Workspace: Branding
 
@@ -298,6 +476,17 @@ A live sample shows the current date/time and number `1,234,567.89` formatted wi
 | **Default new-workbook template** | Template applied when creating a workbook without choosing one |
 | **Host paths** | Read-only display: data dir, state file, workbook root, current workbook |
 
+### Workspace: Version History
+
+![Settings pane showing Version history retention controls](/help-assets/screenshots/shell-settings-version-history.png)
+
+| Setting | What it does |
+|---|---|
+| **Save version history** | Enables or disables app-native save snapshots for workbook files |
+| **Keep up to** | Maximum snapshots retained per workbook before older entries are pruned |
+| **Keep for** | Age-based retention window for snapshots |
+| **Collapse rapid edits** | Coalesces saves within a short interval so typing does not create one version per keystroke |
+
 ### Workspace: Housekeeping
 
 | Setting | What it does |
@@ -307,18 +496,161 @@ A live sample shows the current date/time and number `1,234,567.89` formatted wi
 
 Admin-only controls show a lock indicator for non-admin users; the values are visible but not editable.
 
-## 💬 Assistant Side-Panel
+## 🕘 Version History
 
-Click the **Assistant** button in the top bar (or its keyboard shortcut) to open the AI assistant side-panel.
+Version History is app-native time travel for saved workbook files. Open it with the **circular-arrow icon** in the top bar or from **More → Version history**.
 
-![Assistant side-panel open alongside an active workbook](/help-assets/screenshots/shell-assistant.png)
+![Version history panel showing current version, saved snapshots, focused sheet preview, and Restore this sheet action](/help-assets/screenshots/shell-version-history.png)
 
-The assistant answers questions in the context of the **current sheet**. Switching sheets marks a new context with a divider.
+### What it shows
 
-- Type a message and press `Enter` or click **Send**
-- The assistant can read and describe sheet contents, suggest formulas, and help with CLI/API patterns
-- **Admin can disable** the assistant workspace-wide via Settings → Assistant → Enabled/Disabled
-- When disabled, the Assistant button is hidden for all users in the room
+| Area | What it means |
+|---|---|
+| **Current version** | The live workbook state you are editing now |
+| **Saved versions** | Snapshots written on save, shown newest first with timestamp and revision |
+| **Focused sheet preview** | The active sheet as it existed in the selected version |
+| **Older / Newer** | Step through snapshots without leaving the panel |
+| **Restore this sheet** | Restore only the focused sheet from the selected version |
+
+Selecting a prior version opens a **read-only preview**. For sheet-focused preview, xApps swaps the active sheet into its older state while sibling sheets stay current, matching what restore will do. Closing the panel or choosing **Current version** exits the preview.
+
+### Restore behavior
+
+- Restore is **two-step**: click **Restore this sheet**, then confirm in the panel.
+- Restore is **non-destructive**: the server snapshots the current state first, then applies the selected sheet version.
+- Restore affects only the focused sheet when the sheet exists and differs in the selected snapshot.
+- Private and Shared workbook access rules also protect version listing, preview, and restore routes.
+
+### Retention and automation
+
+Admins configure retention in **Settings → Version history**. The server stores history sidecars next to workbook files and prunes them using the workspace policy.
+
+REST routes:
+
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/api/files/:file/versions` | List available versions |
+| GET | `/api/files/:file/versions/:id` | Preview a saved workbook snapshot |
+| GET | `/api/files/:file/versions/:id/spreadsheet-review?sheet=Sheet1&range=A1:C10` | Review Spreadsheet changed cells, changed ranges, author/name metadata, and unchanged-row visibility for a version |
+| POST | `/api/files/:file/versions/:id/name` | Name a saved version |
+| POST | `/api/files/:file/versions/:id/restore-range` | Restore one Spreadsheet range from a snapshot |
+| POST | `/api/files/:file/versions/:id/restore-sheet` | Restore one named sheet from a snapshot |
+| POST | `/api/files/:file/versions/:id/make-copy` | Create a workbook copy from a snapshot |
+| POST | `/api/files/:file/versions/:id/restore` | Restore a whole workbook snapshot |
+
+> 🤖 Agent example: an agent can list versions, name the close baseline, review changed ranges for `Budget!A1:F40`, restore only the selected range after a human confirms, or make a workbook copy from that version.
+
+## 💬 Assistant Chat Panel
+
+Click the **Assistant** button in the top bar (or its keyboard shortcut) to open the AI assistant chat panel. The panel is a conversation with a MeshAgent room agent that always has the **current workbook and sheet** as context.
+
+![Assistant chat panel open alongside an active workbook](/help-assets/screenshots/shell-assistant.png)
+
+- Type a message and press `Enter` or click **Send**. The composer placeholder reminds you what you are messaging, for example `Message @assistant about Wiki...`.
+- Switching sheets mid-conversation stamps a **context divider** in the log, so answers stay tied to the sheet they were about.
+- The assistant can read and describe sheet contents, suggest formulas, help with CLI/API/MCP patterns, and act on your workbook through the composer **`+`** menu.
+- Close the panel with the **×** button in the header or by pressing **Escape**.
+- **Admin can disable** the assistant workspace-wide via Settings → Assistant → Enabled/Disabled. When disabled, the Assistant button is hidden for everyone in the room.
+
+> The chat panel loads on demand — the first time you open it, xApps fetches the chat bundle, so the very first open can take a moment.
+
+### Panel anatomy
+
+| Area | What it holds |
+|---|---|
+| **Header** | The 💬 assistant avatar, the agent name / picker, a live status line (`Connected`, `Connecting`, or `Working`), a **`＋ New`** button, a **`Threads (n)`** switcher, and the close button |
+| **Thread bar** | The **Private / Room** space switcher, the current thread title (click it to switch threads), and an at-a-glance scope color |
+| **Message log** | Your conversation, grouped by sheet context, with an inline **Activity** toggle at the bottom |
+| **Composer** | The message box, the **`+`** actions menu, attachment pills, and the **Send** button |
+
+### Private and Room chat spaces
+
+The thread bar has a two-button switcher: **`🔒 Private`** and **`👥 Room`**. These are two **distinct spaces**, and the switcher **navigates** between them — it never converts a thread from one space to the other.
+
+- **`🔒 Private`** — "only you and the agent can see it." A private chat can never become room-visible by flipping the switch.
+- **`👥 Room`** — "visible to everyone in this room."
+- A short explainer line under the switcher restates which space you are in.
+- The panel also gives each space an **ambient color** (a green treatment for Room, a neutral treatment for Private) so you can tell at a glance where you are.
+- Clicking the other space opens your most-recent thread there, or starts a fresh thread if that space is empty. Your current thread stays put in its own space.
+
+### Threads: create, switch, rename, delete
+
+Every workbook keeps its own set of saved assistant threads (up to 50).
+
+- **New thread** — click **`＋ New`** in the header (starts a thread in the current space).
+- **Switch** — open **`Threads (n)`** in the header, or click the current thread title in the thread bar. Both dropdowns list threads in two captioned sections, **`🔒 Private`** then **`👥 Room`**. Click a thread to reopen it; its agent binding is shown as an `@handle` badge.
+- **Rename** — click the **`✎`** pencil on a thread row. The title becomes an inline field; press **Enter** to save or **Escape** to cancel.
+- **Delete** — click the **`×`** on a thread row. It arms to **`Delete?`** and waits about 3 seconds for a confirming second click before removing the thread (no browser pop-up). Deleting the active thread falls back to another thread in the same space.
+
+### Unread markers
+
+Threads updated since you last looked show an **unread dot** before their title, and the **`Threads`** switcher shows a small unread count next to the caret. Unread state is a per-browser viewing cue — simply opening a thread marks it read. The thread you are viewing is never flagged unread.
+
+### The composer "+" actions menu
+
+The **`+`** button next to the message box opens a single-level **Actions** menu that turns the conversation into workbook writes. Each row shows a verb, its destination, and a **tier badge**:
+
+| Action | Where it goes | Tier |
+|---|---|---|
+| **Summarize** | Replies in the thread | **INSTANT** |
+| **Create task** | → Tasks (Kanban), opens a prefilled draft | **FORM** |
+| **Wiki page** | → Wiki, opens a prefilled draft | **FORM** |
+| **Log evidence** | → Gallery, opens a prefilled draft | **FORM** |
+| **Dashboard** | → Dashboard, the agent proposes a layout | **IN CHAT** |
+
+Below a divider, **Attach files** opens the file picker (you can also just paste into the message box).
+
+The tiers behave differently on purpose:
+
+- **INSTANT** — Summarize runs immediately and drops a receipt in the log.
+- **FORM** — Task / Wiki / Evidence open a **docked draft card** above the composer, prefilled and ready. While a draft is docked the composer is parked (`Finish or cancel the draft above to keep chatting…`); press **Enter** to create, **Escape** to cancel. Submitting writes to the destination sheet and leaves a receipt.
+- **IN CHAT** — Dashboard is delegated to the agent as a normal turn; the agent proposes a draft in the thread and waits for your approval before writing.
+
+**Act on a specific reply.** Each assistant reply has a hover pill, **`⚡ Act on this reply`**. Click it to open the same `+` menu scoped to that exact reply — the chosen action's draft is prefilled from that reply's text and carries a "from the agent's reply" provenance chip. Without scoping, actions use the latest reply.
+
+**Receipts and Undo.** Completed actions leave a receipt row (`✓` done, `✕` error) with a title, detail, and an **Open** link to what was created. Task, Wiki page, and evidence receipts also show an **Undo** button that deletes the created item and flips the receipt to **Undone** (`↩`). Summaries and dashboard widgets are not undoable.
+
+### Inline Activity (no tabs)
+
+The panel has **no tab strip** — there is no separate Chat / Actions / Activity / Threads tab. Everything lives in one scrolling conversation. At the bottom of the log a small **`⚙ Activity`** pill (with a count) expands an inline diagnostic panel showing the connected **MeshAgent room** capability card (room agents and toolkits available) plus recent tool calls and events. The expanded/collapsed state is remembered.
+
+> The specific tools an agent can use depend on what the connected MeshAgent room provides; the Activity panel is where you can see the toolkits and agents currently available to the assistant.
+
+**Approvals always surface.** When an agent wants to run a tool that needs sign-off, a blocking card appears inline (even with Activity collapsed) with **Approve**, **Edit** (adjust the response first), and **Reject**.
+
+### Picking and mentioning agents
+
+When a room exposes more than one agent, the header agent name becomes a **picker**. Choosing a different agent saves the current thread under its existing owner, shows **Connecting**, and temporarily disables the composer. Once the target agent is bound, xApps opens a clean thread for that agent; the previous conversation stays in **Threads** with its own `@agent` badge. If the bind fails, the current agent and conversation stay in place.
+
+Plain messages always follow the agent shown in the picker. A leading `@agent` mention is an explicit target for that message. Reopening a saved thread restores its saved agent and history together, so an Assistant conversation cannot appear under a MacCodex header (or vice versa).
+
+Reconnect recovery keeps the saved thread's canonical agent owner together with its path. If a saved thread's agent cannot bind, xApps leaves the current header, conversation, and controls in place instead of showing the target history under the wrong agent.
+
+### Long-running turns and switching away
+
+The assistant is built to survive slow, tool-heavy turns and thread switching:
+
+- **Per-thread live turns.** Each thread runs its own conversation. Switch to another thread or agent while a reply is streaming and the first turn keeps running in the background; the unread dot updates and you see it live when you return.
+- **Two-stage watchdog.** Any agent activity resets the timer, so a genuinely long answer is not killed. After ~45s of true silence you either see `Still working — this step is taking a while…` (if connected) or a dropped-connection notice; a hard stall (~5 min of silence) fails the turn and forces a reconnect.
+- **Turn controls.** While a turn runs, **Stop** interrupts it and **Regenerate** re-runs the last answer.
+- **Redirect a streaming answer.** While an answer is streaming and steerable, the Send button becomes **Redirect** (`Redirect the active answer...`) so typed text steers the in-flight turn instead of starting a new one.
+- **Recovery notices.** If saved history does not replay after a reconnect, the thread shows a recovery notice and lets you keep going or start fresh.
+
+### Attachments
+
+Add files to a message three ways: the **`+` → Attach files** row, the paste shortcut (paste an image or file straight into the message box), or drag into the picker. Each attachment shows a pill with a thumbnail/icon, name, size, and status (**Uploading** → **Ready**, or an error). Send is blocked until uploads finish. Images the agent sends back render inline with a **Download** link, and assistant replies render Markdown.
+
+### Thread persistence and visibility
+
+Assistant history is scoped to the workbook in the URL. xApps keeps three coordinated layers:
+
+- a **local per-browser cache** of full conversation bodies for instant same-browser restore, and
+- a **thin shared workbook index** with agent name, thread path, title, timestamp, and Private/Room visibility, plus
+- a **durable server thread store** behind `/api/workbook/assistant-threads` that retains full bodies in the room dataset or owner-scoped atomic filesystem sidecars.
+
+The agent's own room/dataset thread is the source of truth for message bodies; a fresh browser replays them from there. Switching workbook routes saves the old workbook's threads and hydrates the new workbook's set, so each workbook restores its own Private and Room threads, active thread, and inline-Activity state when you return. A merge guard prevents a thin server entry from wiping a cached conversation. If durable storage is damaged, xApps keeps the browser copy visible and pauses automatic save retries instead of looping errors. Retryable failures resume after a real thread change; nonretryable corruption stays paused until storage is repaired and explicitly retried.
+
+Maintainers: staged deployment, health checks, legacy backfill, recovery, and data-preserving rollback for the shared Assistant/Chat Sheet Agent Session layer are documented in [`docs/AGENT_SESSION_ROLLOUT.md`](AGENT_SESSION_ROLLOUT.md).
 
 ## 🔍 Search Across Sheets
 
@@ -341,7 +673,7 @@ The command palette is the fastest way to access any action without navigating m
 
 | Group | Items available |
 |---|---|
-| **Workbook** | Save workbook, Open workbook, New workbook, Starter kits, Share workbook, Sheet groups, Automations, Triggers, Agent Actions |
+| **Workbook** | Save workbook, Open workbook, New workbook, Starter kits, Workbook Access, Sheet groups, Automations, Triggers, Agent Actions |
 | **Sheets** | Jump directly to any sheet by name |
 | **Recent** | Open recently accessed workbooks |
 | **Templates** | Apply a starter kit to the current workbook |
@@ -390,11 +722,13 @@ It updates automatically when you switch sheets. Contents vary by sheet type:
 | Floor Plan | Measurement units, tool shortcuts |
 | Records | Table/field reference format, view types |
 
-## 🔧 Diagnostics Pane (Shell)
+## 🔧 Diagnostics Pane and Runtime Health (Shell)
 
-Open Diagnostics from **Tools → Diagnostics** or from the command palette.
+Open Diagnostics with the **diagnostics icon** in the top bar. On narrow layouts, use the top-bar overflow menu and choose **Diagnostics**. It is also reachable from the command palette.
 
-The Diagnostics pane is a read-only snapshot of the running server internals — useful for debugging deployments and verifying connectivity:
+The Diagnostics pane is a read-only snapshot of the running server internals — useful for debugging deployments, checking room connectivity, and confirming which capabilities are active.
+
+![Diagnostics pane showing runtime, deployment, workbook, MeshAgent toolkit, surfaces, and redacted environment status](/help-assets/screenshots/shell-diagnostics-pane.png)
 
 | Section | What it shows |
 |---|---|
@@ -402,9 +736,55 @@ The Diagnostics pane is a read-only snapshot of the running server internals —
 | **Deployment** | App name, profile, deployment mode, NODE_ENV, host:port, public base URL |
 | **Storage** | Data dir, state file, workbook root, current workbook file, workbook size |
 | **Workbook** | Current file, title, revision, active sheet, sheet count, sheet types |
-| **Collab** | Room name, number of connected users |
+| **Collab** | Room name, Yjs doc name, and whether the live collab room is open |
+| **MeshAgent toolkit** | Whether the workspace host attempted to publish room toolkits, the room name, published toolkit count, names, and last error |
+| **Agent workbook scope** | Whether room assistants can see the current workbook through this host or only through the room/cloud toolkit |
+| **Agent terminal messaging** | Connector count, room-agent count, dispatch count, phase, last event, and connector/room-agent status |
 | **Surfaces** | List of registered sheet-type modules |
 | **Environment** | Which environment variables are set/unset (values are redacted for security) |
+
+The pane loads from `GET /api/diag`. It is workbook-ACL gated before returning workbook details and uses a default-deny environment allowlist: safe path/mode values can be shown, but secret-shaped keys such as tokens, cookies, OAuth secrets, and API keys are reported only as `set` or `unset`.
+
+### Health and diagnostics endpoints
+
+| Endpoint | Purpose |
+|---|---|
+| `GET /healthz` | Lightweight unauthenticated liveness probe for orchestrators. Returns `ok`, `status: "healthy"`, Yjs metrics, and Google Calendar session count without workbook details. |
+| `GET /readyz` | Unauthenticated traffic-readiness probe. Returns `503` with `state: "starting"` before startup completes, `200` while ready, and `503` with `state: "draining"` plus `Retry-After: 1` as soon as graceful shutdown begins. Keep liveness pointed at `/healthz`; use `/readyz` only where the platform supports a distinct readiness probe. |
+| `GET /status` / `GET /liveness` | Gated host status with app name, install mode, builder flag, persistence state, public base URL, and workbook summary. |
+| `GET /api/diag` | Full Diagnostics pane payload for the current workbook scope. |
+| `GET /api/meta/capabilities` | Generated capability payload used by agents, diagnostics, CLI discovery, OpenAPI/help tooling, and MeshAgent toolkit setup. |
+| `POST /api/client-errors` | Browser error-reporting sink. Startup/runtime failures are posted here even from stale tabs before file scoping, so operators can diagnose blank screens or boot failures. |
+
+### Agent Work and operator recovery
+
+Agent Work has its own diagnostics because it spans workbooks and machines through the `xapps/agent-work` room dataset.
+
+| Check | Command |
+|---|---|
+| Agent Work dataset health | `xapps agent-work status --json` |
+| Work-item, activity, run, and attachment queries | `xapps agent-work work-items --json`, `xapps agent-work activity-events --json`, `xapps agent-work agent-runs --json`, `xapps agent-work attachments --json` |
+| Rebuild missing Agent Work rows from saved Kanban cards | `npm run agent-work:backfill -- --file <Workbook.json> --json` |
+| Repair workbook access metadata | `npm run workbook-acl:repair -- --file <Workbook.json>` |
+
+The backfill command plans by default. Use its documented write mode only when connected to the intended MeshAgent room and after reading the plan.
+
+### Repo health gates
+
+For maintainers and agents, the repo-level health checks that keep help, capability discovery, and surface coverage honest are:
+
+```bash
+npm run check
+npm run check:coverage-manifest
+npm run report:coverage
+tools/scorecard-audit.sh --quick
+npm run test:smoke:diagnostics-endpoint
+npm run test:smoke:diagnostics-pane-ui
+npm run test:smoke:healthz-metrics
+npm run test:smoke:client-error-capture
+```
+
+`npm run check:coverage-manifest` verifies the checked-in coverage manifest, while `npm run report:coverage` produces the current coverage report. `tools/scorecard-audit.sh --quick` is the architecture/modularity scorecard used after architecture-facing changes.
 
 ## 📊 Spreadsheets
 
@@ -734,6 +1114,8 @@ Each card can hold:
 - description
 - due date
 - labels
+- one or more room-identity members and optional watchers
+- up to 20 card-level file or link attachments
 - custom fields, such as start date, stop date, amount, account, stage, or probability
 
 ### 🧩 Card fields
@@ -741,6 +1123,10 @@ Each card can hold:
 Each kanban sheet can define its own card schema through the board's **Card fields** setting. Standard task fields can be hidden for that sheet, standard labels can be renamed through **Field labels**, and custom definitions live on the sheet as `kanbanCustomFields`. The visible layout is stored as `kanbanCardFieldLayout`; card values live on each card in `customFields`. This lets one board use normal task cards while another board uses CRM-style opportunity cards without changing the canonical stored columns.
 
 Card fields are exposed through the Kanban REST API, SDK helpers, CLI commands, MCP tools, and MeshAgent toolkit tools. Use `xapps kanban-custom-fields <board>`, `xapps set-kanban-custom-fields <board> <json>`, `xapps kanban-card-field-layout <board>`, and `xapps set-kanban-card-field-layout <board> <json>` for CLI access.
+
+On a MeshAgent-room-connected workspace, card members use stable xApps principal identities instead of free-form names. Members are responsible for the card; watchers receive updates without becoming the legacy primary assignee. Assignment, status, comment, and `@Display Name` mention events are written to a private durable inbox before the host attempts direct online delivery. Offline recipients see the same unread items after reconnecting. The browser reads `/api/kanban-collaboration/people` and `/api/kanban-collaboration/notifications` in the active saved-workbook scope; inbox rows and read acknowledgements are always pinned to the current authenticated principal, and participant delivery ids are never returned to the browser. When the room dataset is unavailable, shared Kanban editing remains usable and the collaboration controls show an honest unavailable state.
+
+For automated writes, use an explicit saved workbook (`--file <Workbook.json>`), `--json`, `--verify`, and `--agent` (or `--strict`). Strict mode requires stable card ids and provenance and always rejects numeric row targets. For an agent workflow transition, read `card-json` to get the card `revision`, then use `transition-card` with `--expected-revision`, a durable `--request-id`, a typed comment, and `--verify`. The same request id and payload safely replay a lost response without duplicating evidence; a stale revision returns a conflict rather than overwriting newer work. REST callers use `POST /api/sheets/{name}/cards/{cardId}/transition`; hosted agents use `transition_kanban_card` (MCP) or `xapps-kanban.kanban_transition_card` (MeshAgent toolkit). Use ordinary update tools for non-workflow field patches.
 
 ### 🖱️ Core interactions
 
@@ -774,6 +1160,8 @@ Behind the board, every card is still stored in sheet data. That means spreadshe
 
 Calendar sheets give you **Month**, **Week**, and **Day** views for events, deadlines, editorial schedules, launches, and personal planning.
 
+Calendar also supports manual availability coordination. An organizer creates a request, enters invitee email addresses, and sends each person a private response link. Invitees mark each proposed time Available, Maybe, or Unavailable without connecting or sharing a calendar. The organizer sees ranked aggregate results, can send reminders, rotate or revoke links, and finalize one slot into a Calendar event.
+
 > 🤖 Agent example: an agent can import an `.ics` feed, generate a launch calendar from spreadsheet dates, and keep milestone events aligned with timeline tasks.
 
 ### 🗓️ Views
@@ -803,6 +1191,8 @@ Events can include:
 ### 🔄 Import and sync
 
 - Import `.ics` calendar files from Google Calendar, Apple Calendar, or Outlook
+- When Google Calendar is available, use **Connect Google** (or **Sign in with Google** when the host requests authentication), complete the official Google consent flow, then use **Sync**. The saved workbook and Calendar sheet are restored after the redirect.
+- Google Calendar access is optional. Local Calendar events continue to work when Google is disconnected or unavailable.
 - Optional Chrome extension support exists for **Google Calendar → xApps** sync workflows
 
 ### 📊 Why calendar sheets are useful in a workbook
@@ -1006,7 +1396,7 @@ Use Design Canvas when you want a bounded page instead of an infinite board. It 
 
 ### 🧩 Starter templates
 
-Canvas now includes a starter template library for common design jobs:
+Canvas now includes a starter template library for common design jobs, with search, categories, single-page designs, and multi-page deck starters:
 
 - Social Quote
 - Product Promo
@@ -1014,9 +1404,16 @@ Canvas now includes a starter template library for common design jobs:
 - Event Flyer
 - Brand Board
 - Moodboard
+- Product Launch Deck
+- Fundraising Pitch Deck
+- Marketing Campaign Kit
 
 Use the `Templates` button in the page bar or `Design -> Apply template...`.
-If the current page is empty, the template replaces it. If the page already has content, xApps inserts the template as a new page so your work stays intact.
+If the current page is empty, the template replaces it. If the page already has content, xApps inserts the template as a new page so your work stays intact. Template sets create several Canvas pages in one apply operation.
+
+### Start with AI
+
+Open **Templates** in the left rail to describe a design, choose a format and style, and generate a starting page. Canvas creates normal editable objects, shows assistant progress, and lets you switch among generated variants without appending duplicate object sets.
 
 ### 📄 Multiple pages and artboards
 
@@ -1047,6 +1444,18 @@ Canvas also supports **Magic Resize** for Canva-style copy-and-resize workflows:
 Shapes can also hold text labels now. Double-click a shape, or select it and press `Enter`, to edit the label inside it.
 
 Right-click an object to see its backing storage footer at the bottom of the context menu. For Canvas objects, that footer shows the exact backing cell range for the object row.
+
+### Stock photos and icons
+
+Open **Elements** and search for terms such as `coffee`, `team`, or `home`. Canvas searches stock photo providers through `/stock/photos`, using Openverse by default and Unsplash/Pexels when `CANVAS_UNSPLASH_ACCESS_KEY` or `CANVAS_PEXELS_API_KEY` are configured. Provider results show real image thumbnails with attribution metadata.
+
+If provider search is unavailable, Canvas shows an explicit source state instead of fake photo tiles. Use **Add URL / upload** to add a photo from your device or a URL, or select an image on the artboard and use **Replace selected** to swap its source while keeping its position.
+
+Inserted provider photos keep attribution, license, source URL, provider, and source image metadata on the image object. Icons use the local Iconify-compatible fallback set, insert as SVG image objects, and retain the selected color, collection, and license metadata.
+
+### SVG import
+
+Drop an SVG file on the Canvas artboard, or upload it from **Uploads**. Supported SVG primitives (`rect`, `circle`/`ellipse`, `polygon`, `line`, `text`) become normal editable Canvas objects with fills, strokes, simple transforms, and text styling where the Canvas object model supports them. Complex paths, filters, gradients, and other unsupported fragments still import as uploaded image objects so the artwork is preserved.
 
 ### ✏️ Line styles
 
@@ -1101,6 +1510,7 @@ When more than one object is selected, Canvas supports:
 
 The CLI exposes the same deterministic operations with explicit row lists:
 
+- `canvas-list-objects`, `canvas-get-object`, `canvas-update-object` for typed inspection and guarded single-object edits
 - `canvas-duplicate-objects`
 - `canvas-delete-objects`
 - `canvas-group-objects`
@@ -1882,6 +2292,8 @@ Repository sheets track files, folders, metadata, previews, and storage operatio
 - Inline preview paths for supported text, image, document, and code formats.
 - Storage operations for adding, updating, removing, refreshing, and categorizing files.
 - CLI, API, MCP, and toolkit coverage for agent workflows.
+- Native **xApps storage**, room-mounted storage, and other non-Google sources use the room/IAP identity and do not require Google sign-in. Repository exposes one canonical native root beneath the configured data directory; connect Google only when you want a Google Drive source.
+- **Google Drive** remains visible as an optional Repository source when it is disconnected. After signing in, **Connect** uses the shared per-feature Google consent flow; disconnecting Drive preserves an independently connected Calendar.
 
 ### Repository vs File Viewer
 
@@ -2065,6 +2477,71 @@ Games sheets provide a lightweight arcade surface inside the workbook. They are 
 
 Use `xapps help games` or the `games_scores` MCP tool to inspect high scores. The sheet itself is primarily UI-driven; score reads are the stable automation surface.
 
+## 🎥 Meeting
+
+### Workspace-native video calls
+
+Meeting sheets add a video-conference surface to the workbook. They store the meeting plan, dated sessions, invite history, notes links, and attendance metadata in the sheet, while live audio and video travel through the active MeshAgent room and LiveKit.
+
+> 🤖 Agent example: an agent can scaffold a meeting sheet for a specific date, pre-fill the title, breakout room, and notes sheet, generate the invite link, and email invites — then a human joins and runs the call.
+
+### What it provides
+
+- **Pre-join lobby** — meeting date, title, breakout room, notes, notes-sheet link, and microphone/camera defaults before joining.
+- **Participant stage** — adaptive grid with active-speaker emphasis, participant labels, and media-status badges.
+- **Controls** — microphone, camera, screen sharing, join, and leave.
+- **Invite panel** — share link, copy action, email-invite action, and clear-history.
+- **Dated history** — multiple meetings (by date) in one sheet; switching dates keeps each meeting's invites, notes, participants, and timestamps separate.
+- **Grant-aware unavailable state** — a clear message when the browser cannot reach the MeshAgent room or the room exposes no LiveKit credentials.
+
+Live audio/video requires browser media permission and a MeshAgent room with LiveKit credentials; outside that, the sheet shows the lobby and the unavailable state. Email invites require SMTP configuration with an explicitly provisioned sender mailbox; MeshAgent room credentials may supply transport defaults but never invent a mailbox identity. Use `xapps help meeting` for the command catalog.
+
+## 🖥️ Terminal
+
+### A real terminal inside the workbook
+
+Terminal sheets render a live browser terminal (xterm.js) as a workbook surface. They support local host PTY sessions and MeshAgent-relayed PTY sessions from a named remote Mac connector.
+
+> 🤖 Agent example: an agent can stand up a terminal sheet, capture the tunnel target command and MeshAgent room URL in the setup dialog, and hand a connected shell to a human operator.
+
+### What it provides
+
+- **Terminal sheet type** in the add-sheet menu; `xterm.js` renders inside the sheet and accepts keyboard input.
+- **Local mode** starts a PTY on the current xApps host.
+- **MeshAgent mode** relays an interactive PTY from the Mac connector through the room; the Mac dials out and does not open inbound ports.
+- **Setup-tunnel dialog** captures the target command, remote Mac label, MeshAgent room URL, and working directory. The connector relies only on the selected room's MeshAgent-injected runtime token; xApps accepts no token override.
+
+Treat terminal connector permissions as a separate operational boundary. Access to a private workbook does not automatically grant access to every terminal connector.
+
+Use `xapps help terminal` for the command catalog.
+
+## 🧭 Agent Work Center
+
+Agent Work Center is a room dataset console for cross-workbook agent work. It reads the central `xapps/agent-work` dataset namespace and shows Kanban work items, activity events, agent runs, evidence metadata, completion summaries, and dataset health.
+
+Use it when several workbooks or several agents need one shared view of active work. Workbook Kanban cards remain the editable source; Agent Work Center is the query and monitoring layer.
+
+It is not a replacement for Kanban, a private agent memory viewer, or a distributed lock manager. Agent claims use `agent_runs` lifecycle, heartbeat, and lease fields; workbook edits still resolve through workbook save/collab behavior.
+
+### What it provides
+
+- **Overview** for rollups, recent evidence, recent completion summaries, and activity.
+- **Work Items** for card-level rows, owning workbook links, evidence counts, and completion summary detail.
+- **Activity** for filtered event streams, including evidence and failure quick filters.
+- **Agents** for request lifecycle, routing, heartbeat, and lease state.
+- **Evidence** for image and attachment metadata with large preview on thumbnail click.
+- **Datasets** for table counts, index readiness, and query previews.
+
+### Completion summaries
+
+When a tracked Kanban card moves to `Done`, `Complete`, or `Completed`, Agent Work emits a `work_item_completed` activity event with structured `data_json.summary` fields. The Wiki should still carry the human-readable outcome, verification, evidence links, risks, and follow-ups; the dataset row is the queryable record used by Agent Work Center, CLI, SDK, MCP, and hosted toolkit reads.
+
+Operational rollout and recovery notes live in `docs/agent-work-rollout-notes.md`.
+
+### Multi-agent use
+
+Multiple agents on different computers can share one Agent Work Center when they connect to the same MeshAgent room and dataset namespace. Latest card/run state is merged by stable ids, activity history is event-based, and active claims depend on `agent_runs` heartbeat and lease data. The dataset is not a distributed lock, so conflicting card edits still resolve through workbook save/collab behavior.
+
 ## 🔗 Template Variables
 
 Template Variables let you embed live spreadsheet values in text across any visual surface. Type `{{SheetName!CellRef}}` in a text box on Canvas, Presentation, Whiteboard, Doc, or Dashboard and it resolves to the current cell value at render time.
@@ -2210,7 +2687,7 @@ Common formats:
 
 | Surface | Import | Export |
 |---|---|---|
-| Spreadsheet | CSV, Excel | CSV, Excel |
+| Spreadsheet | CSV, TSV, Excel, ODS | CSV, TSV, Excel, ODS, PDF |
 | Gallery | — | CSV, PDF |
 | Canvas | — | PNG, PDF |
 | Whiteboard | — | PNG, PDF |
@@ -2223,7 +2700,7 @@ Common formats:
 ### 🖨️ Print and snapshots
 
 - Use browser print for PDFs
-- Workbook files, Yjs snapshots, CSV/Excel sheet imports, ICS calendar import, PPTX import staging, DXF import staging, and image uploads now flow through server APIs
+- Workbook files, Yjs snapshots, CSV/TSV/Excel/ODS sheet imports, ICS calendar import, PPTX import staging, DXF import staging, and image uploads now flow through server APIs
 - Use Yjs snapshots for compact collaboration-state export/import
 
 ## 🤝 Collaboration
@@ -2250,16 +2727,16 @@ xApps shows collaborator presence in different ways depending on the sheet type:
 
 xApps supports importing and exporting data in many formats across its sheet types. This section covers each format in detail.
 
-### CSV Import and Export (Spreadsheet)
+### CSV and TSV Import and Export (Spreadsheet)
 
-**Import:** Use `File -> Import -> CSV` or the CLI command `import-csv`. CSV import maps each row to a spreadsheet row and each comma-separated value to a column. Headers in the first row become column labels.
+**Import:** Use `File -> Import -> CSV`, `Spreadsheet -> Open -> Import/export fidelity`, or the CLI command `import-csv`. CSV import maps each row to a spreadsheet row and each comma-separated value to a column. TSV uses the same server-backed replacement path with tab-separated values.
 
 ```bash
 xapps open-workbook MyWorkbook.json
 xapps import-csv "Stock Data" data.csv
 ```
 
-**Export:** Use `File -> Export -> CSV` or the CLI command `export-csv`. You can export the full sheet or a specific range.
+**Export:** Use `File -> Export -> CSV`, `File -> Export -> TSV`, or the CLI command `export-csv`. You can export the full sheet or a specific range.
 
 ```bash
 xapps open-workbook MyWorkbook.json
@@ -2269,11 +2746,13 @@ xapps export-csv "Stock Data" --range A1:K502 --out subset.csv
 
 > **Tip:** Use `clear-sheet` before `import-csv` when you want a clean replacement instead of appending to existing data.
 
-### XLSX Import and Export (Spreadsheet)
+### Spreadsheet Fidelity, XLSX, ODS, and PDF
 
-**Import:** Use `File -> Import -> Excel` to load `.xlsx` or `.xls` files. The importer reads cell values, basic formatting, and merges. Multi-sheet Excel files import the active sheet by default.
+Use `Spreadsheet -> Open -> Import/export fidelity` before moving a Spreadsheet to another app. The panel reports which features are lossless, partial, values-only, or print-only for `.xss`, XLSX, ODS, CSV, TSV, and PDF, then offers matching import and export actions.
 
-**Export:** Use `File -> Export -> Excel` to generate a `.xlsx` file from the current spreadsheet sheet.
+**Import:** Use `File -> Import -> Excel/ODS` to load `.xlsx`, `.xls`, or `.ods` files. The importer reads cell values, basic formatting, and merges. Multi-sheet files import the active sheet by default.
+
+**Export:** Use `File -> Export -> Excel`, `File -> Export -> ODS`, or `File -> Export -> PDF` from the current spreadsheet sheet. Agents can request the same analysis with `xapps fidelity-report "Sheet Name" --json`.
 
 ### ICS Import (Calendar)
 
@@ -2308,6 +2787,7 @@ PDF export is available from:
 
 - **Canvas** — `File -> Export -> PDF`
 - **Whiteboard** — `File -> Export -> PDF`
+- **Spreadsheet** — `File -> Export -> PDF`
 - **Presentation** — `Slides -> Export as PDF (Print)`
 - **Document** — `Doc` menu or toolbar button
 - **Floor Plan** — `File -> Export -> PDF`
@@ -2335,7 +2815,7 @@ File Viewer sheets accept uploads of many formats: `xlsx`, `xls`, `ods`, `csv`, 
 
 | Surface | Import Formats | Export Formats |
 |---|---|---|
-| Spreadsheet | CSV, XLSX, XLS | CSV, XLSX |
+| Spreadsheet | CSV, TSV, XLSX, XLS, ODS | CSV, TSV, XLSX, ODS, PDF |
 | Calendar | ICS | -- |
 | Presentation | PPTX | PDF |
 | Floor Plan | DXF | DXF, PDF, PNG |
@@ -2358,27 +2838,28 @@ Use it for:
 - opening help
 - starter kits
 - automations
-- sharing
+- workbook access
 - recent workbooks
 - sheet-specific actions
 
 It is the fastest way to move around large workbooks.
 
-## 🔗 Sharing
+## 🔐 Workbook Access
 
-Workbook files can have sharing metadata:
+Saved workbook files have Workbook Access metadata:
 
-> 🤖 Agent example: an agent can prepare a workbook handoff by setting sharing metadata, confirming the saved file path, and generating a view-only or edit-ready link workflow.
+> 🤖 Agent example: an agent can prepare a workbook handoff by setting Shared access, confirming the saved file path, and adding the right reviewers before handing the workbook back to a human.
 
-- 🔒 private
-- 👁️ view link
-- ✏️ edit link
+- **Room** — visible to everyone in the workspace room
+- **Private** — visible only to the owner
+- **Shared** — visible to the owner plus selected people
 
-Sharing works on saved workbook files, not unsaved in-memory state.
+Workbook Access works on saved workbook files, not unsaved in-memory state. Private and Shared access requires a stable authenticated principal so the owner and selected-person grants can be tied to durable identities.
 
 Use:
 
-- `File -> Share Workbook`
+- `Workbook -> Workbook Access...`
+- command palette: `Workbook access`
 
 ## 📦 Starter Kits
 
@@ -2513,6 +2994,20 @@ The current CLI does not register trigger-management commands. Use the REST API 
 | PUT | `/api/workbook/triggers/:id` | Update a trigger |
 | DELETE | `/api/workbook/triggers/:id` | Delete a trigger |
 | POST | `/api/workbook/triggers/:id/test` | Test-fire a trigger |
+| POST | `/api/webhooks/:hookId` | Fire a webhook rule on the host's bound workbook |
+
+Webhook callers authenticate with `X-XApps-Webhook-Secret` (or `?secret=`).
+For safe retries, send a stable `X-XApps-Request-Id` and the same JSON intent.
+While its receipt is retained, an authenticated retry returns `replayed: true`
+without firing again; reusing the key with different JSON returns 409. Object
+key order is ignored, but array order matters. Missing or blank keys make each
+call a separate event. Current rule enablement and secret are checked even on
+retries. Only the newest 256 receipts per rule are retained; deleting/resetting
+the rule or its receipts ends that protection. Ordinary per-rule edits preserve
+receipts when `metadata.webhookRequests` is omitted. An acknowledgement error
+does not prove that the event was unsaved: retry with the same key, or reconcile
+source state before resending an unkeyed call. This is event admission, not proof
+of external provider delivery. See the [webhook contract](/docs/contracts/platform-modules.md#webhook-admission-and-replay).
 
 ### Examples
 
@@ -2650,7 +3145,7 @@ Use the **search field in the top menu bar** (or `Ctrl/Cmd + Shift + F`) to sear
 
 ### Help search
 
-The help dialog has its own built-in search so you can jump to the right help section quickly.
+The help dialog has its own built-in search so you can jump to the right help section quickly. It searches section titles, section content, and platform aliases, so feature terms like `diagnostics`, `healthz`, `client errors`, `versions`, `versioning`, `chatbot`, `settings`, and `workbook acl repair` surface the relevant help even when the exact phrase is not the section title.
 
 ### Quick navigation
 
@@ -2822,17 +3317,17 @@ xapps search <terms...> [--json] [--limit <n>]
 xapps list
 ```
 
-MeshAgent room agents should run those commands from the deployed xApps runtime image, for example `registry.meshagent.com/powerboards/xapps:v2.3.11` when that is the room tag. A sibling container without that image does not have the xApps CLI runtime unless the room explicitly starts or switches into the xApps container.
+MeshAgent room agents should run those commands from the deployed xApps runtime image, for example `registry.meshagent.com/powerboards/xapps:v2.9.56` when that is the room tag. A sibling container without that image does not have the xApps CLI runtime unless the room explicitly starts or switches into the xApps container.
 
 Set the API target with explicit `--base-url`, `XAPPS_INTERNAL_API_BASE_URL`, `MESHAGENT_ROOM_URL`, or `XAPPS_API_BASE_URL`; retired sheet-API URL variables are not read by the current CLI. In the packaged xApps Docker runtime, `/app/bin/xapps.js` seeds `XAPPS_INTERNAL_API_BASE_URL` to the same-runtime workspace API port; the workspace host does the same when launched directly. When that internal URL is unset and `MESHAGENT_ROOM_URL` is present, the CLI parses it as a URL, replaces its port with `3001`, materializes that value into `XAPPS_INTERNAL_API_BASE_URL` for the CLI process, and prefers it over `XAPPS_API_BASE_URL`:
 
 ```bash
-export MESHAGENT_ROOM_URL="http://10.28.5.94:8078"
+export MESHAGENT_ROOM_URL="http://192.0.2.10:8078"
 export XAPPS_API_BEARER_TOKEN="$MESHAGENT_TOKEN"
 xapps list-workbooks --json
 ```
 
-The example room URL above resolves to `http://10.28.5.94:3001` for xApps API calls only when `XAPPS_INTERNAL_API_BASE_URL` is unset; the CLI replaces the port rather than appending a second port.
+The example room URL above resolves to `http://192.0.2.10:3001` for xApps API calls only when `XAPPS_INTERNAL_API_BASE_URL` is unset; the CLI replaces the port rather than appending a second port.
 
 Private MeshAgent/IAP rooms rely on the upstream room/IAP boundary; xApps does not add its own Google sign-in gate there. Public rooms that need xApps-level Google sign-in set `XAPPS_DEPLOYMENT_MODE=public` (legacy `XAPPS_AUTH_MODE=google` also works). Same-runtime CLI/MCP/toolkit calls from the deployed xApps runtime are still accepted as internal agent calls in public mode.
 
@@ -2856,7 +3351,7 @@ Use `xapps search --json <intent> --limit 3` first for compact command discovery
 
 Use `xapps list --json` when an agent really needs the full registry. The detailed typed catalog is in the top-level `commands[]` array; `groups[]` is only a summary.
 
-Current command groups include workbook, calendar, canvas, dashboard, doc, fileviewer, floorplan, gallery, games, kanban, map, poll, presentation, records, repository, spreadsheet, timeline, typewriter, and whiteboard. Use `xapps --help` and `xapps list --json` as the source of truth.
+Current command groups include workbook, agent-work, calendar, canvas, dashboard, doc, fileviewer, floorplan, gallery, games, kanban, map, meeting, poll, presentation, records, repository, spreadsheet, terminal, timeline, typewriter, and whiteboard. Use `xapps --help` and `xapps list --json` as the source of truth.
 
 ### Workbook Commands
 
@@ -2874,7 +3369,16 @@ xapps sheet-settings "FY Budget" --json
 xapps update-sheet-settings "FY Budget" '{"visibility":"primary"}'
 xapps delete-sheet "FY Budget Copy"
 xapps create-workbook "Operations" --sheet kanban:"Sprint Board" --sheet timeline:"Roadmap"
+xapps create-workbook "Private Ops" --sheet kanban:Tasks --access private
+xapps create-workbook "Shared Ops" --sheet kanban:Tasks --storage ma --access shared --member editor@example.com:editor
+xapps list-workbooks --storage localhost --json
+xapps list-workbooks --storage ma --json
+xapps workbook-access "Shared Ops.json" --storage ma --json
+xapps set-workbook-access "Shared Ops.json" --access shared --member reviewer@example.com:viewer --storage ma
 ```
+
+`xapps sheets --json` returns each sheet's user-facing `name`, `type`, and `shorthand` such as `kanban:Sprint Board`. Surface commands accept either the sheet name or the type-prefixed shorthand.
+`create-workbook` auto-suffixes on a name collision (`"Operations"` → `Operations 2.json`); the `--json` output always carries the final name in `file` plus `renamed` / `requestedFile` / `requestedTitle` markers, and `--exact` refuses a collision with the typed `workbook_file_exists` error (409) instead. Workbook file commands accept `--storage`, `--storage-location`, or `--storage-target` with `local|localhost|ma|meshagent-room|mac|mac-local`. If MA storage is unavailable, verify room credentials and run the host through `meshagent room connect`; canonical MA hosts use the Room Storage API and never a room mount. If Mac storage is unavailable, start a Mac connector in the room advertising `mac-local`; MA xApps uses that connector for bounded workbook operations and does not access the Mac filesystem directly. Workbook ACL privacy uses `create-workbook --access ...`, `workbook-access`, and `set-workbook-access`, not link-sharing metadata. `--member` accepts `email@example.com:editor` or `principal-id:viewer`; valid roles are `viewer`, `editor`, and `admin`, and `--member` can be repeated.
 
 ### Spreadsheet Commands
 
@@ -2886,10 +3390,24 @@ xapps range "Budget" A1:D10 --json
 xapps bulk-set "Budget" A1 '[["Name","Amount"],["Rent","2000"],["Food","800"]]'
 xapps import-csv "Stock Data" data.csv
 xapps export-csv "Stock Data" --range A1:K502 --out subset.csv
+xapps fidelity-report "Stock Data" --format xlsx --json
+xapps data-cleanup "Stock Data" remove-duplicates A1:K502 --keys A,B --has-header --apply
+xapps spreadsheet-external-data-sources "Stock Data"
+xapps create-spreadsheet-external-data-source "Stock Data" "Sales feed" '{"connectorType":"inline-json","source":{"text":"[{\"Product\":\"Desk\",\"Revenue\":320}]"},"extract":{"targetRangeStart":"A1"}}'
+xapps refresh-spreadsheet-external-data-source "Stock Data" sales-feed --confirm
+xapps spreadsheet-timeline-views "Stock Data"
+xapps create-spreadsheet-timeline-view "Stock Data" "Launch timeline" A1:H20 '{"title":"Task","start":"Start","end":"End","progress":"Progress","status":"Status","group":"Phase"}' --group-by Phase --target-sheet "Launch Timeline"
+xapps export-spreadsheet-timeline-view "Stock Data" launch-timeline --target-sheet "Launch Timeline"
+xapps spreadsheet-macros "Stock Data"
+xapps create-spreadsheet-macro "Stock Data" "Fill report" '[{"type":"set-cell","ref":"A1","value":"Report"}]' --require-confirmation
+xapps run-spreadsheet-macro "Stock Data" fill-report --confirm
 xapps add-chart "Budget" '{"type":"bar","title":"Spend","dataRange":"A2:B8","labelCol":"A","valueCol":"B"}'
 xapps add-table "Budget" '{"name":"Expenses","rangeStart":"A1","rangeEnd":"C20","groupBy":["Category"]}'
 xapps sort-table "Budget" expenses Amount --direction desc
 xapps table-groups "Budget" expenses
+xapps named-functions
+xapps set-named-function GROSS_MARGIN "revenue,cost" "=(revenue-cost)/revenue" --desc "Returns gross margin percent"
+xapps set-rich-cell "Budget" B2 '{"type":"link","label":"Project plan","value":"Project plan","url":"https://example.com/plan"}'
 xapps set-sparkline "Budget" C2 B2:B12 --type bar
 printf '{"op":"spreadsheet.formatCell","ref":"A1","format":{"bg":"#ff0000"}}\n' | xapps spreadsheet batch "Budget" --stdin
 ```
@@ -2899,16 +3417,24 @@ Add `--json` to spreadsheet commands when agents need structured success output 
 
 For high-volume edits, use `xapps mutate --stdin` or surface batches such as `xapps spreadsheet batch <sheet> --stdin`. They send validated semantic ops to the server-side Yjs path so many cell writes are applied in one Yjs transaction and JSON persistence is debounced.
 
+Because collab (Yjs) persistence is debounced (~5 seconds), a host restart inside that window can revert recent writes. Run `xapps flush` (respects `--file`) after write-heavy work and before stopping or restarting the host — it force-persists the pending debounced save immediately, replacing the old "sleep 3-5 seconds before restart" workaround.
+
 Structured table payloads support `id`, `name`, `rangeStart`, `rangeEnd`, `headerRow`, `style`, `columns`, `sortRules`, and `groupBy`. When `columns` is omitted, xApps derives table columns from the header row. Table sorting reorders only body rows so the header row stays in place, and grouped reads return records plus `count` and numeric `sums`.
 
-In the spreadsheet UI, select a range and click **Format as Table**. Table headers show one arrow sort control; the arrow points up for ascending and down for descending, and sorting only reorders the table body. Toolbar A/Z sorting also targets the table body when the selected cell is inside a table. Use **Alternating Colors** for plain striped ranges without creating table metadata. To group records, right-click a cell in the table column you want to group by, then choose **Table > Group by selected column**. Use **Table > Clear grouping** to remove grouping. Formulas can reference structured tables with `TableName[Column]`, `TableName[#Headers]`, `TableName[#Data]`, and `TableName[#All]`, for example `=SUM(Expenses[Amount])`.
+Named functions are workbook-scoped reusable formulas. They can be created from the Spreadsheet Data menu or with `xapps set-named-function <name> <args-csv> <formula>`, then called from cells like built-in functions.
+
+Smart chips are rich cell objects with a plain fallback value for formulas, CSV export, and automation. Use **Insert > Insert smart chip...** or `xapps set-rich-cell <sheet> <ref> <json>` to create people, file, date, dropdown/status, place, sheet-reference, or link chips with metadata such as URL, email, date, address, sheet/range, color, description, and dropdown options. The dialog changes fields based on the selected chip type, including allowed values plus a Current value picker for dropdown/status chips. For dropdown/status chips, edit Allowed values first; the Current value picker is rebuilt from those options before saving. Click a dropdown/status chip or its arrow to choose one of its configured allowed values. Select an existing chip cell and use **Format > Smart chips > Edit smart chip...** or the cell context menu to edit it. Use `xapps rich-cell <sheet> <ref>` to inspect metadata and `xapps clear-rich-cell <sheet> <ref>` to remove it.
+
+In the spreadsheet UI, select a range and click **Format as Table**. Table headers show one arrow sort control; the arrow points up for ascending and down for descending, and sorting only reorders the table body. Toolbar A/Z sorting also targets the table body when the selected cell is inside a table. Use **Alternating Colors** for plain striped ranges without creating table metadata. To group records, select a cell in the table column you want to group by, then choose **Data > Table > Group by selected column** or right-click the cell and choose **Table > Group by selected column**. Use **Data > Table > Clear grouping** or **Table > Clear grouping** to remove grouping. Formulas can reference structured tables with `TableName[Column]`, `TableName[#Headers]`, `TableName[#Data]`, and `TableName[#All]`, for example `=SUM(Expenses[Amount])`.
 
 ### Surface Examples
 
 ```bash
 xapps cards "Sprint Board" --status "In Progress"
+xapps list-cards "Sprint Board" --status "In Progress"
 xapps add-card "Sprint Board" "Fix login bug" --list "To Do" --labels "P1,bug" --due "2026-04-15"
 xapps card-json "Sprint Board" TASK-42
+xapps transition-card "Sprint Board" TASK-42 "In Progress" --expected-revision 4 --request-id task-42-start --message "Picked up work" --author codex-agent --type progress --verify --agent --json
 xapps add-card-comment "Sprint Board" TASK-42 "Ready for review." --author Alice --type progress
 xapps card-comments "Sprint Board" TASK-42
 xapps records-list-tables "CRM"
@@ -2924,12 +3450,23 @@ xapps gallery add-item "Evidence" "Local screenshot" --image /tmp/fix.png --uplo
 xapps gallery-tag-items "Evidence" --rows 0,1 --tag verified --json
 xapps events "My Calendar" --from 2026-04-01 --to 2026-04-30
 xapps add-event "My Calendar" "Team Standup" --date 2026-04-10 --time 09:00 --color "#4285f4"
+xapps scheduling-sessions "My Calendar"
+xapps create-scheduling-session "My Calendar" '{"title":"Board meeting","startDate":"2026-07-20","endDate":"2026-07-31","dayStart":"08:00","dayEnd":"18:00","durationMinutes":60,"timeZone":"America/Los_Angeles","weekdays":[1,2,3,4,5],"invitees":[{"email":"alex@example.com"}],"deliverInvitations":true}' --verify
+xapps send-scheduling-invitations "My Calendar" schedule-123 --kind reminder --rotate --verify
+xapps finalize-scheduling-session "My Calendar" schedule-123 slot-123 --verify
 xapps widgets "My Dashboard"
 xapps add-widget "My Dashboard" '{"type":"kpi","title":"Revenue","dataSource":{"sheetName":"Budget","range":"B2"}}'
 xapps slides "Pitch Deck"
 xapps add-text-box "Pitch Deck" slide-1 "Hello World" --x 100 --y 200 --size 36
 xapps add-sticky "Brainstorm" "Great idea!" --x 100 --y 200 --bg "#fff475"
 xapps canvas-templates
+xapps register-canvas-template "Design" --input ./launch-template.json --replace
+xapps render-canvas-template-thumbnail "Design" launch-template --out launch-template.svg
+xapps remove-canvas-template "Design" launch-template
+xapps canvas-template-factory "Design" --category Fundraising --brief "Neighborhood arts fundraiser" --count 20 --replace
+xapps apply-canvas-template "Design" report-summary --brand-kit '{"primary":"#2563eb","fontHeading":"Inter","fontBody":"Inter"}'
+xapps apply-canvas-template "Design" fundraising-pitch-deck --mode insert
+xapps canvas-brand-report "Design" --brand-kit '{"colors":["#2563eb","#111827","#ffffff"],"fonts":["Inter"]}'
 xapps add-canvas-text "Design" "Headline" --x 100 --y 100 --size 48 --color "#fff"
 xapps viewer-files "Docs"
 xapps repo-files "Repository"
@@ -2937,8 +3474,10 @@ xapps games-scores "Arcade"
 xapps typewriter wordcount "Report"
 xapps typewriter export "Report" md --out report.md
 xapps doc-add-page "Encyclopedia" "First Article" --icon 📜 --summary "Intro entry"
+xapps doc-add-page "Encyclopedia" "First Article" --id intro --summary "Idempotent upsert: same --id updates the page in place"
 xapps doc-add-block "Encyclopedia" page-2 --type heading2 --text "Background"
-xapps doc-import-markdown "Encyclopedia" --multi --file ./book.md --replace-pages
+xapps doc-add-block "Encyclopedia" page-2 --type callout --text "Same --id updates this block in place" --id status-note
+xapps doc-import-markdown "Encyclopedia" --multi --input ./book.md --replace-pages --yes
 xapps doc-list-pages "Encyclopedia"
 xapps doc-list-page-links "Encyclopedia" page-5
 ```
@@ -2978,6 +3517,9 @@ Base URL: `${XAPPS_API_BASE_URL}/api`. OpenAPI spec: `/api/openapi.json`.
 | Header | Purpose |
 |---|---|
 | `X-XApps-File` | Target a specific saved workbook file (e.g., `Stocks.json`) |
+| `X-XApps-Allow-File-Create` | Explicitly permit workbook creation on file create/write routes |
+| `X-XApps-Workbook-Operation` | Use `move` with `X-XApps-Source-File` on workbook file rename/move writes |
+| `X-XApps-Source-File` | Source workbook file for access-preserving rename/move writes |
 | `X-XApps-Unlock` | Unlock token for protected sheets/groups |
 | `Content-Type` | `application/json` for all POST/PUT requests |
 
@@ -2990,6 +3532,11 @@ Base URL: `${XAPPS_API_BASE_URL}/api`. OpenAPI spec: `/api/openapi.json`.
 | GET | `/api/workbook/active-sheet` | Get active sheet name |
 | POST | `/api/workbook/active-sheet` | Set active sheet |
 | GET | `/api/files` | List saved workbook files |
+| GET | `/api/workbook/assistant-threads` | Read workbook-persisted Assistant threads |
+| PUT | `/api/workbook/assistant-threads` | Merge Assistant thread snapshots |
+| GET | `/api/workbook/assistant-threads/:id` | Read one Assistant thread |
+| PUT | `/api/workbook/assistant-threads/:id` | Upsert one Assistant thread |
+| DELETE | `/api/workbook/assistant-threads/:id` | Delete one Assistant thread |
 | GET | `/api/workbook/groups` | List sheet groups |
 | PUT | `/api/workbook/groups` | Replace sheet groups |
 | POST | `/api/workbook/groups` | Create a sheet group |
@@ -3039,9 +3586,19 @@ Base URL: `${XAPPS_API_BASE_URL}/api`. OpenAPI spec: `/api/openapi.json`.
 | GET | `/api/sheets/:name/range/:range` | Read range (returns `{data:[[...]]}`) |
 | PUT | `/api/sheets/:name/range/:range` | Bulk write range `{"data":[[...]]}` |
 | POST | `/api/sheets/:name/clear` | Clear all cells and merges |
+| POST | `/api/sheets/:name/cleanup/preview` | Preview trim whitespace, duplicate, or split-text cleanup |
+| POST | `/api/sheets/:name/cleanup/apply` | Apply undo-safe data cleanup operations |
+| GET/POST/PUT | `/api/sheets/:name/macros` | List, create, or replace safe Spreadsheet macros |
+| GET/PUT/DELETE | `/api/sheets/:name/macros/:id` | Read, update, or delete a Spreadsheet macro |
+| POST | `/api/sheets/:name/macros/:id/run` | Run a Spreadsheet macro with confirmation/protection checks and audit logging |
+| GET/POST/PUT | `/api/sheets/:name/timeline-views` | List, create, or replace Spreadsheet timeline views |
+| GET/PUT/DELETE | `/api/sheets/:name/timeline-views/:id` | Read, update, or delete a Spreadsheet timeline view |
+| POST | `/api/sheets/:name/timeline-views/:id/preview` | Preview timeline tasks and grouped bars |
+| POST | `/api/sheets/:name/timeline-views/:id/export-timeline-sheet` | Export a Spreadsheet timeline view to an xApps Timeline sheet |
 | GET/PUT/DELETE | `/api/sheets/:name/cells/:ref/format` | Cell format |
 | GET/PUT/DELETE | `/api/sheets/:name/cells/:ref/validation` | Cell validation |
 | GET/PUT/DELETE | `/api/sheets/:name/cells/:ref/comment` | Cell comment |
+| GET/PUT/DELETE | `/api/sheets/:name/cells/:ref/rich-value` | Rich cell/smart chip metadata |
 | GET/PUT/DELETE | `/api/sheets/:name/cells/:ref/image` | Cell image |
 | GET/POST | `/api/sheets/:name/charts` | List/create charts |
 | PUT/DELETE | `/api/sheets/:name/charts/:id` | Update/delete chart |
@@ -3052,6 +3609,33 @@ Base URL: `${XAPPS_API_BASE_URL}/api`. OpenAPI spec: `/api/openapi.json`.
 | GET/PUT/POST/DELETE | `/api/sheets/:name/conditional-formats` | Conditional formatting |
 | POST | `/api/sheets/:name/merge` | Merge range |
 | POST | `/api/sheets/:name/unmerge` | Unmerge range |
+| GET | `/api/sheets/:name/cells:batch` | Read the current revision and fingerprint before a guarded batch |
+| POST | `/api/sheets/:name/cells:batch` | Apply one all-or-nothing semantic batch transaction |
+
+### Guarded Transaction Endpoints
+
+Some write families are **atomic and replay-safe**: they validate every
+operation, persist the whole change once, and leave the sheet untouched when
+anything fails. Each takes two guards — `--expected-revision`, the revision you
+read immediately before writing, and `--request-id`, a stable id that makes a
+retry return the original result instead of applying the change twice.
+
+| Surface | Read the revision | Apply the change | CLI |
+|---|---|---|---|
+| **Spreadsheet** | `GET /api/sheets/:name/cells:batch` | `POST /api/sheets/:name/cells:batch` | `xapps spreadsheet batch-state`, `xapps spreadsheet batch` |
+| **Doc pages** | `GET /api/sheets/:name/document/mutations` | `POST /api/sheets/:name/document/mutations` | `xapps doc-mutation-state`, `xapps doc-mutation-outcome` |
+| **Doc comments** | `GET /api/sheets/:name/pages/:pageId/blocks/:blockId/comments` | `POST`/`PATCH`/`DELETE` on the same family | `xapps doc-list-comments`, `xapps doc-add-comment`, `xapps doc-add-comment-reply`, `xapps doc-resolve-comment` |
+
+`GET /api/sheets/:name/document/mutations/:requestId` (`doc-mutation-outcome`)
+returns the durable original result of a Doc mutation after a disconnect or a
+restart, so a caller that lost the response can recover it instead of guessing.
+
+```bash
+xapps spreadsheet batch-state "Budget" --json
+xapps doc-list-comments "Spec" --json
+xapps doc-add-comment-reply "Spec" thread-1 "Agreed" \
+  --expected-revision 4 --request-id spec-reply-1 --json
+```
 
 ### Surface Endpoints
 
@@ -3059,9 +3643,9 @@ Each sheet type exposes its own sub-endpoints:
 
 | Type | Endpoints |
 |---|---|
-| **Records** | `/records`, `/records/:recordId`, `/records/bulk`, `/records/deleted`, `/records/:recordId/restore`, `/fields`, `/fields/:fieldId`, `/tables`, `/tables/:tableId`, `/views`, `/views/:viewId`, `/sql` |
+| **Records** | `/records`, `/records/:recordId`, `/records/bulk`, `/records/deleted`, `/records/:recordId/restore`, `/fields`, `/fields/batch`, `/fields/:fieldId`, `/tables`, `/tables/:tableId`, `/views`, `/views/:viewId`, `/sql` |
 | **Kanban** | `/cards`, `/cards/:rowOrId`, `/cards/:rowOrId/comments`, `/lists`, `/lists/:name`, `/lists/reorder` |
-| **Calendar** | `/events`, `/events/:row` |
+| **Calendar** | `/events`, `/events/:row`, `/scheduling-sessions`, `/scheduling-sessions/:id`, `/scheduling-sessions/:id/invitations`, `/scheduling-sessions/:id/access/:inviteeId`, `/scheduling-sessions/:id/finalize` |
 | **Timeline** | `/tasks`, `/tasks/:row` |
 | **Poll** | `/config`, `/status`, `/questions`, `/questions/:id`, `/questions/reorder`, `/questions/:id/options`, `/responses`, `/tally` |
 | **Gallery** | `/items`, `/items/:row` |
@@ -3193,22 +3777,27 @@ The server communicates via stdio. It talks to the workspace API with `XAPPS_INT
 - `set_cell_sparkline`, `merge_range`, `unmerge_range`
 
 **Records Tools:**
-- `records_list_tables`, `records_create_table`, `records_rename_table`, `records_delete_table`
-- `records_list_fields`, `records_add_field`, `records_update_field`, `records_delete_field`, `records_reorder_fields`
-- `records_list`, `records_get`, `records_create`, `records_patch`, `records_delete`, `records_bulk_update`, `records_bulk_delete`
+- `records_list_tables`, `records_create_table`, `records_get_table`, `records_update_table`, `records_rename_table`, `records_delete_table`
+- `records_list_fields`, `records_add_field`, `records_add_fields`, `records_update_field`, `records_delete_field`, `records_reorder_fields`
+- `records_list`, `records_get`, `records_create`, `records_patch`, `records_delete`, `records_reorder`, `records_batch`, `records_bulk_update`, `records_bulk_delete`
 - `records_trash`, `records_restore`, `records_duplicate`, `records_history`
 - `records_comments`, `records_add_comment`, `records_edit_comment`, `records_delete_comment`
-- `records_list_views`, `records_add_view`, `records_update_view`, `records_delete_view`, `records_set_active_view`
+- `records_list_views`, `records_add_view`, `records_update_view`, `records_delete_view`, `records_set_active_view`, `records_get_active_view`, `records_reorder_views`
+- `records_submit_form`, `records_list_queries`, `records_add_query`, `records_get_query`, `records_update_query`, `records_delete_query`, `records_get_active_query`, `records_set_active_query`
+- `records_schema_dependencies`, `records_schema_health`, `records_schema_audit`, `records_schema_undo`, `records_schema_repair`
 - `records_relation_preview`, `records_sql`
 
 **Kanban Tools:**
 - `list_kanban_cards`, `get_kanban_card`, `get_kanban_field_labels`, `set_kanban_field_labels`
-- `create_card`, `update_card`, `delete_card`
+- `create_card`, `update_card`, `transition_kanban_card`, `delete_card`
 - `list_kanban_lists`, `create_kanban_list`, `rename_kanban_list`, `color_kanban_list`, `delete_kanban_list`
 - `reorder_kanban_lists`, `save_kanban_view`, `apply_kanban_automation_presets`, `sync_kanban_companion_views`, `get_kanban_report`
 
 **Calendar Tools:**
-- `list_events`, `create_event`, `update_event`, `delete_event`
+- `calendar_state`, `list_events`, `get_event`, `create_event`, `update_event`, `delete_event`, `get_settings`, `update_settings`, `import_ics`
+- `list_scheduling_sessions`, `get_scheduling_session`, `create_scheduling_session`, `send_scheduling_invitations`, `revoke_scheduling_access`, `finalize_scheduling_session`
+
+Scheduling tools are organizer-only. The public invitee token-response endpoints are deliberately excluded from service-principal tool catalogs; authorized organizer detail can still return private links for copy, rotation, and revocation.
 
 **Timeline Tools:**
 - `timeline_tasks`, `timeline_add_task`, `timeline_update_task`, `timeline_delete_task`
@@ -3220,8 +3809,12 @@ The server communicates via stdio. It talks to the workspace API with `XAPPS_INT
 - `poll_add_option`, `poll_set_status`, `poll_submit_response`, `poll_responses`
 
 **Canvas Tools:**
-- `list_canvas_pages`, `set_canvas_artboard`
-- `create_canvas_shape`, `create_canvas_text`, `create_canvas_image`
+- `canvas_list_objects`, `canvas_get_object`, `canvas_update_object`
+- `canvas_list_pages`, `canvas_set_page`, `canvas_set_artboard`, `canvas_mutate_page`, `canvas_mutate_layer`
+- `canvas_create_shape`, `canvas_create_text`, `canvas_create_image`
+- `canvas_duplicate_objects`, `canvas_delete_objects`, `canvas_group_objects`, `canvas_ungroup_objects`
+- `canvas_lock_objects`, `canvas_unlock_objects`, `canvas_layout_objects`
+- `canvas_add_comment`, `canvas_list_comments`, `canvas_resolve_comment`, `canvas_delete_comment`
 
 **Dashboard Tools:**
 - `list_dashboard_widgets`, `get_dashboard_widget`
@@ -3637,6 +4230,24 @@ Common causes and fixes:
 - For chart widgets, the range should include both label and value columns.
 - For treemap widgets, configure `tmLabels`, `tmSizes`, and `tmColors` column ranges.
 - For map widgets, verify `config.mapSource.sheet` points to an existing Map sheet.
+
+### “How long are Chat messages kept?”
+
+- Chat message retention defaults to **2 weeks** for every new or unconfigured room scope.
+- In a Chat sheet, open **Preferences → Room & administration → Message retention** to choose 1 day, 1 week, 2 weeks, 30 days, 90 days, 1 year, or Forever.
+- The policy applies to every Chat sheet that uses the same room scope because those sheets share one room dataset.
+- Expired messages and their reactions are permanently pruned. Referenced room files are not deleted.
+- If saving or pruning fails, the dialog stays open and shows a retry action; Chat does not hide the affected messages before the durable delete succeeds.
+
+### “Do my Chat preferences and unread position follow me?”
+
+- Sort/manual order, mute, stars, hidden channels, notification preferences, and read position update locally without waiting for storage, then roam for the authenticated room identity.
+- Appearance offers both **Use room colors** and **Use my colors**. Room administrators save the shared default in **Room & administration**; a personal override affects only that identity.
+- Preference edits, including notification controls, are staged until **Save**. **Cancel**, Escape, backdrop click, and close discard the draft and restore any live color preview.
+- The right-side room-members pane can be collapsed from the conversation header and its state follows the identity.
+- Chat coalesces changes into whole-state background saves instead of persisting every click or message delta, so preference storage does not delay sending or agent startup.
+- The selected channel and selected agent model remain local to the current device/workbook.
+- If roaming persistence is unavailable, Chat keeps the local state usable and retries unsaved state on a later lifecycle flush or reload.
 
 ### “Automations not running”
 

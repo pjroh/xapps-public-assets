@@ -12,6 +12,12 @@ Per-game high scores persist as workbook state on the Games sheet itself, so the
 
 ---
 
+### Start a short session
+
+Choose a game from the launcher, read the displayed controls, and click the game area before using the keyboard. Most games support **P** to pause; use the individual game's instructions for its movement and action keys. Return through **View → Back to game launcher** when you want a different game.
+
+High scores belong to the Games sheet. A current game and its in-memory play state are different from a saved high score: switching away or restarting the page is not a promise to resume an unfinished run. Use a separate sheet if the project needs a different score history.
+
 ### Features at a Glance
 
 - Eight classic arcade games: Tetris, Snake, Space Invaders, Galaga, 2048, Frogger, Asteroids, Doodle Jump — all keyboard-driven
@@ -97,7 +103,7 @@ Each game's high score is stored under its own key in `gamesHighScores`, so impr
 
 Two top-level fields on the Games sheet:
 
-- `gamesActiveGame: 'tetris' | 'snake' | 'invaders' | 'galaga' | '2048' | 'frogger' | 'asteroids' | 'doodle' | null` — the launched game (null = launcher).
+- `gamesActiveGame: 'tetris' | 'snake' | 'invaders' | 'galaga' | '2048' | 'frogger' | 'asteroids' | 'doodle' | null` — a persisted/default game selection (null = launcher), not authority to switch a peer's live screen.
 - `gamesHighScores: Record<string, number>` — best score per game, keyed by game id.
 
 Both go through the surface's `applyCreateDefaults` / `applySettings` so they're normalized on load (negative scores are clamped to 0; unknown game keys are dropped).
@@ -109,7 +115,7 @@ Both go through the surface's `applyCreateDefaults` / `applySettings` so they're
 The games surface ships **one** CLI command — every other game interaction is keyboard-driven inside the browser.
 
 ```bash
-xapps games-scores <sheet>
+xapps --base-url "$XAPPS_API_BASE_URL" --file MyWorkbook.json --workbook-storage-target local games-scores Games --json
 ```
 
 Prints the per-game high-score table for a Games sheet. Empty table prints `No high scores yet.` Useful for verifying that a play session persisted, or for scripting a leaderboard digest. Pass `--json` for machine-readable output.

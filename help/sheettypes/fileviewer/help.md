@@ -10,7 +10,22 @@ File Viewer sheets let you upload and preview documents, spreadsheets, presentat
 
 ---
 
-### Features
+### Read, inspect, or edit: choose the right action
+
+1. Upload a supported file through the picker or drag-and-drop. Wait for it to appear in the file list, then select it.
+2. Use the page rail for a multi-page document, worksheet tabs for a spreadsheet, or the section rail for Markdown. Zoom changes the preview; it does not change the source document's page setup.
+3. For an editable text format, open source editing, make a small change, save, and return to Preview to confirm the rendered result. Office/PDF preview does not imply that those source formats can be edited here.
+4. Switch to another file and back when checking which document is active. A workbook can contain several File Viewer files, each with its own metadata reference.
+
+### Choose another sheet when appropriate
+
+Use **Typewriter** to author a polished document, **Spreadsheet** for calculations you intend to edit in cells, or **Repository** to organize source files and structured metadata. File Viewer is useful when those original documents need to remain readable beside the work.
+
+### When a preview is missing or different
+
+Confirm the selected file and upload result first. Check the documented format support; a preview may use a converted representation and can differ from the originating application's rendering. Keep the source file for fidelity-sensitive review. A template variable must resolve from its documented source to affect rendered text; changing metadata alone does not rewrite arbitrary document content.
+
+### Feature reference
 
 - Preview 20+ file formats inline
 - File list management (add, remove, set active)
@@ -118,7 +133,7 @@ Word documents render with:
 - Images and embedded media
 - Text-based page cards in the page rail for reliable navigation
 
-Note: The DOCX renderer requires JSZip to be loaded before docx-preview. This is handled automatically.
+Note: The DOCX renderer is bundled with xApps and loads on demand from the same origin.
 
 #### PPTX
 
@@ -387,23 +402,35 @@ An **opaque reference** (`visibility: "opaque-reference"`) stores only a `pointe
 
 When a cloud pointer has `write` capability and a valid parent item ID, the inline editor's **Save** action writes back to the cloud provider, not just the local upload directory.
 
+Cloud preview and text write-back use the shell's frozen workbook-scoped cloud capability. It forces the active saved workbook file and effective storage target on every provider request, so a same-named workbook in another local or room root cannot redirect the read or write. Cloud preview/write fails closed when the capability or trusted workbook scope is unavailable; local uploaded-file behavior is unchanged.
+
 ---
 
 ### Agent / AI Workflow Recipes
 
+Choose the authorized saved workbook and its actual storage target before running the examples. Set `XAPPS_API_BASE_URL` to that host. This helper keeps every operation in the same scope (replace the example file and `local` together when needed):
+
+```bash
+xapps_scoped() {
+  xapps --base-url "${XAPPS_API_BASE_URL:?Set the authorized host URL}" \
+    --file 'MyWorkbook.json' --workbook-storage-target local "$@"
+}
+```
+
+
 #### Recipe 1: Document inventory and analysis
 
-An agent uploads multiple files, then reads their metadata for analysis:
+Upload each source file through `POST /api/uploads` with the exact workbook/storage headers and binary bytes (`X-XApps-Upload-Name` names the file). Read its returned `url` before calling `add-viewer-file`: that command adds metadata, not bytes. The `/uploads/...` paths below stand for those real returned URLs, not invented filenames. Then read metadata for the inventory:
 
 ```bash
 # Add files
-xapps add-viewer-file "Library" "/uploads/contract-v1.pdf" "Contract v1"
-xapps add-viewer-file "Library" "/uploads/contract-v2.pdf" "Contract v2"
-xapps add-viewer-file "Library" "/uploads/requirements.docx" "Requirements"
+xapps_scoped add-viewer-file "Library" "/uploads/contract-v1.pdf" "Contract v1"
+xapps_scoped add-viewer-file "Library" "/uploads/contract-v2.pdf" "Contract v2"
+xapps_scoped add-viewer-file "Library" "/uploads/requirements.docx" "Requirements"
 
 # List and inspect
-xapps viewer-files "Library"
-xapps viewer-meta "Library"
+xapps_scoped viewer-files "Library"
+xapps_scoped viewer-meta "Library"
 
 # Reference from a spreadsheet formula:
 # ='Library'!A1  -> "Contract v1"
@@ -412,30 +439,18 @@ xapps viewer-meta "Library"
 
 #### Recipe 2: Visual regression testing pipeline
 
-File Viewer serves as ground truth for import fidelity testing:
-
-```bash
-# Add the original file
-xapps add-viewer-file "Regression" "/uploads/report.xlsx" "Original XLSX"
-
-# Set it as active for screenshot comparison
-xapps set-active-viewer-file "Regression" fv-abc
-
-# Use Playwright to screenshot the rendered preview
-# Compare against native import rendering
-# See tests/e2e/visual-compare.spec.js for the full framework
-```
+For product use, select the uploaded original by its returned stable file ID and inspect its preview alongside the imported document. A preview screenshot alone does not prove document fidelity. Repository visual acceptance is governed by `docs/AGENT_TEST_PLAYBOOK.md` for the affected path; this user tutorial does not require an engagement-wide screenshot suite. Use only a checked-in suite that exercises the affected import/preview contract; do not infer a test framework from this tutorial.
 
 #### Recipe 3: Markdown documentation hub
 
 ```bash
 # Add documentation files
-xapps add-viewer-file "Docs" "/uploads/api-guide.md" "API Guide"
-xapps add-viewer-file "Docs" "/uploads/changelog.md" "Changelog"
-xapps add-viewer-file "Docs" "/uploads/architecture.md" "Architecture"
+xapps_scoped add-viewer-file "Docs" "/uploads/api-guide.md" "API Guide"
+xapps_scoped add-viewer-file "Docs" "/uploads/changelog.md" "Changelog"
+xapps_scoped add-viewer-file "Docs" "/uploads/architecture.md" "Architecture"
 
 # Set active for inline editing
-xapps set-active-viewer-file "Docs" fv-api-guide
+xapps_scoped set-active-viewer-file "Docs" fv-api-guide
 
 # The Markdown section rail lets readers jump between headings
 # The inline editor allows direct edits that auto-save
@@ -449,10 +464,10 @@ xapps set-active-viewer-file "Docs" fv-api-guide
 Check that the file source URL is valid and accessible. For uploaded files, verify the upload exists in the `/uploads/` directory. Try removing and re-adding the file.
 
 **XLSX file shows unstyled cells or missing formatting.**
-Complex Excel styles (conditional formatting, custom themes, merged ranges spanning many cells) may not render fully. The renderer handles standard fonts, colors, borders, and number formats. Very large workbooks may render slowly.
+Complex Excel styles (conditional formatting, custom themes, merged ranges spanning many cells) may not render fully. The renderer handles standard fonts, colors, borders, alignment, and formatted values. Very large or unusually sparse XLSX/XLS/ODS files show a bounded preview window; open them in a Spreadsheet sheet for the complete workbook.
 
 **DOCX bullets or paragraphs render incorrectly.**
-The DOCX renderer requires JSZip to load before docx-preview. If bullet rendering fails, try refreshing the page. Some advanced Word features (tracked changes, SmartArt, embedded OLE objects) are not fully supported.
+The DOCX renderer is bundled with xApps and loads on demand from the same origin. Some advanced Word features (tracked changes, SmartArt, embedded OLE objects) are not fully supported.
 
 **PDF page rail thumbnails are not showing.**
 PDF rendering relies on the browser's native embed capability. Some browsers or configurations may not support thumbnail generation. The main PDF content should still render correctly.
@@ -480,6 +495,6 @@ The `/content` endpoint only reads files from the local `/uploads/` directory. C
 - Reference file metadata in spreadsheet formulas to build automated document tracking dashboards.
 - The inline text editor makes File Viewer a lightweight code/documentation editor for Markdown, JSON, and script files.
 - For large PDFs, use the page rail thumbnails to navigate quickly instead of scrolling through all pages.
-- The visual regression testing framework (`tests/e2e/visual-compare.spec.js`) uses File Viewer as ground truth when comparing native import rendering against expected output.
+- Compare an imported document with its actual source and record unsupported features. File Viewer is another renderer, so its preview alone is not an independent ground truth or proof of visual fidelity.
 - Zoom in on complex spreadsheet files to read small text or verify cell formatting details.
 - Use the CLI to batch-add files programmatically when setting up a document library for a team workbook.

@@ -1,8 +1,29 @@
 ## Spreadsheets
 
+### Build your first useful spreadsheet
+
+Use Spreadsheet for calculations and a flexible grid. Choose Records instead when you need typed relational tables, linked records, and several saved views over the same records.
+
+1. Put labels in row 1, such as **Item**, **January**, **February**, **March**, and **Quarter**. Enter numbers as values so they can be calculated; use formatting to display currency or percentages.
+2. In E2 enter `=SUM(B2:D2)` and press Enter. Select E2 again: the grid shows the result, while the formula bar shows the expression that produced it. This distinction is useful whenever a number looks wrong.
+3. Fill the formula down for other items. Relative references move with each row; use `$B$2` when a reference must stay fixed. Check a second row before filling a large area.
+4. Add a total below the data, for example `=SUM(E2:E9)`. Apply number formats to the values and emphasize the header and total row. Formatting changes presentation; it does not repair numbers imported as text.
+5. Select the labeled data and use the chart controls to create a chart. Confirm its range includes the intended categories and values. Keep totals out of a category comparison unless you intentionally want a total bar.
+6. Save the workbook and reopen the sheet when handing it to someone else. Give the sheet a meaningful name so cross-sheet references remain readable.
+
+### Keep inputs reliable
+
+Use **Data Validation** to constrain expected inputs, such as a status choice or a numeric range. Use **Conditional Formatting** to draw attention to values that meet a rule. They solve different problems: highlighting a bad value does not prevent its entry.
+
+Create a structured table when a region represents records with headers. Table operations can sort its body as a unit; sorting one unrelated column alone risks separating values that belong together. Preview cleanup and import results before applying them, and keep a source copy when transforming data.
+
+### Follow a number across sheets
+
+A formula can reference a supported value in another sheet, for example `='Budget'!E2`. Quote names containing spaces. Start by reading one known cell, then expand the formula; an empty or error result should send you back to the source sheet and reference first. Charts, dashboards, and embeds each have their own supported binding options—being in the same workbook does not make every object a spreadsheet cell.
+
 ### Grid work, formulas, and lightweight analysis
 
-Spreadsheet sheets are the analytical core of xApps. They provide a full-featured grid for data entry, calculations, formatting, charting, and cross-sheet references. Every other sheet type in xApps stores its data as cells under the hood, so understanding spreadsheets is fundamental to mastering the entire platform.
+Spreadsheet sheets provide a flexible grid for data entry, calculations, formatting, charting, and cross-sheet references. Other sheet types have their own data models and supported bindings; use their dedicated tools when working with records, cards, events, or room-backed collaboration.
 
 > 🤖 Agent example: an agent can import a CSV, normalize headers, build formulas, apply validation, and leave a human-ready review sheet in the same workbook.
 
@@ -23,7 +44,12 @@ Spreadsheet sheets are the analytical core of xApps. They provide a full-feature
 - Merge/unmerge ranges
 - Column field types (checkbox, select, date, rating, progress, email, phone, number)
 - Freeze rows and columns
-- CSV import and export
+- Import/export fidelity panel plus CSV, TSV, XLSX, ODS, and PDF paths
+- Data cleanup panel for trim whitespace, duplicate detection/removal, and split text to columns
+- Spreadsheet Assistant panel for explain range, summarize insights, suggest formulas, build tables/charts/pivots, add validations, conditionally format, clean data, and sort/filter with confirmed writes
+- External data panel for Connected Sheets-style pasted JSON/CSV and workbook-range extracts
+- Timeline view panel for mapping date ranges into printable previews and xApps Timeline sheets
+- Macro recorder and safe xApps macro JSON script hooks
 - Bulk operations (bulk-set, range formatting)
 - Column width and row height control
 - Find and Replace
@@ -196,6 +222,10 @@ When you type `=` and begin a formula, the formula assist panel appears, showing
 
 Use the **Insert Function** dialog (from the toolbar) to browse all functions by category (All, Math, Conditional, Text, Lookup, Date, Charts) with descriptions and syntax previews.
 
+#### Browser formula-authoring boundary
+
+The function picker, autocomplete, active-argument hints, and dependency-driven grid repaint are transient browser editing guidance, not separate durable formula APIs. The core formula storage, evaluation, evaluated/raw reads, and formula-bearing writes remain available to automation through the typed Spreadsheet SDK (`getCell`, `getEvaluatedCell`, `readRange`, and `setCell`). For guarded formula authoring, use `spreadsheet-assistant-preview` / `spreadsheet-assistant-apply` with `suggest-formula`; use this Formula Reference for catalog guidance.
+
 ---
 
 ### Formatting and Structure
@@ -238,6 +268,10 @@ Add comments to any cell. Cells with comments show an indicator triangle. View, 
 #### Images in Cells
 
 Embed images in any cell by URL. Supports fit modes: `contain`, `cover`, or `original`.
+
+#### Smart Chips and Rich Cells
+
+Use **Insert > Insert smart chip...** to create a rich cell object while keeping a plain fallback value for formulas, CSV export, and automation. Select an existing chip cell and use **Format > Smart chips > Edit smart chip...** or the cell context menu to edit its metadata. The dialog changes fields based on the chip type: people show email, files show file name/URL/MIME type, dates show date/calendar ID, dropdown/status chips show allowed values plus a Current value picker, places show address, sheet chips show sheet/range, and links show URL. For dropdown/status chips, edit Allowed values first; the Current value picker is rebuilt from those options before saving. Click a dropdown/status chip or its arrow to choose one of its configured allowed values. Chips render as compact labeled tokens in the grid and can keep URL, email, date, address, sheet/range, color, description, and dropdown option metadata.
 
 #### Zoom
 
@@ -404,12 +438,18 @@ Inline mini-charts rendered directly in a cell:
 - **Filter rules** in the toolbar to show/hide rows
 - **Find and Replace** within the sheet (`Ctrl/Cmd+Shift+H`)
 - **Fill handles** for range autofill -- drag the blue square at the bottom-right of a selection to repeat or continue a series
+- **Data cleanup** from the Data menu to preview/apply trim whitespace, duplicate detection/removal, and split text to columns
+- **Assistant workflows** from the Data menu to preview and confirm sheet-aware actions such as create table, suggest formula, explain range, clean data, build chart, build pivot, add dropdown/checkbox, conditional formatting, sort/filter, and summarize insights
+- **External data** from the Data menu to define workbook-scoped connected sources, preview queries, refresh extracts, and inspect schedule/permission/audit metadata
+- **Timeline view** from the Data menu to map table/range rows into dated tasks, preview grouped bars, print the view, and export to an xApps Timeline sheet
 - **Row detail view** -- form-style editor for wide sheets with many columns
 - **Sort** by column values
 
 #### Embed Sheet View
 
 Insert a live read-only preview of any range from any sheet in the workbook into a cell. Use **Insert > Embed sheet view...** to open the dialog, pick a sheet and a range, then confirm. The embedded view renders a compact table that updates when the source data changes. This is useful for building dashboards where a cell area displays a summary from a different sheet without needing formulas.
+
+Agents can discover and resolve destination-aware, same-workbook range descriptors with `xapps spreadsheet-embed-sources <sheet>` and `xapps spreadsheet-resolve-embed <sheet> <descriptor-json>`; descriptors use stable source/destination sheet identities, ranges are limited to 200 cells, and the consuming surface owns placeholder persistence. Version review, naming, range/sheet restore, and copy commands use the same typed Spreadsheet SDK contract as MCP and hosted tools.
 
 ---
 
@@ -488,11 +528,31 @@ xapps bulk-set "Budget" A1 '[["Name","Q1","Q2"],["Alice",1500,1800],["Bob",1200,
 # Output: Wrote 3 rows x 3 columns at A1:C3
 ```
 
-**Batch semantic ops through Yjs:**
+`bulk-set` is one atomic Spreadsheet transaction. Omit both guard flags for
+an automatic revision read and generated request id, or supply both when a
+caller may need to retry after losing the response:
 ```bash
-printf '{"op":"spreadsheet.formatCell","ref":"A1","format":{"bg":"#ff0000"}}\n' | xapps spreadsheet batch "Budget" --stdin
-# Output: Applied 1 semantic op
+xapps spreadsheet batch-state "Budget" --json
+xapps bulk-set "Budget" A1 '[["Name","Amount"],["Rent",2000]]' \
+  --expected-revision 4 --request-id budget-import-2026-07-13 --json
 ```
+
+**Guarded atomic semantic batch:**
+```bash
+xapps spreadsheet batch-state "Budget" --json
+printf '{"op":"spreadsheet.formatCell","ref":"A1","format":{"bg":"#ff0000"}}\n' | \
+  xapps spreadsheet batch "Budget" --stdin \
+    --expected-revision 4 --request-id budget-format-2026-07-13 --json
+# Output includes revision, requestId, replayed, applied, and changed.
+```
+
+The batch validates every operation before committing, persists the entire
+change once, and leaves the sheet unchanged if validation or persistence
+fails. Retrying the exact same `requestId`, revision, and payload returns the
+persisted receipt without applying twice. Reusing the id with different intent
+or submitting a stale revision returns a conflict. Supported operations are
+`spreadsheet.setCell`, `clearCell`, `formatCell`, `setRange`, `formatRange`,
+`setColumnWidth`, and `setRowHeight`.
 
 #### Formatting
 
@@ -620,6 +680,25 @@ xapps clear-image "Budget" D5
 # Output: Image cleared on D5
 ```
 
+#### Smart Chips and Rich Cells
+
+**Get rich cell metadata:**
+```bash
+xapps rich-cell "Budget" B2
+```
+
+**Set a link chip:**
+```bash
+xapps set-rich-cell "Budget" B2 '{"type":"link","label":"Project plan","value":"Project plan","url":"https://example.com/plan","color":"#2563eb"}'
+# Output: Rich cell value set on B2
+```
+
+**Clear rich cell metadata:**
+```bash
+xapps clear-rich-cell "Budget" B2
+# Output: Rich cell value cleared on B2
+```
+
 #### Charts
 
 **List charts:**
@@ -657,9 +736,11 @@ toolbar. Table headers show one arrow sort control; the arrow points up for
 ascending and down for descending, and sorting only reorders the table body.
 Toolbar A/Z sorting still targets the table body when the selected cell is
 inside a structured table. Use **Alternating Colors** for plain striped ranges
-without creating table metadata. To group records, right-click a cell in the
-table column you want to group by, then choose **Table > Group by selected
-column**. Use **Table > Clear grouping** to remove grouping.
+without creating table metadata. To group records, select a cell in the table
+column you want to group by, then choose **Data > Table > Group by selected
+column** or right-click the cell and choose **Table > Group by selected
+column**. Use **Data > Table > Clear grouping** or **Table > Clear grouping**
+to remove grouping.
 
 Structured table references are available in formulas:
 `=SUM(Expenses[Amount])`, `=COUNTA(Expenses[#Headers])`,
@@ -779,7 +860,143 @@ xapps export-csv "Budget" --range A1:C10 --out export.csv
 
 #### Excel Import/Export
 
-Import and export Excel `.xlsx` files from the **File** menu (**Import Excel...** / **Export Excel...**) in the UI. Round-trip fidelity is best-effort — cell values, basic formats, and formulas are preserved; advanced Excel-specific features such as pivot tables or macros are not.
+Import and export Excel `.xlsx` files from the **File** menu (**Import Excel/ODS...** / **Export Excel...**) in the UI. Round-trip fidelity is best-effort: cell values, basic formats, and formulas are preserved; advanced workbook-native features such as smart chips, saved filter views, slicers, protected ranges, threaded comments, and pivot/table metadata need review after interchange.
+
+#### Import/Export Fidelity
+
+Use **Spreadsheet > Open > Import/export fidelity...** before sending a sheet to another app. The panel scans the active Spreadsheet and shows:
+
+- A recommendation for the safest interchange path.
+- Counts for formulas, formats, rules, tables, charts, rich cells, and comments.
+- Format-specific expectations for `.xss`, `.xlsx`, `.ods`, `.csv`, `.tsv`, and PDF.
+- Import actions for file import, opening a saved sheet copy, or replacing the current sheet.
+- Export actions for XLSX, ODS, CSV, TSV, and PDF.
+
+Use `.xss` workbook copies for lossless xApps round-trip. Use XLSX/ODS for spreadsheet interchange when formulas and basic layout matter. Use CSV/TSV for plain grid values only. Use PDF when the target is review or printing rather than editable data.
+
+Agents can request the same report:
+
+```bash
+xapps fidelity-report "Budget"
+xapps fidelity-report "Budget" --format tsv --json
+```
+
+#### Rich client file-fidelity boundary
+
+XLSX/ODS package parsing and generation and PDF/print rendering remain rich client-side workflows because they require user-selected bytes, browser SheetJS, DOM/print layout, or an external office renderer. CSV import/export and the machine-readable fidelity report remain available to automation through `XAppsSpreadsheetClient.importCsv` / `exportCsv`, the matching CLI and agent tools, and `fidelity-report`. Keep `.xss` as the lossless source of truth; use the browser **File** menu and visually review XLSX/ODS/PDF handoff output.
+
+#### Assistant Workflows
+
+Use **Data > Assistant workflows...** to preview Spreadsheet-native actions over the selected range. The panel is deterministic and confirmation-based: it inspects headers, values, formulas, blanks, numeric columns, and common values, then proposes a concrete action. Read-only workflows explain or summarize the range. Write workflows require pressing **Apply** and use the same protected-range checks as other Spreadsheet edits.
+
+Supported workflows:
+
+- Create table from the selected range.
+- Suggest formulas such as `SUM`, `AVERAGE`, `COUNT`, `MIN`, or `MAX` into a target cell.
+- Explain a range or summarize insights, including numeric totals and common values.
+- Clean data with trim whitespace, duplicate detection/removal, or split text to columns.
+- Build chart and pivot metadata from inferred label/value columns.
+- Add dropdown or checkbox-style validation.
+- Apply conditional formatting to inferred numeric columns.
+- Sort/filter the selected data range.
+
+Use **Data > Pivot table...** for the AI Pivot Analyst. The panel infers the selected table, runs a source preflight, generates an editable pivot plan from a prompt, previews the result without writing to the workbook, and then **Apply to grid** writes the pivot output into the grid, closes the panel, selects the written output range, and persists the AI plan metadata with the workbook.
+
+After a pivot exists, reopen the panel from a pivot output cell to use the workflow actions: preview/apply source repairs, preview/apply a refinement prompt, explain the selected pivot value from source rows, refresh dependent pivots, save or suggest reusable pivot recipes, preview a source model, create or publish a dashboard block, and save AI governance metadata for recovery/audit.
+
+Agents and scripts can preview or apply the same proposals:
+
+```bash
+xapps spreadsheet-assistant-preview "Budget" summarize-insights A1:D20 --json
+xapps spreadsheet-assistant-preview "Budget" suggest-formula A1:D20 --aggregate sum --target E21 --json
+xapps run-spreadsheet-assistant "Budget" create-table A1:D20 --table "Budget table" --confirm
+xapps run-spreadsheet-assistant "Budget" add-dropdown D2:D20 --items "Ready,Blocked,Done" --confirm
+```
+
+#### Data Cleanup
+
+Use **Data > Data cleanup...** to preview cleanup changes before applying them to the selected range. The panel supports:
+
+- Trim whitespace with optional inner-whitespace collapse.
+- Detect duplicates by all selected columns or a comma-separated key column list.
+- Remove duplicates while keeping the first matching row and compacting unique rows inside the selected range.
+- Split text to columns with comma, semicolon, tab, space, or custom delimiters.
+
+Applied cleanup batches are pushed onto the Spreadsheet undo stack. Agents and scripts can use the same cleanup engine through the CLI or REST API:
+
+```bash
+xapps data-cleanup "Budget" trim-whitespace A2:D200 --apply
+xapps data-cleanup "Budget" detect-duplicates A1:D200 --keys A,B --has-header --json
+xapps data-cleanup "Budget" remove-duplicates A1:D200 --keys A,B --has-header --apply
+xapps data-cleanup "Budget" split-text-to-columns C2:C200 --delimiter comma --apply
+```
+
+#### External Data Connectors & Scheduled Refresh
+
+Use **Data > External data...** to create workbook-scoped connected data sources, preview query output, refresh extracts into the grid, cancel the next refresh, and inspect schedule, permission, and audit metadata. Supported deterministic connectors are:
+
+- Inline JSON arrays of objects or array tables.
+- Pasted CSV text with a header row.
+- Same-workbook ranges using the first row as headers.
+
+External data sources can filter, sort, select columns, limit rows, and add calculated columns (`concat`, `add`, `subtract`, `multiply`, `divide`, `uppercase`, `lowercase`, and `literal`). Refresh writes are added to the Spreadsheet undo stack in the browser, protected ranges are enforced server-side, and optional confirmation gates write blocked/success/cancelled audit entries. The scheduled-refresh fields are stored as metadata for automation; they do not fetch arbitrary URLs from the server.
+
+Agents and scripts can manage connected data sources through CLI or REST:
+
+```bash
+xapps spreadsheet-external-data-sources "Budget"
+xapps create-spreadsheet-external-data-source "Budget" "Sales feed" '{"connectorType":"inline-json","source":{"text":"[{\"Product\":\"Desk\",\"Revenue\":320}]"},"extract":{"targetRangeStart":"A1"}}'
+xapps preview-spreadsheet-external-data-source "Budget" sales-feed
+xapps refresh-spreadsheet-external-data-source "Budget" sales-feed --confirm
+xapps cancel-spreadsheet-external-data-refresh "Budget" sales-feed
+xapps delete-spreadsheet-external-data-source "Budget" sales-feed
+```
+
+#### Timeline Views
+
+Use **Data > Timeline view...** to create Google Sheets-style timeline views from project tables or selected ranges. A timeline view stores a source range, field mappings for title/start/end/progress/status/group/color/assignee/id, grouping and color fields, print settings, and an optional target xApps Timeline sheet. The panel previews date bars directly in Spreadsheet and can print the current preview or export rows into a full Timeline sheet.
+
+Date fields accept ISO dates, common date strings, or spreadsheet serial dates. Progress values accept numbers from 0-1, 0-100, or percent strings. Exported Timeline sheets use the existing xApps Timeline task column contract so downstream Timeline tools can read the generated tasks.
+
+Agents and scripts can manage timeline views through CLI or REST:
+
+```bash
+xapps spreadsheet-timeline-views "Budget"
+xapps create-spreadsheet-timeline-view "Budget" "Launch timeline" A1:H20 '{"title":"Task","start":"Start","end":"End","progress":"Progress","status":"Status","group":"Phase","color":"Status","assignee":"Owner","id":"Id"}' --group-by Phase --color-by Status --scale week --target-sheet "Launch Timeline"
+xapps preview-spreadsheet-timeline-view "Budget" launch-timeline
+xapps export-spreadsheet-timeline-view "Budget" launch-timeline --target-sheet "Launch Timeline"
+xapps delete-spreadsheet-timeline-view "Budget" launch-timeline
+```
+
+#### Macro Recorder & Script Automation
+
+Use **Data > Macros & scripts...** to record changes in the selected range, save the current selection as a reusable macro, run saved macros, and inspect safe script-hook metadata plus recent audit results. Spreadsheet macros use declarative xApps macro JSON instead of arbitrary browser code. Supported steps are:
+
+- Set a cell value and safe formatting keys.
+- Clear a cell.
+- Run a data-cleanup operation.
+
+Macro records also include trigger metadata (`manual`, `on-edit`, `on-open`, or `schedule`), optional confirmation gates, allowed-editor metadata, last-run state, run count, and a bounded audit log. Protected ranges are enforced before a macro mutates cells. Browser runs are added to the Spreadsheet undo stack.
+
+Agents and scripts can manage the same macro records through CLI or REST:
+
+```bash
+xapps spreadsheet-macros "Budget"
+xapps create-spreadsheet-macro "Budget" "Fill report" '[{"type":"set-cell","ref":"A1","value":"Report"}]' --require-confirmation
+xapps run-spreadsheet-macro "Budget" fill-report --confirm
+xapps delete-spreadsheet-macro "Budget" fill-report
+```
+
+#### Version History & Range Review
+
+Use **Data > Version history & range review...** or right-click a selection and choose **Review range history...** to compare the selected range with a saved workbook version. The panel shows named versions, author attribution, changed cell counts, changed ranges, a hide/show unchanged rows toggle, selected-range restore, sheet restore, and a make-copy action.
+
+```bash
+xapps spreadsheet-version-review "Budget.json" "2026-07-04T06-10-00-000Z" "Budget" A1:F40
+xapps name-version "Budget.json" "2026-07-04T06-10-00-000Z" "Quarter close baseline"
+xapps restore-version-range "Budget.json" "2026-07-04T06-10-00-000Z" "Budget" B2:D20
+xapps make-version-copy "Budget.json" "2026-07-04T06-10-00-000Z" "Budget baseline copy"
+```
 
 #### Paste Special
 
@@ -909,6 +1126,39 @@ curl -H 'X-XApps-File: MyWorkbook.json' $XAPPS_API_BASE_URL/api/sheets/Budget/cs
 # Export CSV with range filter
 curl -H 'X-XApps-File: MyWorkbook.json' "$XAPPS_API_BASE_URL/api/sheets/Budget/csv?range=A1:C10"
 
+# Import TSV
+curl -X POST $XAPPS_API_BASE_URL/api/sheets/Budget/tsv \
+  -H 'X-XApps-File: MyWorkbook.json' \
+  -H "Content-Type: text/tab-separated-values; charset=utf-8" \
+  --data-binary @data.tsv
+
+# Export TSV with range filter
+curl -H 'X-XApps-File: MyWorkbook.json' "$XAPPS_API_BASE_URL/api/sheets/Budget/tsv?range=A1:C10"
+
+# Preview data cleanup
+curl -X POST $XAPPS_API_BASE_URL/api/sheets/Budget/cleanup/preview \
+  -H 'X-XApps-File: MyWorkbook.json' \
+  -H "Content-Type: application/json" \
+  -d '{"operation":"remove-duplicates","range":"A1:D200","keyColumns":["A","B"],"hasHeader":true}'
+
+# Apply data cleanup
+curl -X POST $XAPPS_API_BASE_URL/api/sheets/Budget/cleanup/apply \
+  -H 'X-XApps-File: MyWorkbook.json' \
+  -H "Content-Type: application/json" \
+  -d '{"operation":"trim-whitespace","range":"A2:D200"}'
+
+# Create a safe Spreadsheet macro
+curl -X POST $XAPPS_API_BASE_URL/api/sheets/Budget/macros \
+  -H 'X-XApps-File: MyWorkbook.json' \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Fill report","permissions":{"requireConfirmation":true},"steps":[{"type":"set-cell","ref":"A1","value":"Report","format":{"bold":true,"bg":"#e8f0fe"}}]}'
+
+# Run a Spreadsheet macro
+curl -X POST $XAPPS_API_BASE_URL/api/sheets/Budget/macros/fill-report/run \
+  -H 'X-XApps-File: MyWorkbook.json' \
+  -H "Content-Type: application/json" \
+  -d '{"acknowledgePermissions":true}'
+
 # Update sheet settings (freeze panes, column widths, row heights)
 curl -X PUT $XAPPS_API_BASE_URL/api/sheets/Budget/settings \
   -H 'X-XApps-File: MyWorkbook.json' \
@@ -920,81 +1170,28 @@ curl -X PUT $XAPPS_API_BASE_URL/api/sheets/Budget/settings \
 
 ### Agent/AI Workflow Recipes
 
-#### Recipe 1: Build a formatted budget report from raw data
-
-An AI agent receives a CSV of expense data and needs to create a polished budget sheet.
+Choose the authorized saved workbook and its actual storage target before running the examples. Set `XAPPS_API_BASE_URL` to that host. This helper keeps every operation in the same scope (replace the example file and `local` together when needed):
 
 ```bash
-# Step 1: Import the raw CSV
-xapps import-csv "Q1 Budget" /tmp/expenses.csv
-
-# Step 2: Add a SUM formula at the bottom
-xapps set "Q1 Budget" B25 "=SUM(B2:B24)"
-
-# Step 3: Add a header with formatting
-xapps range-format "Q1 Budget" A1:D1 '{"bold":true,"bg":"#1a73e8","color":"#ffffff"}'
-
-# Step 4: Add conditional formatting to flag high expenses
-xapps add-conditional-format "Q1 Budget" '{"rangeStart":"B2","rangeEnd":"B24","condition":"greater","value":"5000","bgColor":"#f8d7da","textColor":"#721c24","bold":true,"enabled":true}'
-
-# Step 5: Freeze the header row
-xapps freeze-panes "Q1 Budget" 1 0
-
-# Step 6: Add a bar chart of expenses
-xapps add-chart "Q1 Budget" '{"type":"bar","range":"A1:B24","title":"Q1 Expenses by Category"}'
-
-# Step 7: Export a clean copy
-xapps export-csv "Q1 Budget" --out /tmp/q1-budget-final.csv
+xapps_scoped() {
+  xapps --base-url "${XAPPS_API_BASE_URL:?Set the authorized host URL}" \
+    --file 'MyWorkbook.json' --workbook-storage-target local "$@"
+}
 ```
 
-#### Recipe 2: Set up a validated data entry form
-
-An agent needs to create a structured sheet where users pick from dropdowns and values are validated.
+Use bounded ranges and a semantic batch for related values, formulas and formatting; do not issue one network request per cell for bulk authoring.
 
 ```bash
-# Step 1: Set column headers
-xapps bulk-set "Order Form" A1 '[["Department","Amount","Status","Priority"]]'
-xapps range-format "Order Form" A1:D1 '{"bold":true}'
-
-# Step 2: Set column types
-xapps col-type "Order Form" 0 '{"type":"single-select","options":["Engineering","Marketing","Sales"]}'
-
-# Step 3: Add validation on Amount (must be 0-10000)
-for row in $(seq 2 50); do
-  xapps set-validation "Order Form" B${row} '{"type":"number","cond":"between","min":0,"max":10000,"reject":true}'
-done
-
-# Step 4: Add dependent dropdown -- Priority depends on Department
-for row in $(seq 2 50); do
-  xapps set-validation "Order Form" D${row} '{"type":"list","dependsOnRef":"A","optionsByValue":{"Engineering":["P0","P1","P2"],"Marketing":["High","Medium","Low"],"Sales":["Urgent","Normal"]},"fallbackItems":["Normal"],"showDropdown":true,"reject":true}'
-done
+xapps_scoped spreadsheet batch-state "Q1 Budget" --json
+# Set BUDGET_REVISION to the returned revision.
+xapps_scoped spreadsheet batch "Q1 Budget" \
+  '{"ops":[{"op":"spreadsheet.setrange","range":"A1:B3","data":[["Category","Amount"],["Travel",1200],["Supplies",300]]},{"op":"spreadsheet.setcell","ref":"B4","value":"=SUM(B2:B3)"},{"op":"spreadsheet.formatrange","range":"A1:B1","format":{"bold":true}}]}' \
+  --expected-revision "$BUDGET_REVISION" --request-id budget-seed-1 --json
+xapps_scoped get "Q1 Budget" B4 --json
+xapps_scoped export-csv "Q1 Budget" --range A1:B4 --out q1-budget-final.csv
 ```
 
-#### Recipe 3: Cross-sheet dashboard with sparklines
-
-An agent aggregates data from multiple sheets into a summary view.
-
-```bash
-# Step 1: Create summary headers
-xapps bulk-set "Summary" A1 '[["Sheet","Total","Avg","Trend"]]'
-xapps range-format "Summary" A1:D1 '{"bold":true,"bg":"#e8f0fe"}'
-
-# Step 2: Add cross-sheet formulas
-xapps set "Summary" A2 "Q1 Revenue"
-xapps set "Summary" B2 "=SUM('Q1 Revenue'!B2:B100)"
-xapps set "Summary" C2 "=AVERAGE('Q1 Revenue'!B2:B100)"
-xapps set-sparkline "Summary" D2 "'Q1 Revenue'!B2:B13" --type bar
-
-xapps set "Summary" A3 "Q2 Revenue"
-xapps set "Summary" B3 "=SUM('Q2 Revenue'!B2:B100)"
-xapps set "Summary" C3 "=AVERAGE('Q2 Revenue'!B2:B100)"
-xapps set-sparkline "Summary" D3 "'Q2 Revenue'!B2:B13" --type bar
-
-# Step 3: Format currency columns
-xapps range-format "Summary" B2:C3 '{"format":"currency","decimals":2}'
-```
-
----
+These amounts illustrate the schema; replace them with validated source values before creating a real report. The supported batch operations are defined by `SpreadsheetBatchOperation` and `spreadsheet-batch-transactions.ts`; validation, charts and other commands are not implicitly batch operations. Read back stored formulas and their computed values through the advertised read contracts, and check the final bounded export. Keep the exact payload, expected revision and request ID after uncertain delivery; retry that same intent. On a revision conflict, reread and reconcile before creating a new intent and request ID.
 
 ### Troubleshooting
 
@@ -1066,3 +1263,22 @@ xapps delete-named-range <name>                   # remove a named range
 ```
 
 Names follow the standard rules: must start with a letter, max 64 chars, no spaces or punctuation outside underscore. Names that collide with reserved tokens (`Sheet1`, `A1`, function names) are rejected at create time. Updating a name is idempotent — re-running `set-named-range` with the same name overwrites the prior pointer.
+
+### Named Functions
+
+Named functions are workbook-scoped reusable formulas with named arguments and descriptions. They appear in the function picker and formula autocomplete, and formulas can call them like built-ins:
+
+```text
+=GROSS_MARGIN(revenue, cost)
+```
+
+CLI:
+
+```bash
+xapps named-functions                                      # list all workbook-scoped named functions
+xapps set-named-function <name> <args-csv> <formula>       # create or update a named function
+xapps set-named-function GROSS_MARGIN "revenue,cost" "=(revenue-cost)/revenue" --desc "Returns gross margin percent"
+xapps delete-named-function <name>                         # remove a named function
+```
+
+Named function names and argument placeholders must start with a letter or underscore and may contain letters, digits, and underscores. The formula may be saved with or without a leading `=`.

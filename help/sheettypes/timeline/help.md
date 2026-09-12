@@ -1,5 +1,20 @@
 ## Timeline / Gantt Charts
 
+### Plan a project you can keep current
+
+Use Timeline when the important question is when work happens and what depends on what. Kanban is better for moving work through stages; Calendar is better for individual scheduled events. You can keep those views of a project in neighboring sheets.
+
+1. Add a task with a recognizable title and planned start/end dates. Add a milestone for a decision or deadline that should appear as a point in time.
+2. Break a large deliverable into work that can be assigned and updated. Set progress on the actual tasks; a colored bar alone does not establish that the work is complete.
+3. Add dependencies only where one task truly relies on another. Check the predecessor IDs and direction so the relationship means what you intend.
+4. Choose a zoom that shows the whole planning window, then group or filter to review one team or category. Clear filters before interpreting an apparently missing task.
+5. Before applying auto-scheduling, review its proposed dates and affected tasks. Dependencies can move more than the selected bar. Keep immovable commitments visible while reviewing the result.
+6. Revisit dates and progress during project reviews. Export or share a view only after checking that it includes the intended time window and filters.
+
+### Read the schedule
+
+The sidebar names the work; bars show its timing; milestones mark a date; connectors show dependency relationships. Dragging a task and changing a dependency are different edits. If a date moves unexpectedly, inspect both its direct dates and dependency chain before moving it back.
+
 ### Overview
 
 Timeline sheets are interactive Gantt-style views for roadmaps, schedules, project plans, and milestone tracking. Tasks appear as horizontal bars plotted over time, with support for progress tracking, dependency arrows, subtasks, assignees, status, filtering, grouping, and auto-scheduling.
@@ -43,7 +58,7 @@ Timeline sheets are interactive Gantt-style views for roadmaps, schedules, proje
 Timeline supports three task types:
 
 - **Task** -- Standard work item rendered as a full horizontal bar (square icon in sidebar). Has start/end dates, progress, color, assignee, status, and all metadata fields.
-- **Subtask** -- A child of a parent task. Rendered indented in the sidebar (circle icon) and as a thinner bar on the chart. Subtask dates are clamped within the parent's date range when saved through the editor. Deleting a parent task also deletes all its subtasks.
+- **Subtask** -- A child of a parent task. Rendered indented in the sidebar (circle icon) and as a thinner bar on the chart. Every guarded mutation clamps subtask dates within the parent's date range. Deleting a parent task also deletes all its subtasks.
 - **Milestone** -- A single-date event rendered as a diamond. Milestones have no end date or progress. The end date is automatically set equal to the start date. Tasks can be converted to milestones and back via the context menu or `set-task-milestone` command.
 
 ### Task Fields
@@ -53,7 +68,7 @@ Each task stores these fields:
 | Field | Description |
 |---|---|
 | Title | Display name shown on the bar and sidebar |
-| ID | Auto-generated identifier (T1, T2, ...) used for dependency references |
+| ID | Auto-generated collaboration-safe identifier (for example `T1-a1b2c3d4e5`) used for dependency references |
 | Type | `task`, `subtask`, or `milestone` |
 | Start Date | When the task begins (YYYY-MM-DD) |
 | End Date | When the task ends (YYYY-MM-DD) |
@@ -89,7 +104,7 @@ Dependency arrows render as SVG paths between the linked task bars. When a prede
 
 When a predecessor task moves or changes duration, dependent tasks automatically shift forward to maintain the relationship. This keeps your plan consistent without manual date adjustments.
 
-Auto-scheduling runs after every task save through the editor or drag interaction.
+Auto-scheduling runs in the canonical server task domain after every guarded task mutation, including UI, API, SDK, CLI, MCP, and toolkit writes. Failed schedules roll back without a partial save.
 
 ### Zoom Levels
 
@@ -163,118 +178,43 @@ Right-clicking on empty chart space provides:
 - **Add task** -- opens the editor for a new task
 - **Add milestone** -- immediately creates a milestone for today's date
 
-### Home Page Popover
-
-When you hover over a timeline sheet on the workbook home page, a compact summary popover appears with:
-
-- Total task and milestone count
-- Number of completed items
-- Number of overdue items
-- Average progress percentage with a visual progress bar
-
-This is the same data returned by the `timeline-report` API endpoint, fetched live when you hover.
-
 ### CLI Commands
 
 Timeline registers CLI commands for task authoring, dependency management, milestone conversion, filtered task reads, and summary reports. Use `xapps list --json` as the authoritative machine-readable command inventory.
 
 ### API Endpoints
 
-**List all tasks:**
+All reads and writes carry `X-XApps-File` plus `X-XApps-Workbook-Storage-Target` for the saved workbook. Read `GET /api/sheets/<sheet>/state` for canonical tasks, revision and fingerprint before authoring. The typed SDK and `timeline-batch` CLI below build the current scheduling request; their `TimelineMutationGuard` contains `expectedRevision`, stable `requestId`, and optional `expectedFingerprint`.
 
-```bash
-curl -H 'X-XApps-File: MyWorkbook.json' "$XAPPS_API_BASE_URL/api/sheets/MyTimeline/tasks"
-```
-
-**Create a task:**
-
-```bash
-curl -X POST "$XAPPS_API_BASE_URL/api/sheets/MyTimeline/tasks" \
-  -H "Content-Type: application/json" \
-  -H 'X-XApps-File: MyWorkbook.json' \
-  -d '{"title":"Design Review","start":"2025-04-01","end":"2025-04-03","progress":0,"color":"#34a853","assignee":"Carol","status":"not-started","type":"task","id":"T20"}'
-```
-
-**Update a task:**
-
-```bash
-curl -X PUT "$XAPPS_API_BASE_URL/api/sheets/MyTimeline/tasks/T20" \
-  -H "Content-Type: application/json" \
-  -H 'X-XApps-File: MyWorkbook.json' \
-  -d '{"progress":50,"status":"in-progress"}'
-```
-
-**Delete a task:**
-
-```bash
-curl -X DELETE "$XAPPS_API_BASE_URL/api/sheets/MyTimeline/tasks/T20" \
-  -H 'X-XApps-File: MyWorkbook.json'
-```
+Use stable task IDs for updates/dependencies. Preview a removal or scheduling batch before applying the authorized intent, and use the exact same payload/ID to recover a lost response. Endpoint and body authority lives in `packages/xapps-surface-timeline/src/server-transactions.ts` and `src/public-api.ts`; a raw task-shaped JSON body without those guards is not a valid mutation recipe.
 
 ### Agent / AI Workflow Recipes
 
-**Recipe 1: Build a project plan from a list of deliverables**
-
-Given a spreadsheet with deliverable names and estimated durations, an agent can read the spreadsheet data and create timeline tasks programmatically:
+Choose the authorized saved workbook and its actual storage target before running the examples. Set `XAPPS_API_BASE_URL` to that host. This helper keeps every operation in the same scope (replace the example file and `local` together when needed):
 
 ```bash
-# 1. Read deliverables from spreadsheet
-curl -H 'X-XApps-File: MyWorkbook.json' $XAPPS_API_BASE_URL/api/sheets/Deliverables/cells
-
-# 2. Create tasks with staggered dates and dependencies
-curl -X POST $XAPPS_API_BASE_URL/api/sheets/Roadmap/tasks \
-  -H 'X-XApps-File: MyWorkbook.json' \
-  -H "Content-Type: application/json" \
-  -d '{"title":"Phase 1: Research","start":"2025-04-01","end":"2025-04-14","type":"task","id":"T1"}'
-
-curl -X POST $XAPPS_API_BASE_URL/api/sheets/Roadmap/tasks \
-  -H 'X-XApps-File: MyWorkbook.json' \
-  -H "Content-Type: application/json" \
-  -d '{"title":"Phase 2: Build","start":"2025-04-15","end":"2025-05-09","type":"task","id":"T2","deps":"T1"}'
-
-# 3. Add subtasks under each phase
-curl -X POST $XAPPS_API_BASE_URL/api/sheets/Roadmap/tasks \
-  -H 'X-XApps-File: MyWorkbook.json' \
-  -H "Content-Type: application/json" \
-  -d '{"title":"User interviews","start":"2025-04-01","end":"2025-04-07","type":"subtask","parent":"0","id":"T3"}'
+xapps_scoped() {
+  xapps --base-url "${XAPPS_API_BASE_URL:?Set the authorized host URL}" \
+    --file 'MyWorkbook.json' --workbook-storage-target local "$@"
+}
 ```
 
-**Recipe 2: Daily standup status updater**
-
-An agent can read current task statuses and update progress based on external signals:
+Timeline does not invoke a provider directly. Prepare a schedule from bounded source data using the typed `TimelineBatchOperation[]` contract, including actual task dates and dependency targets.
 
 ```bash
-# List all tasks to find in-progress work
-curl -H 'X-XApps-File: MyWorkbook.json' $XAPPS_API_BASE_URL/api/sheets/Sprint/tasks
-
-# Update progress on active tasks
-curl -X PUT $XAPPS_API_BASE_URL/api/sheets/Sprint/tasks/T5 \
-  -H 'X-XApps-File: MyWorkbook.json' \
-  -H "Content-Type: application/json" \
-  -d '{"progress":80,"status":"in-progress"}'
-
-# Mark completed tasks as done
-curl -X PUT $XAPPS_API_BASE_URL/api/sheets/Sprint/tasks/T3 \
-  -H 'X-XApps-File: MyWorkbook.json' \
-  -H "Content-Type: application/json" \
-  -d '{"progress":100,"status":"done"}'
+xapps_scoped timeline-state Roadmap --json
+# Set TIMELINE_REVISION to the returned revision; inspect dependency IDs.
+xapps_scoped timeline-batch Roadmap \
+  '[{"op":"create","task":{"id":"phase-1","title":"Research","start":"2026-09-07","end":"2026-09-11"}}]' \
+  --expected-revision "$TIMELINE_REVISION" --request-id roadmap-phase-1 --dry-run --json
+# After reviewing that concrete preview, apply the same intended operation.
+xapps_scoped timeline-batch Roadmap \
+  '[{"op":"create","task":{"id":"phase-1","title":"Research","start":"2026-09-07","end":"2026-09-11"}}]' \
+  --expected-revision "$TIMELINE_REVISION" --request-id roadmap-phase-1 --yes --verify --json
+xapps_scoped timeline-state Roadmap --json
 ```
 
-**Recipe 3: Generate a milestone summary for a dashboard**
-
-Read timeline tasks to extract milestones and write summary data to a spreadsheet for dashboard consumption:
-
-```bash
-# Fetch all tasks
-curl -H 'X-XApps-File: MyWorkbook.json' $XAPPS_API_BASE_URL/api/sheets/Roadmap/tasks
-
-# Filter milestones from the response and write to a spreadsheet
-# for a dashboard widget to display
-curl -X PUT $XAPPS_API_BASE_URL/api/sheets/Summary/cells/A1 \
-  -H 'X-XApps-File: MyWorkbook.json' \
-  -H "Content-Type: application/json" \
-  -d '{"value":"Milestone"}'
-```
+For an already authorized schedule change, preview/review is an implementation step and does not require another conversational approval. The canonical task domain validates parent/dependency relationships; do not copy row offsets from an old snapshot. Read the final dates, dependencies, revision and fingerprint before reporting the schedule complete. Keep the exact payload, expected revision and request ID after uncertain delivery; retry that same intent. On a revision conflict, reread and reconcile before creating a new intent and request ID.
 
 ### Troubleshooting
 
@@ -285,10 +225,10 @@ Make sure both start and end dates are set and in YYYY-MM-DD format. Tasks witho
 Verify the dependency reference uses the correct task ID (e.g., T1, not the row number). Check that the referenced task exists and has valid dates. Both the source and target tasks must be visible in the current view.
 
 **Auto-scheduling did not move dependent tasks**
-Auto-scheduling only triggers when saving through the editor or a drag interaction. Direct cell edits and CLI updates do not trigger auto-scheduling on the client side.
+Confirm that every dependency uses a live stable task ID and that the requested dates fit inside any parent range. UI, API, SDK, CLI, MCP, and toolkit task mutations all run the same scheduler; invalid or cyclic plans return a typed error and leave the saved plan unchanged.
 
 **Subtask dates extend beyond the parent**
-Subtask dates are clamped to the parent's range when saved through the editor. If dates were set via API before the parent existed, re-save the subtask through the editor to clamp them.
+Use a guarded task mutation to repair legacy raw-cell data. All current task mutation interfaces clamp subtask dates to the parent range before committing.
 
 **Weekend stripes are not showing**
 Weekend highlighting only appears in **Day** zoom level. Switch to Day view using the toolbar or `View > Day view`.
@@ -298,6 +238,8 @@ Drag the vertical resize handle between the sidebar and chart area to adjust. Th
 
 **Filters return no tasks**
 Search, status, and assignee filters combine with AND logic. Clear all filters using the Clear button to see all tasks, then apply one filter at a time.
+
+Zoom, grouping, and task collapse are shared planning state. Search/status/assignee filters and sidebar width are per-tab viewport state: they survive reload in that tab but are not written to the workbook or shared with other users.
 
 ### Tips & Tricks
 
@@ -320,7 +262,7 @@ Search, status, and assignee filters combine with AND logic. Clear all filters u
 
 ### Command Line Interface
 
-Timeline ships eight CLI commands covering task authoring, dependency management, milestone helpers, and a one-shot board summary. Every UI mutation is also a scriptable CLI / MCP call.
+Timeline ships typed CLI commands covering task authoring, dependency management, view settings, and reporting. Shared mutations use revision/request guards.
 
 ```bash
 xapps tasks <sheet> [--status <status>] [--assignee <name>] [--search <text>] [--type <task|subtask|milestone>] [--json]
@@ -329,8 +271,11 @@ xapps update-task <sheet> <row-or-id> <json>                                    
 xapps delete-task <sheet> <row-or-id>
 xapps set-task-dependencies <sheet> <row-or-id> <task-id>...                                                # replace deps array
 xapps clear-task-dependencies <sheet> <row-or-id>
+xapps set-task-collapsed <sheet> <row-or-id> <true|false>
 xapps set-task-milestone <sheet> <row-or-id> [--at <YYYY-MM-DD>]                                            # type=milestone, end=start, progress=100
 xapps timeline-report <sheet> [--horizon-days <n>] [--status <status>] [--assignee <name>] [--type <task|subtask|milestone>] [--json]
+xapps update-timeline-settings <sheet> '{"timelineZoom":"week","timelineGroupBy":"assignee"}'
+xapps set-timeline-grouping <sheet> <none|assignee|status|color>
 ```
 
 Quick end-to-end example -- author a five-task roadmap, wire dependencies, get the report:
@@ -349,11 +294,11 @@ xapps set-task-dependencies Roadmap v02-launch   task-tests
 xapps timeline-report Roadmap
 ```
 
-The report prints something like `5 items (4 tasks, 1 milestone); 1 complete; 0 overdue; 46% avg progress.` -- a standup-ready summary you can pipe into a Slack post or commit hook. `--json` returns the structured shape: `{ ok, taskCount, milestoneCount, overdueCount, completedCount, averageProgress, overdueTasks[], upcomingMilestones[], filters, horizonDays, summary }`.
+The report prints something like `5 items (4 tasks, 1 milestone); 1 complete; 0 overdue; 46% avg progress.` -- a standup-ready summary you can pipe into a Slack post or commit hook. `--json` returns the typed shape: `{ ok, sheet, asOf, horizonEnd, horizonDays, filters, itemCount, taskCount, milestoneCount, completedCount, overdueCount, overdueTasks[], upcomingMilestoneCount, upcomingMilestones[], averageProgress, summary }`; `done` and `completed` are equivalent report filters.
 
 ### MCP
 
-The MCP surface mirrors the CLI 1:1: `timeline_tasks`, `timeline_add_task`, `timeline_update_task`, `timeline_delete_task`, `timeline_set_task_dependencies`, `timeline_clear_task_dependencies`, `timeline_set_task_milestone`, `timeline_report`. Useful for agents that need to translate a planning conversation into a Gantt chart, or read out current state in a periodic standup loop.
+The MCP surface mirrors these operations, including `timeline_set_task_collapsed`, `timeline_update_settings`, `timeline_set_zoom`, and `timeline_set_grouping`. It does not expose generic whole-sheet mutation.
 
 ### REST API
 
@@ -364,6 +309,7 @@ The MCP surface mirrors the CLI 1:1: `timeline_tasks`, `timeline_add_task`, `tim
 | `/api/sheets/<timeline>/tasks/<row-or-id>`           | GET     | Read one task                                 |
 | `/api/sheets/<timeline>/tasks/<row-or-id>`           | PUT     | Patch a task (any subset of fields)           |
 | `/api/sheets/<timeline>/tasks/<row-or-id>`           | DELETE  | Remove a task                                 |
+| `/api/sheets/<timeline>/settings`                    | GET/PUT | Read/update guarded shared zoom and grouping  |
 | `/api/sheets/<timeline>/timeline-report`             | GET     | One-shot summary                              |
 
 Tasks accept either a 1-based row index or a stable id (column J) for `<row-or-id>`. The persisted dependencies field is a CSV in column H, but the API normalizes `string[]` / CSV input on PUT and POST.

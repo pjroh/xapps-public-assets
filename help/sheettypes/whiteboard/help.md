@@ -2,6 +2,61 @@
 
 ### Infinite space for thinking out loud
 
+Choose **Whiteboard** for ideas that need space: a workshop, mind map, user
+flow or decision discussion. Use **Design Canvas** for a graphic with a fixed
+page size.
+
+### Run a useful workshop
+
+1. Start with a clear prompt, such as “What should we improve before launch?”
+   Use a text object for the prompt.
+2. Double-click empty space to add a sticky. Write one idea per sticky so
+   people can rearrange them independently.
+3. Drag related ideas together. Add frames for themes, or start with a process
+   template such as SWOT or Eisenhower.
+4. Use shapes for decisions and connectors for relationships. Use an anchored
+   connector when the line should follow objects as you move them.
+5. Add tags to make outcomes searchable. Use **Fit content** to review the whole
+   board, then zoom in to read individual clusters.
+6. Export the active page as SVG for a portable visual summary. Keep the
+   workbook for continued editing and linked data.
+
+### Pick an object for the job
+
+| You want to… | Start with… |
+|---|---|
+| Collect independent ideas | Sticky notes |
+| Show a process or decision | Shapes and anchored connectors |
+| Expand a hierarchy | Native mind nodes |
+| Name or explain a section | Text |
+| Group a visible area | A frame |
+| Place research imagery | Upload or Reference existing |
+
+### Grow a mind map
+
+Add a **Mind node** for the central topic, then create child branches. Native
+mind nodes retain parent/child relationships, so layout, collapse and branch
+side changes operate on the hierarchy. Collapse detail while discussing the
+main branches and expand it when you need the underlying ideas. An indented
+outline can create a larger map without adding every node separately.
+
+### Navigate without losing your place
+
+**Fit content** brings the current board into view. The zoom input accepts a
+percentage and the minimap helps move between distant clusters. Search and
+type/tag filters narrow what you see; clear them before concluding an object
+has disappeared. Pages keep separate work areas in the same sheet.
+
+![Whiteboard search narrowing the workshop to roadmap content](/help-assets/screenshots/whiteboard-search.png)
+
+### Connect workshop outcomes to the workbook
+
+Move agreed work into Kanban and durable decisions into Wiki; the board remains
+the visual context. Use `{{SheetName!CellRef}}` in text for spreadsheet facts
+and **Reference existing** for imagery that should follow its source.
+
+### Feature reference
+
 Whiteboard sheets give you a boundless spatial canvas for brainstorming, system mapping, workshop exercises, user flows, and meeting synthesis. Unlike page-based sheets, the whiteboard extends infinitely in every direction, letting ideas sprawl naturally.
 
 > 🤖 Agent example: an agent can seed a workshop board with sticky notes, structure a decision area, and prepare a thinking space for the human team to move through live.
@@ -26,6 +81,8 @@ Whiteboard sheets give you a boundless spatial canvas for brainstorming, system 
 - Native mind-map nodes with parent/child relationships
 - Mind node metadata: icon, status, assignee, due date, notes, tags
 - Mind map outline import (paste indented text to build a whole map)
+- AI mind-map generation and branch expansion through the room Assistant
+- Mind-map focus mode and presentation frame creation
 - Mind-map connector styles: elbow or curved
 - Align, distribute, and z-order actions for diagram cleanup
 - Style clipboard (copy/paste style between objects)
@@ -82,7 +139,7 @@ Freeform text objects with full styling: font size, color, weight, font family, 
 
 Eight shape types, each with configurable fill, stroke, stroke width, border style (solid, dashed, dotted), and optional text labels.
 
-![Shapes including rounded rectangles, diamond, and circle with fill colors](/help-assets/screenshots/whiteboard-shapes.png)
+![Whiteboard filtered to rounded rectangle shapes for High Priority, Medium Priority and Backlog](/help-assets/screenshots/whiteboard-shapes.png)
 
 | Shape | Description |
 |---|---|
@@ -105,6 +162,16 @@ Add images by:
 - Using the toolbar upload button
 - Pasting a URL
 - CLI with `add-wb-image`
+
+Public automation uses the same stored representation and guarded object revision as the UI:
+
+- `add-wb-image` mirrors a local file or HTTP(S) URL into workbook-scoped `/uploads/` storage before inserting it.
+- `wb-list-media` lists stored images, clips, and live references with the current revision.
+- `wb-add-image-reference` inserts a typed live source reference.
+- `wb-insert-clip` stores source/capture metadata with an uploaded image.
+- `wb-remove-media` removes the image object and its persisted media metadata.
+
+Agent tools expose the matching `whiteboard_create_image`, `whiteboard_list_media`, `whiteboard_create_image_reference`, `whiteboard_insert_clip`, and `whiteboard_remove_media` operations. New guarded image writes reject raw external URLs: upload or import them first so reload never depends on an ephemeral browser URL.
 
 Image objects support:
 
@@ -169,9 +236,18 @@ A connector anchors to the source object. When the source moves, the connector r
 - Mind-map connectors can be switched between elbow and curved rendering
 - Branches can be explicitly assigned to the left or right side of the root
 - Branches can be collapsed and expanded without deleting descendants
+- Selected branches can be focused while sibling branches collapse out of the way
+- Presentation frames can be generated around the full map and first-level branches
 - CLI and API can create nodes and trigger layout without relying on the browser UI
+- The Assistant can use MeshAgent room whiteboard tools to create or expand editable mind maps
 
 Use mind nodes when you need a real editable mind map rather than a static whiteboard layout.
+
+**AI-assisted maps.** Choose **AI Mind Map** from the Whiteboard menu or right-click a mind node and choose **Expand with AI**. The request is sent to the room Assistant with the active workbook, sheet, selected node, and branch outline, and asks the Assistant to use the xApps Whiteboard toolkit to create normal editable mind-node objects.
+
+Whiteboard does not invoke an AI provider directly. It has no surface-local model endpoint, provider client, AI CLI command, or AI agent tool. The browser action only hands context to the shared MeshAgent room Assistant; any resulting edits return through the normal guarded Whiteboard tools, revisions, and persistence paths. Provider execution and resumable provider-run state therefore remain owned by the shared Assistant/provider layer.
+
+**Presentation readiness.** Select a mind node and choose **Create Presentation Frames** to add frames around the full map and each first-level branch. These frames provide a ready path for walkthroughs, screenshots, PNG/PDF export, and later slide preparation.
 
 **Mind node metadata.** Each mind node has an optional Details dialog (toolbar button or right-click) where you can set:
 
@@ -383,6 +459,31 @@ xapps wb-find "My Board" --query architecture --tag api
 # Output: matching whiteboard rows
 ```
 
+#### Guarded object CRUD and connectors
+
+```bash
+xapps wb-create-object "My Board" --object-json '{"type":"sticky","content":"API-created","w":180,"h":120}'
+xapps wb-get-object "My Board" wb-stable-id
+xapps wb-update-object "My Board" wb-stable-id --updates-json '{"content":"Updated"}'
+xapps wb-create-connector "My Board" wb-source-id wb-target-id --page page-1 --routing elbow
+xapps wb-update-connector "My Board" wb-connector-id --end wb-new-target-id
+xapps wb-delete-object "My Board" wb-stable-id
+```
+
+Writes read the current object revision automatically. Supply both `--expected-revision` and `--request-id` only when replaying an exact mutation.
+
+#### Guarded pages, layers, and frames
+
+```bash
+xapps wb-pages "My Board"
+xapps wb-page-mutate "My Board" create --title "Roadmap"
+xapps wb-layer-mutate "My Board" add Planning --page-id page-stable-id
+xapps wb-frame-mutate "My Board" create --page-id page-stable-id --layer Planning --title "Q3" --x 80 --y 80 --w 640 --h 360
+xapps wb-frame-mutate "My Board" reorder wb-frame-id --index 0
+```
+
+Page, layer, and frame writes share one guarded workspace revision. Duplicate/delete and ordering changes commit once, roll back on validation or save failure, and preserve the active page and layer.
+
 #### wb-tag-objects -- Add or replace tags on whiteboard objects
 
 ```bash
@@ -404,6 +505,8 @@ xapps wb-layout-mind-map "My Board" 5
 # Output: whiteboard mind map laid out
 ```
 
+The command resolves row `5` to its stable node id, reads the current graph revision, and commits the complete layout in one rollback-safe transaction.
+
 #### wb-set-mind-side -- Assign a branch to the left or right
 
 ```bash
@@ -411,12 +514,36 @@ xapps wb-set-mind-side "My Board" 7 left
 # Output: Set mind-map branch side on 7 to left
 ```
 
+The side change and resulting root layout persist together; a stale concurrent edit is rejected instead of partially overwriting the map.
+
 #### wb-set-mind-collapse -- Collapse or expand a branch
 
 ```bash
 xapps wb-set-mind-collapse "My Board" 7 true
 xapps wb-set-mind-collapse "My Board" 7 false
 ```
+
+#### Guarded mind-map I/O and metadata
+
+```bash
+xapps wb-mind-export "My Board" 7 --format json
+xapps wb-mind-import "My Board" --mode merge --document-json '{"version":1,"nodes":[{"key":"root","content":"Launch"}]}' --expected-revision 4 --request-id import-launch-v1
+xapps wb-mind-search "My Board" --status blocked --tag launch
+xapps wb-mind-set-metadata "My Board" 7 --status blocked --assignee Ada --due-date 2026-08-01 --tags launch,p1 --expected-revision 5 --request-id metadata-launch-v1
+```
+
+Exported version-1 documents round-trip through atomic merge or replace imports. Missing ids are derived deterministically from page and node key. Import, metadata, collapse, and connector-style writes share the guarded graph revision and replay contract; invalid cycles, dangling or cross-page parents, stale revisions, and late save failures leave the graph unchanged.
+
+#### Guarded template transactions and data binding
+
+```bash
+xapps wb-templates "My Board"
+xapps wb-template-preview "My Board" swot --instance-id launch-swot --variables-json '{"title":"Launch SWOT"}' --bindings-json '{"section1":{"sheet":"Metrics","cell":"B2"}}'
+xapps wb-template-apply "My Board" swot --instance-id launch-swot --variables-json '{"title":"Launch SWOT"}'
+xapps wb-template-replace "My Board" launch-swot proscons --variables-json '{"title":"Ship decision"}'
+```
+
+Preview is mutation-free and returns the exact deterministic object plan and fingerprint. Apply/replace use one guarded template revision, persist instance provenance and live `{{Sheet!A1}}` bindings, replay identical request ids, and restore the exact sheet snapshot when validation or saving fails.
 
 #### add-wb-image -- Add an image
 
@@ -494,6 +621,24 @@ curl -X POST $XAPPS_API_BASE_URL/api/sheets/My%20Board/objects/batch \
   -d '{"action":"duplicate","rows":[0,1]}'
 ```
 
+#### Guarded object state and atomic mutation
+
+`GET objects:state` returns stable objects plus the current revision. `POST objects:mutate` accepts guarded create, update, delete, or an `operations` batch; validation and save failures leave the sheet unchanged.
+
+```bash
+curl -H 'X-XApps-File: MyWorkbook.json' $XAPPS_API_BASE_URL/api/sheets/My%20Board/objects:state
+
+curl -X POST $XAPPS_API_BASE_URL/api/sheets/My%20Board/objects:mutate \
+  -H 'X-XApps-File: MyWorkbook.json' -H 'Content-Type: application/json' \
+  -d '{"action":"create","expectedRevision":0,"requestId":"create-1","object":{"type":"connector","style":{"pageId":"page-1","anchors":{"start":{"kind":"row","row":"source-id"},"end":{"kind":"row","row":"target-id"}}}}}'
+```
+
+Connector targets must exist on the connector page. Deleting an anchored object also deletes its dependent connector objects.
+
+#### Guarded Whiteboard templates
+
+`GET whiteboard-templates` discovers templates and variables; `GET whiteboard-templates:state` reads persisted instances and revision; `POST whiteboard-templates:preview` returns a deterministic plan; and `POST whiteboard-templates:apply` atomically applies or replaces it.
+
 #### Update viewport settings
 
 ```bash
@@ -513,51 +658,74 @@ curl -H 'X-XApps-File: MyWorkbook.json' $XAPPS_API_BASE_URL/api/sheets/My%20Boar
 
 ### Agent / AI Workflow Recipes
 
-#### Recipe 1: Generate a SWOT analysis from spreadsheet data
-
-An AI agent can read strengths, weaknesses, opportunities, and threats from a spreadsheet, then populate a whiteboard SWOT layout:
+The recipes use an existing authorized `MyWorkbook.json` in `local` storage. Replace that file and storage target together for your actual workbook, and set `XAPPS_API_BASE_URL` to its authorized host. Commands that extract structured receipts also require `jq`.
 
 ```bash
-# 1. Create sticky notes for each strength
-xapps add-sticky "SWOT Board" "Strong brand recognition" --x 100 --y 150 --bg "#A5D6A7"
-xapps add-sticky "SWOT Board" "Loyal customer base" --x 320 --y 180 --bg "#C8E6C9"
-
-# 2. Add weaknesses
-xapps add-sticky "SWOT Board" "High operating costs" --x 650 --y 150 --bg "#EF9A9A"
-
-# 3. Export for review
-xapps wb-export-svg "SWOT Board" --out swot-review.svg
+xapps_scoped() {
+  xapps --base-url "${XAPPS_API_BASE_URL:?Set the authorized host URL}" \
+    --file 'MyWorkbook.json' --workbook-storage-target local "$@"
+}
 ```
 
-#### Recipe 2: Build a system architecture diagram
+The shared Assistant/provider layer owns model work; Whiteboard mutations use the normal deterministic object contract. This example uses an existing `Architecture` Whiteboard and `Evidence` Gallery in the same scoped workbook. It creates two named service boxes and their connector atomically, then retains the exported SVG as a durable Gallery attachment.
+
+#### Prepare and review one stable-ID diagram batch
 
 ```bash
-# Create service boxes
-xapps add-wb-shape "Arch Board" rounded-rect --x 100 --y 200 --w 180 --h 100 --fill "#E3F2FD" --content "API Gateway"
-xapps add-wb-shape "Arch Board" rounded-rect --x 400 --y 200 --w 180 --h 100 --fill "#E8F5E9" --content "Auth Service"
-xapps add-wb-shape "Arch Board" rounded-rect --x 400 --y 400 --w 180 --h 100 --fill "#FFF3E0" --content "Database"
-
-# Add labels
-xapps add-wb-text "Arch Board" "System Architecture v2" --x 200 --y 50 --size 32
+xapps_request() {
+  curl --fail-with-body --silent --show-error \
+    -H 'X-XApps-File: MyWorkbook.json' -H 'X-XApps-Workbook-Storage-Target: local' "$@"
+}
+xapps_request "$XAPPS_API_BASE_URL/api/sheets/Architecture/objects:state" > architecture-before.json
+WHITEBOARD_REVISION=$(jq -er '.revision' architecture-before.json)
+cat > architecture-operations.json <<'JSON'
+[{"action":"create","object":{"id":"arch-api","type":"rounded-rect","content":"API","x":100,"y":100,"w":220,"h":100,"style":{"fill":"#dbeafe"}}},{"action":"create","object":{"id":"arch-store","type":"rounded-rect","content":"Storage","x":450,"y":100,"w":220,"h":100,"style":{"fill":"#dcfce7"}}},{"action":"create","object":{"id":"arch-api-store","type":"connector","style":{"anchors":{"start":{"kind":"row","row":"arch-api","side":"right"},"end":{"kind":"row","row":"arch-store","side":"left"}},"arrow":true}}}]
+JSON
+jq -n --argjson revision "$WHITEBOARD_REVISION" --slurpfile ops architecture-operations.json \
+  '{action:"batch",expectedRevision:$revision,requestId:"architecture-diagram-1",operations:$ops[0]}' \
+  > architecture-request.json
 ```
 
-#### Recipe 3: Meeting notes synthesis
+Inspect the current objects and prepared request first. The connector anchor field is named `row`, but its value here is the stable object ID accepted by the object contract; the server resolves it within this same atomic batch.
 
-After a meeting, an agent can summarize key points onto sticky notes grouped by topic:
+#### Apply and read the actual saved objects
 
 ```bash
-# Group header
-xapps add-wb-shape "Retro" frame --x 50 --y 50 --w 600 --h 400
-
-# Key decisions
-xapps add-sticky "Retro" "Move launch to Q3" --x 80 --y 120 --bg "#90CAF9"
-xapps add-sticky "Retro" "Hire 2 more engineers" --x 300 --y 120 --bg "#90CAF9"
-
-# Action items
-xapps add-sticky "Retro" "Draft updated timeline by Friday" --x 80 --y 300 --bg "#A5D6A7"
+xapps_request -X POST -H 'Content-Type: application/json' \
+  --data-binary @architecture-request.json \
+  "$XAPPS_API_BASE_URL/api/sheets/Architecture/objects:mutate" > architecture-receipt.json
+jq -e '.ok == true and .requestId == "architecture-diagram-1"' architecture-receipt.json
+xapps_scoped wb-get-object Architecture arch-api --json
+xapps_scoped wb-get-object Architecture arch-store --json
+xapps_scoped wb-get-object Architecture arch-api-store --json
+xapps_request "$XAPPS_API_BASE_URL/api/sheets/Architecture/objects:state" > architecture-after.json
+xapps_scoped wb-export-svg Architecture --out architecture.svg
+xapps_request "$XAPPS_API_BASE_URL/api/sheets/Architecture/objects:state" > architecture-export-state.json
+jq -e --slurpfile before architecture-after.json \
+  ' .revision == $before[0].revision ' architecture-export-state.json
 ```
 
----
+#### Upload the exported bytes and retain the attachment receipt
+
+```bash
+xapps_request -X POST -H 'Content-Type: image/svg+xml' -H 'X-XApps-Upload-Name: architecture.svg' \
+  --data-binary @architecture.svg "$XAPPS_API_BASE_URL/api/uploads" > architecture-upload.json
+ARCHITECTURE_UPLOAD_URL=$(jq -er '.url' architecture-upload.json)
+xapps_scoped gallery-settings Evidence --json > architecture-gallery-before.json
+GALLERY_REVISION=$(jq -er '.revision' architecture-gallery-before.json)
+SOURCE_REVISION=$(jq -er '.revision' architecture-after.json)
+xapps_scoped gallery-ingest Evidence "Architecture diagram" --id architecture-svg-1 \
+  --source-type upload-ref --source "$ARCHITECTURE_UPLOAD_URL" \
+  --desc "SVG exported from MyWorkbook.json / Architecture at object revision $SOURCE_REVISION" \
+  --expected-revision "$GALLERY_REVISION" --request-id architecture-attachment-1 --json \
+  > architecture-attachment-receipt.json
+xapps_scoped gallery item Evidence architecture-svg-1 --json > architecture-attachment-after.json
+jq '.item | {id,image,description}' architecture-attachment-after.json
+```
+
+If the revision check changes during export, regenerate the export from a fresh snapshot before uploading it; do not repeat the already completed diagram mutation. The upload response and Gallery item are separate receipts: a local export path is not an attachment. The upload step names the object with `X-XApps-Upload-Name`; `upload-ref` ingestion consumes its returned URL and does not accept `--name`. Retain both receipts and the exact mutation request. An uncertain upload is not covered by the object/Gallery request IDs; reconcile its returned durable URL before retrying the attachment step. Inspect the exported/rendered diagram when visual quality is part of the deliverable; the transaction receipts establish saved state only.
+
+Keep every prepared payload, revision, request ID and receipt until verification completes. After uncertain delivery, retry the identical mutation with its original guard; do not rerun the preparation steps with a fresh revision. On `409`, reread, reconcile and create a new ID only for a newly decided intent. Read commands can run independently; writes against shared state run sequentially or as one atomic batch.
 
 ### Troubleshooting
 
@@ -620,7 +788,7 @@ xapps wb-link-mind-nodes <sheet> <parent-row-or-id> <child-row-or-id> [--side <l
 xapps wb-set-mind-connector-style <sheet> <row-or-id> <elbow|curved>
 ```
 
-`wb-link-mind-nodes` adds a parent → child edge; `--side` controls whether the child sits to the left or right of the parent (the default auto-balances). `wb-set-mind-connector-style` swaps a single connector between right-angled `elbow` lines and smooth `curved` ones, useful when you want one critical edge to stand out.
+`wb-link-mind-nodes` atomically moves the complete child subtree, canonicalizes its map id, and lays out the destination root; `--side` controls whether the child sits to the left or right of the parent (the default auto-balances). `wb-set-mind-connector-style` swaps a single connector between right-angled `elbow` lines and smooth `curved` ones, useful when you want one critical edge to stand out.
 
 The mind-map flavor reuses the standard whiteboard layer / connector machinery, so you can mix mind-map nodes with other whiteboard objects on the same canvas.
 

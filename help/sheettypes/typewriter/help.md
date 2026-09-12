@@ -1,32 +1,91 @@
 # Typewriter sheet
 
-Word-processing surface backed by Tiptap v3 (ProseMirror) with `y-prosemirror`
-collaboration, lazy-loaded into a typewriter sheet on first render. Visual
-language clones Google Docs: GDocs-style toolbar + ruler, page-chrome
-pagination with headers/footers, an Insert menu, right-click context menus,
-HTML/Markdown/DOCX export, DOCX/Markdown/TXT import, and surface embeds for spreadsheet ranges,
-kanban boards, dashboards, and charts.
+Typewriter is the document editor for reports, proposals, letters and polished
+meeting notes. Write on a paginated page, style text and tables, add headers
+and footers, review comments, and export a document people can read or edit.
+Use **Wiki** when you want a collection of linked knowledge pages instead.
 
 ![Typewriter](/help-assets/screenshots/typewriter-sheet.png)
 
-This document is the authoritative reference. It mirrors the live runtime —
-the CLI section is generated from the same metadata `xapps typewriter
-<command> --help` reads at runtime, so you cannot drift the two.
+Start with the workflow below. The feature reference follows it; the final CLI
+section is generated from the same command catalog as the installed xApps CLI.
 
 ## Quick start
 
 1. Open or create a workbook in xApps.
-2. Click **+ Add sheet** and pick **Typewriter**. The shell mounts the
-   typewriter host inside the sheet container and lazy-loads `editor-bundle.js`
-   on first render (~750 KB gzipped). Subsequent typewriter sheets re-use the
-   cached bundle.
-3. Type. Multi-user collaboration runs through the workbook's existing Y.Doc
-   via a per-sheet `Y.XmlFragment` keyed by `typewriterDocId`.
+2. Click **+ Add sheet** and pick **Typewriter**. Give the sheet a useful name,
+   such as **Project Proposal**.
+3. Write a title and a short opening paragraph. Use the paragraph-style
+   dropdown for headings so the document has a real structure.
 4. **`Cmd-S`** saves the entire workbook. Per-sheet "Save as…" lives under
    **Sheet → Save as…** (HTML, Markdown, DOCX).
-5. The persisted document is a ProseMirror JSON tree on the sheet under
-   `typewriterDoc`. Settings (page size, margins, headers/footers, page
-   numbering) live on `typewriterSettings`.
+5. Add a table, image or workbook embed from **Insert** when it helps explain
+   the content. Use **Page setup** to choose page size and margins.
+6. Use **Sheet → Import/export fidelity report…** before exporting layout-heavy
+   documents. It summarizes what HTML, Markdown, DOCX, PDF, TXT, JSON, RTF,
+   and ODT can preserve, and calls out browser-only or unsupported paths.
+7. Use **Tools → Writing tools…** to review spelling, grammar, style, citation
+   markers, and local assistant drafts before sharing a document.
+8. Use **Tools → Keyboard shortcuts…** or `Ctrl-/` from the editor to search
+   Typewriter commands and launch keyboard-first review, insert, and document
+   tools.
+9. Use **Print** for visual PDF output, or **Sheet → Save as** for an editable
+   interchange format. Open the result and check its layout before sharing.
+
+## Start from a template or reuse your own material
+
+Open **Insert → Templates and reusable blocks…**. Preview a meeting note,
+proposal, decision log or status update before inserting it. **Insert** adds the
+selected material; **Use as document** replaces the document, so use that action
+when you intend to start over. You can also save selected text as a reusable
+block for standard introductions, approval sections or recurring meeting agendas.
+
+![Typewriter Templates and reusable blocks library](/help-assets/screenshots/typewriter-templates.png)
+
+## Take a proposal from draft to review
+
+1. State the proposed outcome in the title and opening paragraph.
+2. Apply Heading 1/2 styles to Scope, Schedule, Cost and Decision. Insert a
+   table of contents when the document grows long.
+3. Add a live spreadsheet embed for figures that should follow workbook changes,
+   or choose Snapshot to keep a reviewed version until you refresh it.
+4. Select wording that needs discussion and choose **Edit → Add comment…**.
+   Open **Comments…** to return to those passages during review.
+5. Use **Find and replace…** for consistent names and terminology. Check a
+   match before replacing every occurrence.
+6. Open **Writing tools…**, inspect suggestions and explicitly apply the ones
+   you want. The built-in tools use local rules; they do not verify facts.
+7. Review **Version history…** and save an interchange copy before handing the
+   finished document to someone who will edit it outside xApps.
+
+## Choose an export for the recipient
+
+| Recipient needs | Choose | Expect |
+|---|---|---|
+| A fixed visual document | Print / Save as PDF | Viewing and printing; not an editable source |
+| Editable Word content | DOCX | Word editing with reported conversion limits |
+| Rich web content | HTML | Rich styling and supported document structure |
+| Portable text with headings | Markdown | Typography and page layout are reduced |
+| Text only | Plain text | No layout, styles or embedded views |
+| An xApps document backup | Typewriter JSON | Structured document data |
+
+![Typewriter import and export fidelity report for the current document](/help-assets/screenshots/typewriter-fidelity.png)
+
+*The fidelity report considers the current document. Check it again after adding
+complex tables, images, review metadata or live embeds.*
+
+## Solve common document problems
+
+| Symptom | Check |
+|---|---|
+| Toolbar and menu disappeared | Turn off **Focus** in the status bar. |
+| Pages or margins look different | Check Page/Web/Print view, zoom and Page setup. |
+| A heading is absent from navigation | Apply a heading style; bold text alone is not a heading. |
+| A table control is missing | Click inside the table; table tools follow the current selection. |
+| A pasted document lost styling | Check the source format and fidelity report; Markdown carries less styling than HTML or DOCX. |
+| An embed seems old | Check Live versus Snapshot, the source sheet, and Refresh snapshot. |
+| A review suggestion cannot apply | Confirm edit access and rerun analysis after changing its source text. |
+| Export/import is unavailable | Save the workbook and check its access permissions and format support. |
 
 ## Toolbar reference
 
@@ -41,7 +100,7 @@ sits inside the relevant mark/node.
 |---|---|---|
 | **History** | Undo (`Cmd-Z`) · Redo (`Cmd-Shift-Z` / `Cmd-Y`) | Standard ProseMirror history. |
 | **Print** | Print (`Cmd-P`) | Routes to `browser-print.ts` which generates an `@page` CSS document. The CLI cannot print. |
-| **Zoom** | Zoom dropdown (`50% / 75% / 90% / 100% / 125% / 150% / 200%`) | Applied via CSS `transform: scale()` on the editor host. *Status-bar zoom slider is queued for V2.1.14.* |
+| **Zoom** | Zoom dropdown (`50% / 75% / 90% / 100% / 125% / 150% / 200%`) | Applied via CSS `transform: scale()` on the editor host. The status-bar zoom control mirrors this value. |
 | **Paragraph style** | Title · Subtitle · Heading 1–6 · Normal text | Title/Subtitle collapse to H1/H2 in Markdown round-trip. |
 | **Font family** | Inter / Roboto / Georgia / Times / Courier / Arial / Verdana / etc. | Stored as `fontFamily` mark; lost on Markdown export. |
 | **Font size** | `+`/`−` stepper, numeric input | Stored as `fontSize` mark; lost on Markdown export. |
@@ -50,29 +109,32 @@ sits inside the relevant mark/node.
 | **Alignment** | Left / Center / Right / Justify | Backed by `@tiptap/extension-text-align`. |
 | **Line spacing** | 1.0 / 1.15 / 1.5 / 2.0 / 2.5 / 3.0 / Custom… | Custom prompts for an arbitrary multiplier. |
 | **Lists** | Bullet (`Cmd-Shift-8`) · Numbered (`Cmd-Shift-7`) · Checklist · Indent / Outdent | 5-level depth-cycled bullet glyphs (`•`, `◦`, `▪`, `▫`, `‣`). Tab/Shift-Tab in lists adjusts depth. |
-| **Insert** kebab + Insert menu | All 18 entries — see [Insert menu](#insert-menu-v2111) | The kebab also exposes "Import from file…" / "Export as…". |
+| **Insert** kebab + Insert menu | All 18 entries — see [Insert menu](#insert-menu) | The kebab also exposes "Import from file…" / "Export as…". |
 | **Tables (when active)** | Floating toolbar above active table — see [Tables](#tables) | Only renders when the cursor sits inside a table. |
 
 ### Keyboard shortcuts in the toolbar
 
-The toolbar honours `Cmd-K` (link) and `Cmd-P` (print) on document capture
-phase, ahead of the browser's native handlers. Bold / italic / underline /
-strike route through Tiptap's StarterKit defaults.
+The toolbar honours `Cmd-K` (link), `Cmd-P` (print), `Ctrl-/` (shortcut
+finder), and Typewriter-specific `Ctrl-Alt-*` review/tool routes on document
+capture phase, ahead of the browser's native handlers. Bold / italic /
+underline / strike route through Tiptap's StarterKit defaults.
 
-## Insert menu (V2.1.11)
+## Insert menu
 
 The menubar exposes an **Insert** slot wired through shell-core's generic
-`MENU_SLOT_ORDER`. The 18 entries:
+`MENU_SLOT_ORDER`. The 19 entries:
 
 | Group | Id | Label | Shortcut |
 |---|---|---|---|
 | Media | `typewriter-insert-image` | Image… | — |
 | | `typewriter-insert-link` | Link… | `Ctrl-K` |
+| Smart insert | `typewriter-smart-insert` | Smart insert… | `@` |
+| Templates | `typewriter-insert-template-blocks` | Templates and reusable blocks… | — |
 | Tables / embeds | `typewriter-insert-table` | Table… | — |
 | | `typewriter-insert-embed` | Sheet embed… | — |
 | Page chrome | `typewriter-insert-header` | Header | — |
 | | `typewriter-insert-footer` | Footer | — |
-| | `typewriter-insert-page-numbers` | Page numbers… | — |
+| | `typewriter-insert-page-numbers` | Page Number | — |
 | | `typewriter-insert-page-break` | Page break | — |
 | Inline atoms | `typewriter-insert-hr` | Horizontal line | — |
 | | `typewriter-insert-special-chars` | Special characters… | — |
@@ -89,42 +151,70 @@ The menubar exposes an **Insert** slot wired through shell-core's generic
 
 - **Image…** opens the image popover (Upload / By URL / Search the web stub).
 - **Link…** opens the link modal (also bound to `Cmd-K`).
+- **Smart insert…** opens the keyboard-first `@` palette at a word boundary.
+  It inserts a fixed, human-readable date or an actionable reference to another
+  sheet in the current workbook. Sheet references can be opened by mouse or
+  keyboard. Ordinary `@` characters inside text, including email addresses,
+  remain literal text.
+- **Templates and reusable blocks…** opens a document template library with
+  preview, Insert, and Use as document actions. Built-ins include meeting
+  notes, decision logs, proposals, summaries, and status updates. The same
+  dialog can save the current selection as a custom reusable block that
+  persists with the workbook-backed Typewriter sheet and can be inserted again
+  after reload.
 - **Table…** opens the 10×10 grid picker.
-- **Sheet embed…** opens the Insert Embed dialog (snapshot mode).
-- **Header / Footer** toggle the page-chrome region with the cursor inside it.
-- **Page numbers…** opens the page-numbering subdialog (placement, alignment,
-  template).
+- **Sheet embed…** opens the Insert Embed dialog with Live and Snapshot modes.
+- **Header / Footer** open a Word-style built-in gallery. Pick a template,
+  choose Edit Header/Footer, or remove the region; editing happens in the page
+  band itself with the contextual Header & Footer ribbon visible. Saved header
+  and footer content renders on each page as a non-editable preview until the
+  user double-clicks a header/footer band or chooses an edit command.
+- **Page Number** opens a Word-style menu with Page Number, Format Page
+  Numbers, and Remove Page Numbers. Page Number opens a dialog for position,
+  alignment, first-page visibility, and number format.
 - **Page break** inserts a `pageBreak` Tiptap node; renders as `page-break-before:
   always` for print/HTML/DOCX.
 - **Horizontal line** inserts `<hr>`.
 - **Special characters…** opens a Unicode picker (block + grid).
 - **Bookmark…** opens the bookmark dialog (slug-validated).
-- **Cross-reference…** opens the cross-reference dialog. *Live navigation is
-  in-flight; the cross-ref dialog ships, but heading nodes don't yet emit
-  `id="heading-{slug}"` — see Known limitations.*
+- **Cross-reference…** opens the cross-reference dialog. Heading targets emit
+  stable `id="heading-{slug}"` anchors, so same-document references and TOC
+  entries scroll to the target.
 - **Table of contents** inserts a `tableOfContents` node; export-time
-  exporters crawl headings to inline a TOC.
+  exporters crawl headings to inline a TOC, and the in-editor entries are
+  clickable.
 - **Bullet / Numbered / Checklist** start the corresponding list at the cursor.
 - **Code block / Blockquote** wrap the current paragraph.
+
+## Edit and review workflows
+
+The Edit menu and toolbar expose Word-familiar document review utilities:
+
+| Id | Label | Behaviour |
+|---|---|---|
+| `typewriter-find-replace` | Find and replace… | In-page find/replace panel with next/previous, replace current, replace all, and match-case. |
+| `typewriter-add-comment` | Add comment… | Adds a persisted inline review comment mark to the selected text. |
+| `typewriter-show-comments` | Comments… | Lists review comments and jumps back to the referenced text. |
+| `typewriter-word-count` | Word count… | Opens the in-page document statistics dialog; no browser alert fallback. |
 
 ## Tables
 
 Backed by `@tiptap/extension-table` (resizable columns) and the
 `browser-table-*` modules. Two tiers of features:
 
-### Tier 1 — basics
+### Table structure
 
 - **Insert** via the kebab "Insert table" or `Insert → Table…`. 10×10 grid
   picker, optional header row checkbox.
 - **Merge / Split cells** through the right-click context menu when a
   CellSelection is active.
 - **Header row toggle** in the floating table toolbar.
-- **Header column toggle** (Tier 1+ extension; sibling of header row).
+- **Header column toggle** (independent of the header row).
 - **Row drag-resize** via a `contenteditable=false` resize handle — stores
   per-row `minHeight`.
 - **Distribute rows / columns evenly** (right-click → Distribute…).
 
-### Tier 2 — round-out
+### Cell appearance
 
 - **Cell background color** with localStorage swatch recents.
 - **Vertical alignment** (top / middle / bottom).
@@ -134,6 +224,13 @@ Backed by `@tiptap/extension-table` (resizable columns) and the
 - **Paragraph ↔ Table conversion** (right-click → Convert to/from table). Uses
   tab characters as the column separator.
 
+### Automation parity
+
+`POST /document/ops`, the typed SDK, `xapps typewriter apply-ops`, and the
+strict Typewriter toolkit expose the same atomic table operations: insert,
+row/column CRUD, merge/split, headers, resize/distribute, cell styling and
+borders, and paragraph/table conversion. Table coordinates are 0-based.
+
 ### Right-click menu sections
 
 The table context menu groups actions: **Selection** (cut/copy/paste,
@@ -142,30 +239,27 @@ align), **Cells** (merge/split, padding, borders, bg color), **Rows**
 **Columns** (insert before/after, distribute, header toggle), and **Table**
 (insert/delete, convert to/from paragraphs).
 
-## Surface embeds (V2.1.2 + V2.1.8)
+## Surface embeds
 
-Drag a spreadsheet cell range, kanban list, dashboard widget, or chart
-into the typewriter document. The surface registers an embed renderer with
-`XAppsSheetRegistry.registerEmbedRenderer(kind, renderer)` (shell-core
-generic API; zero kind-aware branching in the shell). Drops are routed
-through a ProseMirror PM-plugin drop-handler that reads the embed payload
-from a synthetic `text/x-xapps-embed` MIME and inserts a `surfaceEmbed`
-atom node.
+Bring a spreadsheet cell range, Kanban list, Dashboard widget or chart into
+your document using **Insert → Sheet embed…**. Supported sources also allow
+dragging their content into the document. An embed keeps the source recognizable
+without requiring you to rebuild the same information as a table or image.
 
 ### Insert Embed dialog
 
 `Insert → Sheet embed…` opens the dialog. Pick the source surface, narrow
-to a sheet (and a cell range, for spreadsheets). The current default is
-**Snapshot mode** — the embed renders a frozen JSON-serialized snapshot of
-the source. **Live mode** is reserved for V2.x when the workbook collab
-runtime exposes the per-sheet Y.Doc accessor.
+to a sheet (and a cell range, for spreadsheets), then choose **Live** or
+**Snapshot** mode. Live same-workbook embeds refresh from the source sheet
+when the document opens and when workbook changes arrive. Snapshot embeds
+keep their saved export fallback until the user clicks **Refresh snapshot**.
+External workbook embeds render the saved snapshot as a portable fallback.
 
-### Persistence
+### Exporting embeds
 
-The embed node carries `attrs = { kind, sheetId, range?, mode }`. On
-serialization to Markdown, embeds emit `[Embed: <kind>]` placeholder text
-(lossy). HTML round-trip preserves the node; DOCX round-trip preserves
-the placeholder text.
+Markdown and DOCX use placeholder text for embeds. HTML preserves the embed
+and its latest saved snapshot. Review the exported document before sending it,
+especially when the recipient cannot open the source workbook.
 
 ## Import / Export
 
@@ -173,24 +267,21 @@ The Sheet menu exposes server-backed **Open** / **Replace** for workbook
 documents and explicit import rows for external Word, Markdown, and text
 files.
 
-### HTML — lossless
+### HTML — rich document interchange
 
-- Export wraps `editor.getHTML()` in a standalone HTML5 document with an
-  inline print-grade stylesheet (no external assets).
-- Import accepts pasted or file-loaded HTML; routed through Tiptap's
-  built-in HTML parser, which round-trips every extension's
-  `parseHTML`/`renderHTML` rules.
+HTML preserves supported formatting, tables and embed snapshots. Paste rich
+HTML content into the editor, or use the available file import commands.
+Export produces an HTML document with its formatting stylesheet. Linked images
+can still require access to their source; check them in the recipient's context.
 
 ### Markdown — partly lossy
 
-- Export uses a hand-rolled CommonMark+GFM serializer
-  (`browser-import-export-md.ts`). 666 lines, ~6 KB; chosen over
-  `prosemirror-markdown` to avoid pulling in `markdown-it` (~165 KB). GFM
-  pipe tables, fenced code, link/inline emphasis, headings (H1–H6), and
-  task lists are preserved.
-- Import accepts Markdown via paste-detect heuristic OR explicit "Import
-  from file…". Conservative paste detection keeps regular HTML pasted from
-  the web on Tiptap's HTML path.
+- Export preserves headings, links, emphasis, fenced code, task lists and
+  simple pipe tables. Page styling and embedded workbook views need richer
+  formats; see the table below.
+- Use the Markdown import command for a `.md` file. Recognizable Markdown
+  pasted into the editor can also be converted; ordinary rich HTML paste
+  keeps its formatting.
 
 ### Plain text — import-only
 
@@ -215,40 +306,177 @@ files.
 `underline` is preserved via inline `<u>`. Tables flatten cell content to
 inline (block-level cells collapse to one line; nested tables are dropped).
 
-### DOCX — faithful preview + editable fallback
+### DOCX — editable import
 
-- Default **Sheet → Open → Import Word document (.docx)** uploads the
-  original Word file and inserts a Typewriter `docxPreview` node rendered
-  with `docx-preview`. This preserves the source page geometry, table
-  layout, fonts, colors, borders, headers/footers, and spacing far better
-  than semantic HTML conversion. The preview is view-only.
-- **Import Word as editable text (.docx)** keeps the Mammoth conversion
-  path for users who need editable paragraphs/tables inside Typewriter.
-  That path is intentionally semantic and can lose Word layout details.
+- Default **Sheet → Open → Import editable Word document (.docx)** converts
+  the Word file into editable Typewriter content. The converter renders the
+  DOCX through `docx-preview`, then flattens the resolved DOM into
+  ProseMirror-friendly HTML so text, headings, tables, links, colors,
+  fonts, spacing, and list markers remain writable.
+- DOCX import always creates editable Typewriter content; there is no
+  read-only import mode.
 - DOCX export is still powered by `docx` in the lazy `docx-bundle.js` and
   serializes the editable Typewriter document tree.
 
 ### Round-trip fidelity matrix
 
+HTML, Markdown, plain text, and JSON use the same saved-workbook server
+interchange contract in the browser, CLI, SDK, and hosted toolkit. Imports are
+sanitized, limited to 5 MB, revision/request guarded, and replace the document
+atomically. Browser exports download the server attachment URL directly.
+
 | Format | Headings | Inline marks | Lists | Tables | Images | Embeds | Page chrome | Color/font |
 |---|---|---|---|---|---|---|---|---|
 | HTML | ✓ | ✓ | ✓ | ✓ | ✓ | node preserved | ✓ | ✓ |
 | Markdown | H1–H6 only | bold/italic/underline/strike/code/link | ✓ (incl. tasklist) | GFM pipe | ✓ (alt+src) | placeholder text | ✗ | ✗ |
-| DOCX preview | source layout | source layout | source layout | source layout | source layout | source file | source page | source styles |
 | DOCX editable | ✓ | ✓ | ✓ | ✓ | ✓ | placeholder | partial | ✓ |
 
-## Page setup (V2.2)
+### Fidelity report
+
+**Sheet → Import/export fidelity report…** opens an in-page report based on the
+server's current ProseMirror document and `typewriterSettings`. It flags document
+signals such as tables, images, live surface embeds, page chrome, rich styling,
+and review metadata, then maps them to each export path:
+
+- **JSON** is the lossless xApps backup and compatibility-fixture path.
+- **HTML** is the richest CLI/browser interchange format outside DOCX.
+- **Markdown** is portable but intentionally drops page chrome, typography,
+  most layout styling, live embeds, and rich image/container data.
+- **DOCX** is available through the live browser plus bounded API, SDK, CLI,
+  MCP/toolkit import/export paths. Encrypted and legacy binary Word files are
+  rejected; fidelity losses are reported explicitly.
+- **PDF** uses browser Print and is visual output, not editable document data.
+- **TXT** is plain text extraction.
+- **RTF** and **ODT** are explicit unsupported interchange formats. Use DOCX,
+  HTML, Markdown, or JSON depending on the fidelity need.
+
+## Writing tools
+
+**Tools → Writing tools…** opens an in-page review surface for document text.
+Analysis is deterministic and server-owned: no document text is sent to an AI
+provider. The browser, typed SDK, CLI, and hosted tools share the same saved-
+workbook `/writing-tools/analysis`, `/preview`, and `/apply` contracts.
+
+- **Spelling** uses a small built-in typo dictionary for common mistakes.
+- **Grammar** catches repeated words and extra spacing.
+- **Style** suggests simpler replacements for verbose phrases such as
+  "in order to" or "due to the fact that".
+- **Citation** flags evidence claims such as "according to..." and can insert
+  `[citation needed]`, an inline author/year citation, or a bibliography entry.
+- **Local assistant** produces summary, outline, and selected-range rewrite
+  plans. Preview never mutates. **Insert result** explicitly approves a plan;
+  apply requires its fingerprint, unchanged source, current revision, and a
+  replay-safe request id.
+
+Editing actions respect the active workbook access state. View-only users can
+inspect suggestions and drafts but cannot apply changes.
+
+Agents use `typewriter writing-analyze`, `writing-preview`, and
+`writing-apply`, or the matching `typewriter_*_writing*` hosted tools. Apply
+rejects tampered plans, stale revisions, changed source text, and reused request
+ids with different intent.
+
+## Keyboard shortcuts and command palette
+
+**Tools → Keyboard shortcuts…** opens a searchable Typewriter command finder.
+The search field receives focus on open, filters rows as the user types, and
+each visible row can be activated with the keyboard or pointer.
+
+The shell command palette also receives Typewriter-owned items through the
+surface registry hook. Searching for commands such as "writing tools",
+"comment", "mobile offline", "smart insert", "version history", or
+"fidelity" runs the same handlers as the menubar and shortcut dialog.
+
+Editor-scoped routes added for Google Docs parity:
+
+| Shortcut | Action |
+|---|---|
+| `Ctrl-/` | Open Keyboard shortcuts |
+| `Ctrl-Alt-M` | Add comment to selected text |
+| `Ctrl-Alt-Shift-M` | Show threaded comments |
+| `Ctrl-Alt-W` | Open Writing tools |
+| `Ctrl-Alt-O` | Open Mobile/offline readiness |
+| `Ctrl-Alt-P` | Open Publish/admin readiness |
+| `Ctrl-Alt-I` | Open Smart insert |
+| `Ctrl-Alt-T` | Open Templates and reusable blocks |
+| `Ctrl-Alt-V` | Open Version history |
+| `Ctrl-Alt-F` | Open Import/export fidelity report |
+| `Ctrl-Alt-S` | Open Word count |
+
+## Mobile/offline readiness
+
+**Tools → Mobile/offline readiness…** opens an in-page strategy surface for
+P2 mobile and offline parity. It does not pretend that full offline editing is
+complete; instead it makes the readiness contract visible and testable.
+
+The dialog reports:
+
+- **Form factor** from the current viewport and touch capability: Desktop,
+  Tablet, or Phone.
+- **Network** from `navigator.onLine`, with a Recheck action that updates when
+  the browser is placed into offline mode.
+- **Mobile layout** rules for toolbar scroll, stacked rails, constrained
+  dialogs, and reachable primary actions.
+- **Offline cache** posture for IndexedDB/Yjs update storage and service-worker
+  shell caching when a deployment registers one.
+- **Conflict resolution** strategy: queue local Yjs updates while offline,
+  replay on reconnect, and keep the shared-y-updates channel as the merge
+  authority instead of replacing JSON snapshots.
+- **Reconnect behavior** requirements: show pending sync, flush autosave and
+  collab updates on reconnect, then clear pending state only after server
+  acknowledgement.
+- **Verification matrix** for 1440px desktop, 760px narrow web, 390px phone
+  width, browser offline simulation, and future reconnect convergence gates.
+
+The checked-in smoke covers both the pure strategy analyzer and the visible
+dialog at desktop, offline, and 390px phone widths.
+
+## Publish/admin readiness
+
+**Tools → Publish/admin readiness…** opens an in-page enterprise decision
+surface for P2 publish, admin, security, and ecosystem parity. It makes the
+current contract explicit instead of implying that public publishing,
+e-signature, external connector, audit-log, or encryption-at-rest work is
+complete.
+
+The dialog reports:
+
+- **Role, export policy, admin surface, and workbook scope** from the active
+  workbook access state.
+- **Publish to web** as planned architecture: signed public route, admin
+  publish/unpublish controls, snapshot lifecycle, cache invalidation, and
+  iframe policy.
+- **E-signature** as a product/legal decision: provider, signer identity,
+  audit trail, retention, and document-lock semantics.
+- **Download restrictions** as ready Typewriter behavior: export, print, and
+  file actions are gated through workbook access state.
+- **Audit/admin controls** as a partial platform surface: sharing roles exist,
+  but publish changes, export attempts, signature events, and policy edits
+  need durable admin events and review surfaces.
+- **Encryption posture** as a platform security decision: HTTPS is not enough;
+  at-rest encryption, key management, backup, residency, and publish/signature
+  blocking rules need a written policy.
+- **External integrations and ecosystem hooks** as two tracks: xApps-native
+  smart insert, command palette entries, and live surface embeds are ready;
+  Google Workspace-style add-ons, Drive/Calendar/Gmail hooks, DLP, and
+  marketplace connectors need an API, consent, revocation, and audit contract.
+
+The checked-in smokes cover the pure analyzer, the visible dialog, command
+palette discoverability, `Ctrl-Alt-P`, and narrow layout without document
+horizontal overflow.
+
+## Page setup
 
 Visual pagination, headers / footers, auto page numbering, custom page
-size, margins, and `@page`-CSS print/PDF — all rebuilt in V2.1.11.
+size, margins, and `@page`-CSS print/PDF.
 
 - **Visual pagination** — `browser-pagination.ts` measures page heights
   off the editor scroll and shifts content into virtual pages. The
   current page index, page count, and per-page first-block id are
-  exposed via a `pageInfo` event for the queued status bar (V2.1.14).
-- **Headers / footers** — `header.enabled` / `footer.enabled` settings.
-  Each carries an independent ProseMirror JSON document. Optional
-  `differentFirstPage` and `differentEvenOdd` toggles add
+  exposed via a `pageInfo` event for the status bar.
+- **Headers / footers** — authored in-place in the page margin bands, not in
+  Page setup. `header` / `footer` each carry an independent ProseMirror JSON
+  document. Optional `differentFirstPage` and `differentEvenOdd` toggles add
   `firstPageContent` and `evenPageContent` documents.
 - **Auto page numbering** — `pageNumbering.{ enabled, placement, align,
   format, startAt?, suppressOnFirstPage? }`. Format is a template with
@@ -265,12 +493,14 @@ size, margins, and `@page`-CSS print/PDF — all rebuilt in V2.1.11.
 
 ### Page Setup dialog
 
-Opens via the kebab → Page setup… or `Insert → Header / Footer / Page
-numbers…`. Sticky-header / scrollable-body / sticky-footer layout with
+Opens via the Sheet menu Page setup command. It owns page geometry, margin
+sizes, header/footer distances, header/footer show/hide toggles, and page
+number settings; header/footer authoring stays in the page bands. Sticky-header /
+scrollable-body / sticky-footer layout with
 `max-height: min(90vh, 800px)`; works at 1024×600, 1024×900, 1200×768
 viewports. Smoke covers viewport-aware layout.
 
-## Workbook + Sheet menu (V2.1.9)
+## Workbook + Sheet menu
 
 The menubar splits into **Workbook** and **Sheet** dropdowns:
 
@@ -281,8 +511,7 @@ Workbook ▸                         Sheet ▸
   Save              Cmd-S            Open ▸
   Save As…                             Open in new sheet…
   ─                                    Replace current sheet content…
-  Recent workbooks ▸                   Import Word document (.docx)
-  ─                                    Import Word as editable text (.docx)
+  Recent workbooks ▸                   Import editable Word document (.docx)
   Close workbook                       Import Markdown (.md)
                                        Import Text file (.txt)
                                      Save
@@ -293,6 +522,9 @@ Workbook ▸                         Sheet ▸
                                        DOCX
                                      ─
                                      Recent files ▸
+                                     ─
+                                     Version history…
+                                     Import/export fidelity report…
                                      ─
                                      Sheet settings…
 ```
@@ -306,7 +538,7 @@ Workbook ▸                         Sheet ▸
   hooks back the menu items; surfaces self-publish without the shell
   needing to know about typewriter formats.
 
-## Right-click context menu (V2.1.6)
+## Right-click context menu
 
 Sectioned, context-aware actions. The menu varies based on the cursor /
 selection:
@@ -319,7 +551,7 @@ selection:
 - **In a list** — Increase / decrease indent (`Tab` / `Shift-Tab`);
   switch list style.
 - **In a table** — full Table sub-menu (see [Tables](#tables)).
-- **On an image** — Replace, Align L/C/R, Resize, Remove.
+- **On an image** — Replace, Align L/C/R, Resize, Remove, and Text wrapping (Break text, Wrap left, Wrap right, In line with text). "In line with text" converts the block image into an inline `imageInline` node inside the paragraph so text flows on both sides; choosing any block wrap mode converts it back, splitting the paragraph around the image. Alignment and resize handles apply to block images only.
 
 The `shortcutHint()` helper formats key combos OS-aware (`⌘` on macOS,
 `Ctrl` elsewhere).
@@ -333,6 +565,16 @@ The `shortcutHint()` helper formats key combos OS-aware (`⌘` on macOS,
 | `Cmd-U` | Underline |
 | `Cmd-Shift-X` | Strikethrough |
 | `Cmd-K` | Insert / edit link |
+| `Ctrl-/` | Open Keyboard shortcuts |
+| `Ctrl-Alt-M` | Add comment |
+| `Ctrl-Alt-Shift-M` | Show comments |
+| `Ctrl-Alt-W` | Writing tools |
+| `Ctrl-Alt-O` | Mobile/offline readiness |
+| `Ctrl-Alt-I` | Smart insert |
+| `Ctrl-Alt-T` | Templates and reusable blocks |
+| `Ctrl-Alt-V` | Version history |
+| `Ctrl-Alt-F` | Import/export fidelity report |
+| `Ctrl-Alt-S` | Word count |
 | `Cmd-Z` | Undo |
 | `Cmd-Shift-Z` / `Cmd-Y` | Redo |
 | `Cmd-S` | Save workbook |
@@ -354,7 +596,7 @@ Heading shortcuts go through Tiptap StarterKit defaults
 (`Cmd-Alt-1`…`Cmd-Alt-6`) but the GDocs-style **Paragraph style**
 dropdown is the canonical UI.
 
-## Status bar (V2.1.14)
+## Status bar
 
 ![Typewriter status bar](/help-assets/screenshots/typewriter-status-bar.png)
 
@@ -366,7 +608,7 @@ appends it to the host element outside the page-chrome area.
 
 | Slot | Content | Interaction |
 |---|---|---|
-| **Page indicator** | `Page N of M` | Click to scroll to a specific page (queued; currently cosmetic). |
+| **Page indicator** | `Page N of M` | Shows the current page and total page count. |
 | **Counts** | `N words · N chars` | Click to open a **Document statistics** popover with all six counters (see below). |
 | **Reading time** | `~N min` | Hidden when the host is narrower than 250 px. Hidden at 0 words. |
 
@@ -384,6 +626,10 @@ Counts are debounced 250 ms after each editor `update` event so rapid
 typing doesn't thrash the DOM.
 
 ### Right cluster — view controls
+
+The top **View → View mode** flyout mirrors the status-bar selector, exposing
+**Page**, **Web**, and **Print preview** through the same persisted view state.
+Changing either control updates the other immediately.
 
 | Slot | Control | Notes |
 |---|---|---|
@@ -417,6 +663,17 @@ through the surface manifest's `runtime.cli=true` flag. All commands need
 either `--base-url <url>`, `MESHAGENT_ROOM_URL`, or `XAPPS_API_BASE_URL`
 to reach the workspace API.
 
+Headless edits use block indices from `outline`; range commands use exact
+`[from, to)` text offsets within one block. Mutations are revision-guarded,
+request-idempotent, and atomic. Interactive undo/redo remains local to the
+browser editor session and is not exposed as a public transaction API.
+
+View/query automation uses `view`, `set-view`, `outline --filter`, `find`,
+`replace-query`, and `statistics`. Page/Web/Print, Focus, zoom, document tabs,
+and navigation-rail collapse are durable settings; outline filters, the active
+find match, and exact rendered page count are browser-session-only. The
+statistics contract reports exact page count as browser-only.
+
 <!-- typewriter-cli:start -->
 
 > This block is generated from the same `TYPEWRITER_CLI_COMMANDS` array that
@@ -427,12 +684,12 @@ to reach the workspace API.
 
 ### `xapps typewriter export`
 
-Export a typewriter document to html, md, txt, or json.
+Export a typewriter document to docx, html, md, txt, or json.
 
 **Usage:**
 
 ```
-xapps typewriter export <sheet> <format> [--out <path>]
+xapps typewriter export <sheet> <format> [--out <path>] [--json]
 ```
 
 **Arguments:**
@@ -440,18 +697,19 @@ xapps typewriter export <sheet> <format> [--out <path>]
 | Argument | Required | Description |
 |---|---|---|
 | `<sheet>` | yes | Exact typewriter sheet name from `xapps sheets`. |
-| `<format>` | yes | One of html, md, txt, json. (docx is UI-only — see notes.) |
+| `<format>` | yes | One of docx, html, md, txt, json. |
 | `[--out <path>]` | no | Write the exported body to this file path; otherwise print to stdout. |
 
 **Notes:**
 
 - json emits the raw ProseMirror document; html emits a <body>-fragment ready to wrap; md emits CommonMark with GFM tables.
-- DOCX export is browser-only because the docx library ships in a lazy editor bundle. Use the live app's Export menu for DOCX.
+- DOCX is binary and requires --out <path>; HTML/Markdown/TXT/JSON may print to stdout.
 
 **Examples:**
 
 ```sh
 xapps typewriter export "Draft" md --out draft.md
+xapps typewriter export "Draft" docx --out draft.docx
 xapps typewriter export "Draft" json
 ```
 
@@ -462,7 +720,7 @@ Replace a typewriter document with the contents of a file.
 **Usage:**
 
 ```
-xapps typewriter import <sheet> <path> [--format html|md|txt|json]
+xapps typewriter import <sheet> <path> [--format docx|html|md|txt|json] [--request-id <id> --expected-revision <n>] [--verify] [--json]
 ```
 
 **Arguments:**
@@ -471,18 +729,51 @@ xapps typewriter import <sheet> <path> [--format html|md|txt|json]
 |---|---|---|
 | `<sheet>` | yes | Exact typewriter sheet name from `xapps sheets`. |
 | `<path>` | yes | Local file path to import. Format is inferred from the extension unless --format is set. |
-| `[--format html|md|txt|json]` | no | Force the import format when the extension is ambiguous or wrong. |
+| `[--format docx|html|md|txt|json]` | no | Force the import format when the extension is ambiguous or wrong. |
 
 **Notes:**
 
 - Import REPLACES the document. To merge, export to md, edit locally, and import the merged file.
-- DOCX import is UI-only (mammoth ships in the lazy docx bundle). Use the live app's Import menu for DOCX.
+- DOCX import is size-limited, rejects encrypted/legacy packages, and replaces the document atomically.
 
 **Examples:**
 
 ```sh
 xapps typewriter import "Draft" notes.md
+xapps typewriter import "Draft" draft.docx --verify
 xapps typewriter import "Draft" pasted.html --format html
+```
+
+### `xapps typewriter fidelity-report`
+
+Report import/export fidelity risks and supported/browser-only/unsupported paths.
+
+**Usage:**
+
+```
+xapps typewriter fidelity-report <sheet> [format] [--format html|md|docx|pdf|txt|json|rtf|odt] [--json]
+```
+
+**Arguments:**
+
+| Argument | Required | Description |
+|---|---|---|
+| `<sheet>` | yes | Exact typewriter sheet name from `xapps sheets`. |
+| `[format]` | no | Optional format focus: html, md/markdown, docx, pdf, txt, json, rtf, or odt. |
+| `[--format <format>]` | no | Alternative flag form for selecting the focused format. |
+| `[--json]` | no | Emit the structured report object instead of human-readable text. |
+
+**Notes:**
+
+- DOCX is available through server-safe API/SDK/CLI/toolkit paths; PDF remains browser print-only; RTF and ODT are explicit unsupported interchange formats.
+- Use this before Markdown/TXT export when a document contains tables, images, page chrome, review metadata, or live surface embeds.
+
+**Examples:**
+
+```sh
+xapps typewriter fidelity-report "Draft"
+xapps typewriter fidelity-report "Draft" markdown
+xapps typewriter fidelity-report "Draft" --format docx --json
 ```
 
 ### `xapps typewriter wordcount`
@@ -492,7 +783,7 @@ Print word, character, and paragraph counts as JSON.
 **Usage:**
 
 ```
-xapps typewriter wordcount <sheet>
+xapps typewriter wordcount <sheet> [--json]
 ```
 
 **Arguments:**
@@ -519,7 +810,7 @@ Set the page size preset (letter|legal|a4|a3|tabloid) or a custom WxH in inches.
 **Usage:**
 
 ```
-xapps typewriter set-page-size <sheet> <size> [portrait|landscape]
+xapps typewriter set-page-size <sheet> <size> [portrait|landscape] [--request-id <id> --expected-revision <n>] [--verify] [--json]
 ```
 
 **Arguments:**
@@ -548,7 +839,7 @@ Set page margins; each value accepts a unit suffix (in/cm/mm), defaulting to inc
 **Usage:**
 
 ```
-xapps typewriter set-margins <sheet> <top> <right> <bottom> <left>
+xapps typewriter set-margins <sheet> <top> <right> <bottom> <left> [--request-id <id> --expected-revision <n>] [--verify] [--json]
 ```
 
 **Arguments:**
@@ -579,7 +870,7 @@ Enable auto page numbering with placement, alignment, and a {X}/{Y} template.
 **Usage:**
 
 ```
-xapps typewriter set-page-numbers <sheet> [--placement header|footer] [--align left|center|right] [--format <template>]
+xapps typewriter set-page-numbers <sheet> [--placement header|footer] [--align left|center|right] [--format <template>] [--start-at <n>] [--suppress-first] [--disable] [--request-id <id> --expected-revision <n>] [--verify] [--json]
 ```
 
 **Arguments:**
@@ -590,6 +881,9 @@ xapps typewriter set-page-numbers <sheet> [--placement header|footer] [--align l
 | `[--placement header|footer]` | no | Where to render numbers; defaults to footer. |
 | `[--align left|center|right]` | no | Horizontal alignment within the header/footer; defaults to center. |
 | `[--format <template>]` | no | Template with {X} (current page) and {Y} (total pages); defaults to "Page {X} of {Y}". |
+| `[--start-at <n>]` | no | Positive starting page number; defaults to 1. |
+| `[--suppress-first]` | no | Do not render a number on the first page. |
+| `[--disable]` | no | Disable page numbering. |
 
 **Notes:**
 
@@ -602,70 +896,800 @@ xapps typewriter set-page-numbers "Draft"
 xapps typewriter set-page-numbers "Draft" --placement header --align right --format "{X}"
 ```
 
-### `xapps typewriter insert-embed`
+### `xapps typewriter discover-embed-sources`
 
-Append a surface embed (spreadsheet-range, kanban, dashboard, chart) to the document.
+Discover same-workbook Spreadsheet, Kanban, and Dashboard embed sources.
 
 **Usage:**
 
 ```
-xapps typewriter insert-embed <sheet> <kind> <ref> [--mode snapshot|live]
+xapps typewriter discover-embed-sources <sheet> [--json]
 ```
 
 **Arguments:**
 
 | Argument | Required | Description |
 |---|---|---|
-| `<sheet>` | yes | Exact typewriter sheet name from `xapps sheets`. |
-| `<kind>` | yes | One of spreadsheet-range, kanban, dashboard, chart. |
-| `<ref>` | yes | For spreadsheet-range, "<sheetId>!A1:B5". For kanban/dashboard/chart, the source sheet id. |
-| `[--mode snapshot|live]` | no | Embed mode; defaults to snapshot. Live mode is reserved for V2.x. |
+| `<sheet>` | yes | Exact typewriter sheet name. |
 
-**Notes:**
+### `xapps typewriter insert-embed`
 
-- Embeds are inserted at the end of the document. Use the in-app Insert Embed dialog for cursor-aware placement.
+Insert a typed same-workbook surface embed at a block position.
+
+**Usage:**
+
+```
+xapps typewriter insert-embed <sheet> <spreadsheet-range|kanban-board|kanban-column|kanban-card|dashboard-widget> <reference-json> [--mode snapshot|live] [--position <position>] [--verify] [--json]
+```
+
+**Arguments:**
+
+| Argument | Required | Description |
+|---|---|---|
+| `<sheet>` | yes | Exact typewriter sheet name. |
+| `<kind>` | yes | One of spreadsheet-range|kanban-board|kanban-column|kanban-card|dashboard-widget. |
+| `<reference-json>` | yes | JSON reference with sheetId and exact range/column/card/widget selector. |
+| `[--mode snapshot|live]` | no | Snapshot (default) or live refresh behavior. |
+| `[--position <position>]` | no | Zero-based block index or end; omit to append. |
 
 **Examples:**
 
 ```sh
-xapps typewriter insert-embed "Draft" spreadsheet-range "Budget!A1:C5"
-xapps typewriter insert-embed "Draft" kanban "Sprint Board"
+xapps typewriter insert-embed "Draft" spreadsheet-range "Budget!A1:C5" --mode live
+xapps typewriter insert-embed "Draft" kanban-card '{"sheetId":"Board","cardId":"card-1"}'
 ```
 
 ### `xapps typewriter list-embeds`
 
-Enumerate embedded surfaces in a typewriter document (kind, ref, mode).
+List typed embeds with stable ids and source status.
 
 **Usage:**
 
 ```
-xapps typewriter list-embeds <sheet>
+xapps typewriter list-embeds <sheet> [--json]
 ```
 
 **Arguments:**
 
 | Argument | Required | Description |
 |---|---|---|
-| `<sheet>` | yes | Exact typewriter sheet name from `xapps sheets`. |
+| `<sheet>` | yes | Exact typewriter sheet name. |
+
+### `xapps typewriter get-embed`
+
+Read one typed embed by stable id.
+
+**Usage:**
+
+```
+xapps typewriter get-embed <sheet> <embed-id> [--json]
+```
+
+**Arguments:**
+
+| Argument | Required | Description |
+|---|---|---|
+| `<sheet>` | yes | Exact typewriter sheet name. |
+| `<embed-id>` | yes | Stable embed id from list-embeds. |
+
+### `xapps typewriter update-embed`
+
+Update an embed reference, mode, or block position.
+
+**Usage:**
+
+```
+xapps typewriter update-embed <sheet> <embed-id> [--kind <kind> --reference <json>] [--mode snapshot|live] [--position <position>] [--verify] [--json]
+```
+
+**Arguments:**
+
+| Argument | Required | Description |
+|---|---|---|
+| `<sheet>` | yes | Exact typewriter sheet name. |
+| `<embed-id>` | yes | Stable embed id. |
+| `[--kind <kind> --reference <json>]` | no | Replacement typed reference; supply kind with reference. |
+| `[--mode snapshot|live]` | no | Replacement refresh behavior. |
+| `[--position <position>]` | no | Zero-based block index or end. |
+
+### `xapps typewriter remove-embed`
+
+Remove one typed embed by stable id.
+
+**Usage:**
+
+```
+xapps typewriter remove-embed <sheet> <embed-id> [--verify] [--json]
+```
+
+**Arguments:**
+
+| Argument | Required | Description |
+|---|---|---|
+| `<sheet>` | yes | Exact typewriter sheet name. |
+| `<embed-id>` | yes | Stable embed id. |
+
+### `xapps typewriter refresh-embed`
+
+Refresh a live or snapshot embed from its same-workbook source.
+
+**Usage:**
+
+```
+xapps typewriter refresh-embed <sheet> <embed-id> [--verify] [--json]
+```
+
+**Arguments:**
+
+| Argument | Required | Description |
+|---|---|---|
+| `<sheet>` | yes | Exact typewriter sheet name. |
+| `<embed-id>` | yes | Stable embed id. |
+
+### `xapps typewriter open-embed-reference`
+
+Resolve the saved-route target for an embed source.
+
+**Usage:**
+
+```
+xapps typewriter open-embed-reference <sheet> <embed-id> [--json]
+```
+
+**Arguments:**
+
+| Argument | Required | Description |
+|---|---|---|
+| `<sheet>` | yes | Exact typewriter sheet name. |
+| `<embed-id>` | yes | Stable embed id. |
+
+### `xapps typewriter smart-items`
+
+List Today and real sibling-sheet Smart Insert items.
+
+**Usage:**
+
+```
+xapps typewriter smart-items <sheet> [--json]
+```
+
+**Arguments:**
+
+| Argument | Required | Description |
+|---|---|---|
+| `<sheet>` | yes | Exact typewriter sheet name. |
+
+### `xapps typewriter insert-smart-item`
+
+Insert a currently available Smart Insert item at a block boundary.
+
+**Usage:**
+
+```
+xapps typewriter insert-smart-item <sheet> <item-id> [position|end] [--request-id <id> --expected-revision <n>] [--verify] [--json]
+```
+
+**Arguments:**
+
+| Argument | Required | Description |
+|---|---|---|
+| `<sheet>` | yes | Exact typewriter sheet name. |
+| `<item-id>` | yes | Id returned by smart-items. |
+| `[position|end]` | no | 0-based block boundary; defaults to end. |
+
+### `xapps typewriter templates`
+
+List five built-in templates and saved reusable blocks.
+
+**Usage:**
+
+```
+xapps typewriter templates <sheet> [--json]
+```
+
+**Arguments:**
+
+| Argument | Required | Description |
+|---|---|---|
+| `<sheet>` | yes | Exact typewriter sheet name. |
+
+### `xapps typewriter template-preview`
+
+Preview a built-in template or reusable block.
+
+**Usage:**
+
+```
+xapps typewriter template-preview <sheet> <template-id> [--json]
+```
+
+**Arguments:**
+
+| Argument | Required | Description |
+|---|---|---|
+| `<sheet>` | yes | Exact typewriter sheet name. |
+| `<template-id>` | yes | Built-in or custom template id. |
+
+### `xapps typewriter apply-template`
+
+Insert a template at a block boundary or replace the document.
+
+**Usage:**
+
+```
+xapps typewriter apply-template <sheet> <template-id> <insert|replace> [position|end] [--request-id <id> --expected-revision <n>] [--verify] [--json]
+```
+
+**Arguments:**
+
+| Argument | Required | Description |
+|---|---|---|
+| `<sheet>` | yes | Exact typewriter sheet name. |
+| `<template-id>` | yes | Built-in or custom template id. |
+| `<insert|replace>` | yes | Application mode. |
+| `[position|end]` | no | Insert position; ignored for replace. |
+
+### `xapps typewriter save-reusable-block`
+
+Save selected ProseMirror nodes as a reusable block.
+
+**Usage:**
+
+```
+xapps typewriter save-reusable-block <sheet> <name> <content-json> [--request-id <id> --expected-revision <n>] [--verify] [--json]
+```
+
+**Arguments:**
+
+| Argument | Required | Description |
+|---|---|---|
+| `<sheet>` | yes | Exact typewriter sheet name. |
+| `<name>` | yes | Unique reusable block name. |
+| `<content-json>` | yes | JSON array of selected ProseMirror nodes. |
+
+### `xapps typewriter rename-reusable-block`
+
+Rename a saved reusable block.
+
+**Usage:**
+
+```
+xapps typewriter rename-reusable-block <sheet> <block-id> <name> [--request-id <id> --expected-revision <n>] [--verify] [--json]
+```
+
+**Arguments:**
+
+| Argument | Required | Description |
+|---|---|---|
+| `<sheet>` | yes | Exact typewriter sheet name. |
+| `<block-id>` | yes | Saved reusable block id. |
+| `<name>` | yes | New unique name. |
+
+### `xapps typewriter delete-reusable-block`
+
+Delete a saved reusable block.
+
+**Usage:**
+
+```
+xapps typewriter delete-reusable-block <sheet> <block-id> [--request-id <id> --expected-revision <n>] [--verify] [--json]
+```
+
+**Arguments:**
+
+| Argument | Required | Description |
+|---|---|---|
+| `<sheet>` | yes | Exact typewriter sheet name. |
+| `<block-id>` | yes | Saved reusable block id. |
+
+### `xapps typewriter media`
+
+List scoped images with stable path ids and fallback status.
+
+**Usage:**
+
+```
+xapps typewriter media <sheet> [--json]
+```
+
+**Arguments:**
+
+| Argument | Required | Description |
+|---|---|---|
+| `<sheet>` | yes | Exact typewriter sheet name. |
+
+### `xapps typewriter insert-image`
+
+Upload or import and insert a workbook-scoped image.
+
+**Usage:**
+
+```
+xapps typewriter insert-image <sheet> <path|url|upload-ref> [position|end] [--alt <text> --width <px> --height <px> --align left|center|right --wrap break|wrap-left|wrap-right --kind block|inline] [--request-id <id> --expected-revision <n>] [--verify] [--json]
+```
+
+**Arguments:**
+
+| Argument | Required | Description |
+|---|---|---|
+| `<sheet>` | yes | Exact typewriter sheet name. |
+| `<path|url|upload-ref>` | yes | Local image, HTTP(S) URL, or durable /uploads/ reference. |
+| `[position|end]` | no | 0-based block boundary; defaults to end. |
+
+### `xapps typewriter edit-image`
+
+Replace, describe, resize, align, wrap, or convert a scoped image.
+
+**Usage:**
+
+```
+xapps typewriter edit-image <sheet> <media-id> [--source <path|url|upload-ref> --alt <text> --width <px> --height <px> --align left|center|right --wrap break|wrap-left|wrap-right --kind block|inline] [--request-id <id> --expected-revision <n>] [--verify] [--json]
+```
+
+**Arguments:**
+
+| Argument | Required | Description |
+|---|---|---|
+| `<sheet>` | yes | Exact typewriter sheet name. |
+| `<media-id>` | yes | Stable path id returned by media. |
+
+### `xapps typewriter remove-image`
+
+Remove a scoped image from a Typewriter document.
+
+**Usage:**
+
+```
+xapps typewriter remove-image <sheet> <media-id> [--request-id <id> --expected-revision <n>] [--verify] [--json]
+```
+
+**Arguments:**
+
+| Argument | Required | Description |
+|---|---|---|
+| `<sheet>` | yes | Exact typewriter sheet name. |
+| `<media-id>` | yes | Stable path id returned by media. |
+
+### `xapps typewriter navigation`
+
+List bookmarks, cross-references, TOCs, and broken/stale diagnostics.
+
+**Usage:**
+
+```
+xapps typewriter navigation <sheet> [--json]
+```
+
+**Arguments:**
+
+| Argument | Required | Description |
+|---|---|---|
+| `<sheet>` | yes | Exact typewriter sheet name. |
+
+### `xapps typewriter create-bookmark`
+
+Create a named bookmark with a stable identity at an exact text offset.
+
+**Usage:**
+
+```
+xapps typewriter create-bookmark <sheet> <name> <index> [offset] [--id <bookmark-id>] [--request-id <id> --expected-revision <n>] [--verify] [--json]
+```
+
+**Arguments:**
+
+| Argument | Required | Description |
+|---|---|---|
+| `<sheet>` | yes | Exact typewriter sheet name. |
+| `<name>` | yes | Unique non-reserved bookmark name. |
+| `<index>` | yes | 0-based text block index. |
+| `[offset]` | no | Text offset; defaults to 0. |
+
+### `xapps typewriter rename-bookmark`
+
+Rename a stable bookmark and refresh automatic reference labels.
+
+**Usage:**
+
+```
+xapps typewriter rename-bookmark <sheet> <bookmark-id> <name> [--request-id <id> --expected-revision <n>] [--verify] [--json]
+```
+
+**Arguments:**
+
+| Argument | Required | Description |
+|---|---|---|
+| `<sheet>` | yes | Exact typewriter sheet name. |
+| `<bookmark-id>` | yes | Stable bookmark id. |
+| `<name>` | yes | New unique name. |
+
+### `xapps typewriter delete-bookmark`
+
+Delete a bookmark while preserving broken-reference diagnostics.
+
+**Usage:**
+
+```
+xapps typewriter delete-bookmark <sheet> <bookmark-id> [--request-id <id> --expected-revision <n>] [--verify] [--json]
+```
+
+**Arguments:**
+
+| Argument | Required | Description |
+|---|---|---|
+| `<sheet>` | yes | Exact typewriter sheet name. |
+| `<bookmark-id>` | yes | Stable bookmark id. |
+
+### `xapps typewriter insert-cross-reference`
+
+Insert a stable cross-reference to an existing bookmark.
+
+**Usage:**
+
+```
+xapps typewriter insert-cross-reference <sheet> <bookmark-id> <index> <offset> [text] [--id <reference-id>] [--request-id <id> --expected-revision <n>] [--verify] [--json]
+```
+
+**Arguments:**
+
+| Argument | Required | Description |
+|---|---|---|
+| `<sheet>` | yes | Exact typewriter sheet name. |
+| `<bookmark-id>` | yes | Target bookmark id. |
+| `<index>` | yes | 0-based text block index. |
+| `<offset>` | yes | Exact text offset. |
+| `[text]` | no | Optional custom label; defaults to the bookmark name. |
+
+### `xapps typewriter update-cross-reference`
+
+Retarget or relabel an existing cross-reference.
+
+**Usage:**
+
+```
+xapps typewriter update-cross-reference <sheet> <reference-id> [--bookmark-id <id> --text <label>] [--request-id <id> --expected-revision <n>] [--verify] [--json]
+```
+
+**Arguments:**
+
+| Argument | Required | Description |
+|---|---|---|
+| `<sheet>` | yes | Exact typewriter sheet name. |
+| `<reference-id>` | yes | Stable cross-reference id. |
+| `[--bookmark-id <id> --text <label>]` | no | At least one update field is required. |
+
+### `xapps typewriter insert-toc`
+
+Insert a generated TOC snapshot from non-empty headings.
+
+**Usage:**
+
+```
+xapps typewriter insert-toc <sheet> <index> [--id <toc-id>] [--request-id <id> --expected-revision <n>] [--verify] [--json]
+```
+
+**Arguments:**
+
+| Argument | Required | Description |
+|---|---|---|
+| `<sheet>` | yes | Exact typewriter sheet name. |
+| `<index>` | yes | 0-based block insertion index. |
+
+### `xapps typewriter refresh-toc`
+
+Refresh a generated TOC after heading edits.
+
+**Usage:**
+
+```
+xapps typewriter refresh-toc <sheet> <toc-id> [--request-id <id> --expected-revision <n>] [--verify] [--json]
+```
+
+**Arguments:**
+
+| Argument | Required | Description |
+|---|---|---|
+| `<sheet>` | yes | Exact typewriter sheet name. |
+| `<toc-id>` | yes | Stable TOC id. |
+
+### `xapps typewriter insert-structure`
+
+Insert a special character or structural block through the guarded SDK.
+
+**Usage:**
+
+```
+xapps typewriter insert-structure <sheet> <special-character|code-block|blockquote|horizontal-rule|page-break> <index> [value] [--offset <n>] [--request-id <id> --expected-revision <n>] [--verify] [--json]
+```
+
+**Arguments:**
+
+| Argument | Required | Description |
+|---|---|---|
+| `<sheet>` | yes | Exact typewriter sheet name. |
+| `<kind>` | yes | special-character | code-block | blockquote | horizontal-rule | page-break. |
+| `<index>` | yes | Block index or insertion boundary. |
+| `[value]` | no | Character or optional code/quote text. |
+
+### `xapps typewriter set-header-footer`
+
+Configure a rich header or footer with optional first-page and even-page variants.
+
+**Usage:**
+
+```
+xapps typewriter set-header-footer <sheet> <header|footer> <on|off> [--content <doc-json> --different-first --first-content <doc-json> --different-even --even-content <doc-json> --from-edge <px>] [--request-id <id> --expected-revision <n>] [--verify] [--json]
+```
+
+**Arguments:**
+
+| Argument | Required | Description |
+|---|---|---|
+| `<sheet>` | yes | Exact Typewriter sheet name. |
+| `<header|footer>` | yes | Page region to configure. |
+| `<on|off>` | yes | Enable or disable the region. |
+
+### `xapps typewriter set-ruler`
+
+Set paragraph ruler indents and typed tab stops at an exact block index.
+
+**Usage:**
+
+```
+xapps typewriter set-ruler <sheet> <index> [--first-line <pt|null> --left <pt|null> --right <pt|null> --tab-stops <json|null>] [--request-id <id> --expected-revision <n>] [--verify] [--json]
+```
+
+**Arguments:**
+
+| Argument | Required | Description |
+|---|---|---|
+| `<sheet>` | yes | Exact Typewriter sheet name. |
+| `<index>` | yes | 0-based paragraph or heading index. |
+
+### `xapps typewriter view`
+
+Read durable Page/Web/Print, focus, zoom, document-tab, and navigation-rail state.
+
+**Usage:**
+
+```
+xapps typewriter view <sheet> [--json]
+```
+
+**Arguments:**
+
+| Argument | Required | Description |
+|---|---|---|
+| `<sheet>` | yes | Exact Typewriter sheet name. |
+
+### `xapps typewriter set-view`
+
+Atomically patch durable Typewriter view and document-navigation settings.
+
+**Usage:**
+
+```
+xapps typewriter set-view <sheet> [--mode page|web|print --focus true|false --zoom 50..200 --navigation expanded|collapsed --active-tab <id> --doc-tabs <json>] [--request-id <id> --expected-revision <n>] [--verify] [--json]
+```
+
+**Arguments:**
+
+| Argument | Required | Description |
+|---|---|---|
+| `<sheet>` | yes | Exact Typewriter sheet name. |
+
+### `xapps typewriter find`
+
+Return typed find matches with stable text-node paths and offsets.
+
+**Usage:**
+
+```
+xapps typewriter find <sheet> <query> [--case-sensitive --overlap] [--json]
+```
+
+**Arguments:**
+
+| Argument | Required | Description |
+|---|---|---|
+| `<sheet>` | yes | Exact Typewriter sheet name. |
+| `<query>` | yes | Literal text to find. |
+
+### `xapps typewriter statistics`
+
+Read word, character, paragraph, heading, reading-time, and honest page statistics.
+
+**Usage:**
+
+```
+xapps typewriter statistics <sheet> [--json]
+```
+
+**Arguments:**
+
+| Argument | Required | Description |
+|---|---|---|
+| `<sheet>` | yes | Exact Typewriter sheet name. |
+
+### `xapps typewriter replace-query`
+
+Atomically replace one selected find match or every non-overlapping match.
+
+**Usage:**
+
+```
+xapps typewriter replace-query <sheet> <query> [replacement] [--one --match-index <n> --case-sensitive] [--request-id <id> --expected-revision <n>] [--verify] [--json]
+```
+
+**Arguments:**
+
+| Argument | Required | Description |
+|---|---|---|
+| `<sheet>` | yes | Exact Typewriter sheet name. |
+| `<query>` | yes | Literal text to replace. |
+| `[replacement]` | no | Replacement text; omit to delete. |
+
+### `xapps typewriter review-state`
+
+List Typewriter review mode, permissions, comments, suggestions, and immutable provenance.
+
+**Usage:**
+
+```
+xapps typewriter review-state <sheet> [--json]
+```
+
+**Arguments:**
+
+| Argument | Required | Description |
+|---|---|---|
+| `<sheet>` | yes | Exact Typewriter sheet name. |
+
+### `xapps typewriter review-action`
+
+Apply a guarded comment, suggestion, reaction, assignment, resolution, or review-mode action through the typed SDK.
+
+**Usage:**
+
+```
+xapps typewriter review-action <sheet> <action> [--mode editing|suggesting|viewing --anchor <json> --text <text> --comment-id <id> --suggestion-id <id> --reply-id <id> --reaction <name> --active true|false --assignee <json|null> --done true|false] [--actor-id <id> --actor-name <name>] [--request-id <id> --expected-revision <n>] [--verify] [--json]
+```
+
+**Arguments:**
+
+| Argument | Required | Description |
+|---|---|---|
+| `<sheet>` | yes | Exact Typewriter sheet name. |
+| `<action>` | yes | Closed action discriminator; use --help for the supported list. |
+| `[--anchor <json> --text <text>]` | no | Range/node anchor and content for create actions. |
+| `[--comment-id <id> --suggestion-id <id>]` | no | Stable target id for lifecycle actions. |
 
 **Notes:**
 
-- Output is tab-separated: kind, ref, mode. Useful for scripting bulk audits.
+- Create anchors use {"path":[0,0],"from":0,"to":5,"quote":"Hello"}; stale or deleted anchors fail with 409.
+- The CLI always sends explicit actor identity; actor-id defaults to xapps-cli.
+
+### `xapps typewriter history-state`
+
+List durable Typewriter snapshots, restore activity, actors, and permissions.
+
+**Usage:**
+
+```
+xapps typewriter history-state <sheet> [--json]
+```
+
+**Arguments:**
+
+| Argument | Required | Description |
+|---|---|---|
+| `<sheet>` | yes | Exact Typewriter sheet name. |
+
+### `xapps typewriter history-action`
+
+Create or restore a durable guarded Typewriter snapshot through the typed SDK.
+
+**Usage:**
+
+```
+xapps typewriter history-action <sheet> <snapshot_create|snapshot_restore> [--name <name> --snapshot-id <id>] [--actor-id <id> --actor-name <name>] [--request-id <id> --expected-revision <n>] [--verify] [--json]
+```
+
+**Arguments:**
+
+| Argument | Required | Description |
+|---|---|---|
+| `<sheet>` | yes | Exact Typewriter sheet name. |
+| `<action>` | yes | snapshot_create or snapshot_restore. |
+| `[--name <name> --snapshot-id <id>]` | no | Snapshot creation name or stable snapshot target. |
+
+**Notes:**
+
+- The CLI always sends explicit actor identity; actor-id defaults to xapps-cli.
+
+### `xapps typewriter writing-analyze`
+
+Analyze spelling, grammar, style, citations, summary, outline, and rewrite drafts without mutation.
+
+**Usage:**
+
+```
+xapps typewriter writing-analyze <sheet> [--json]
+```
+
+**Arguments:**
+
+| Argument | Required | Description |
+|---|---|---|
+| `<sheet>` | yes | Exact Typewriter sheet name. |
 
 **Examples:**
 
 ```sh
-xapps typewriter list-embeds "Draft"
+xapps typewriter writing-analyze "Draft" --json
 ```
 
-### `xapps typewriter outline`
+### `xapps typewriter writing-preview`
 
-Print the document outline (block index, type, level, alignment, text) as JSON.
+Create a deterministic, fingerprinted writing plan without changing the document.
 
 **Usage:**
 
 ```
-xapps typewriter outline <sheet>
+xapps typewriter writing-preview <sheet> <suggestion|summary|outline|rewrite> [--suggestion-id <id>] [--block-index <n> --from <n> --to <n>] [--json]
+```
+
+**Arguments:**
+
+| Argument | Required | Description |
+|---|---|---|
+| `<sheet>` | yes | Exact Typewriter sheet name. |
+| `<kind>` | yes | suggestion, summary, outline, or rewrite. |
+| `[--suggestion-id <id>]` | no | Server analysis suggestion id for suggestion plans. |
+| `[--block-index <n> --from <n> --to <n>]` | no | Required non-empty text range for rewrite plans. |
+
+**Examples:**
+
+```sh
+xapps typewriter writing-preview "Draft" suggestion --suggestion-id spelling-1 --json
+xapps typewriter writing-preview "Draft" rewrite --block-index 0 --from 0 --to 42 --json
+```
+
+### `xapps typewriter writing-apply`
+
+Explicitly approve and atomically apply a server-issued writing plan.
+
+**Usage:**
+
+```
+xapps typewriter writing-apply <sheet> <plan-json> [--request-id <id> --expected-revision <n>] [--verify] [--json]
+```
+
+**Arguments:**
+
+| Argument | Required | Description |
+|---|---|---|
+| `<sheet>` | yes | Exact Typewriter sheet name. |
+| `<plan-json>` | yes | Unmodified plan object returned by writing-preview. |
+
+**Notes:**
+
+- The SDK forces approved=true; stale revisions, changed source text, tampered plans, and request-id conflicts are rejected.
+
+**Examples:**
+
+```sh
+xapps typewriter writing-apply "Draft" "$PLAN_JSON" --verify --json
+```
+
+### `xapps typewriter outline`
+
+Print the document outline, heading jump targets, and optional filtered result as JSON.
+
+**Usage:**
+
+```
+xapps typewriter outline <sheet> [--filter <text>] [--json]
 ```
 
 **Arguments:**
@@ -676,12 +1700,35 @@ xapps typewriter outline <sheet>
 
 **Notes:**
 
-- The 0-based "index" in each entry is what the granular edit commands (set-block, format-block, set-align, delete-block, insert-paragraph) target.
+- Without --filter, output remains the block array used by granular edits. With --filter, output includes filtered blocks and heading jump targets.
 
 **Examples:**
 
 ```sh
 xapps typewriter outline "Draft"
+```
+
+### `xapps typewriter apply-ops`
+
+Atomically apply a non-empty JSON array from the typed Typewriter document-op union.
+
+**Usage:**
+
+```
+xapps typewriter apply-ops <sheet> <ops-json> [--request-id <id> --expected-revision <n>] [--verify] [--json]
+```
+
+**Arguments:**
+
+| Argument | Required | Description |
+|---|---|---|
+| `<sheet>` | yes | Exact typewriter sheet name from `xapps sheets`. |
+| `<ops-json>` | yes | JSON array of typed document operations; the whole batch commits or rolls back. |
+
+**Examples:**
+
+```sh
+xapps typewriter apply-ops "Draft" '[{"op":"set_paragraph_style","index":0,"style":"title"}]'
 ```
 
 ### `xapps typewriter append-paragraph`
@@ -691,7 +1738,7 @@ Append a paragraph (optionally with text) to the end of the document.
 **Usage:**
 
 ```
-xapps typewriter append-paragraph <sheet> [text]
+xapps typewriter append-paragraph <sheet> [text] [--request-id <id> --expected-revision <n>] [--verify] [--json]
 ```
 
 **Arguments:**
@@ -709,12 +1756,12 @@ xapps typewriter append-paragraph "Draft" "A new closing line."
 
 ### `xapps typewriter insert-paragraph`
 
-Insert a paragraph at a 0-based block index (clamped to the document length).
+Insert a paragraph at an exact 0-based block boundary from 0 through the document length.
 
 **Usage:**
 
 ```
-xapps typewriter insert-paragraph <sheet> <index> [text]
+xapps typewriter insert-paragraph <sheet> <index> [text] [--request-id <id> --expected-revision <n>] [--verify] [--json]
 ```
 
 **Arguments:**
@@ -738,7 +1785,7 @@ Delete the block at a 0-based index (see `outline`).
 **Usage:**
 
 ```
-xapps typewriter delete-block <sheet> <index>
+xapps typewriter delete-block <sheet> <index> [--request-id <id> --expected-revision <n>] [--verify] [--json]
 ```
 
 **Arguments:**
@@ -761,7 +1808,7 @@ Change a block to paragraph, heading, blockquote, or codeBlock (keeps its text).
 **Usage:**
 
 ```
-xapps typewriter set-block <sheet> <index> <type> [--level <1-6>]
+xapps typewriter set-block <sheet> <index> <type> [--level <1-6>] [--request-id <id> --expected-revision <n>] [--verify] [--json]
 ```
 
 **Arguments:**
@@ -787,7 +1834,7 @@ Set a block’s text alignment.
 **Usage:**
 
 ```
-xapps typewriter set-align <sheet> <index> <left|center|right|justify>
+xapps typewriter set-align <sheet> <index> <left|center|right|justify> [--request-id <id> --expected-revision <n>] [--verify] [--json]
 ```
 
 **Arguments:**
@@ -811,7 +1858,7 @@ Apply inline marks (bold,italic,underline,strike,code) to all text in a block.
 **Usage:**
 
 ```
-xapps typewriter format-block <sheet> <index> <marks> [--mode add|remove|set]
+xapps typewriter format-block <sheet> <index> <marks> [--mode add|remove|set] [--request-id <id> --expected-revision <n>] [--verify] [--json]
 ```
 
 **Arguments:**
@@ -830,6 +1877,178 @@ xapps typewriter format-block "Draft" 0 bold,italic
 xapps typewriter format-block "Draft" 0 bold --mode remove
 ```
 
+### `xapps typewriter set-style`
+
+Set paragraph, Title, Subtitle, or Heading 1–6 style on a text block.
+
+**Usage:**
+
+```
+xapps typewriter set-style <sheet> <index> <style> [--request-id <id> --expected-revision <n>] [--verify] [--json]
+```
+
+**Arguments:**
+
+| Argument | Required | Description |
+|---|---|---|
+| `<sheet>` | yes | Exact typewriter sheet name. |
+| `<index>` | yes | 0-based block index from `outline`. |
+| `<style>` | yes | paragraph | title | subtitle | heading-1 | heading-2 | heading-3 | heading-4 | heading-5 | heading-6 |
+
+**Examples:**
+
+```sh
+xapps typewriter set-style "Draft" 0 title
+```
+
+### `xapps typewriter format-range`
+
+Apply marks, font, size, color, highlight, or link to a deterministic block-text range.
+
+**Usage:**
+
+```
+xapps typewriter format-range <sheet> <index> <from> <to> [--marks <csv> --mode add|remove|set] [--font-family <value>] [--font-size <value>] [--color <value>] [--highlight <value>] [--link <value>] [--new-tab] [--request-id <id> --expected-revision <n>] [--verify] [--json]
+```
+
+**Arguments:**
+
+| Argument | Required | Description |
+|---|---|---|
+| `<sheet>` | yes | Exact typewriter sheet name. |
+| `<index>` | yes | 0-based block index from `outline`. |
+| `<from>` | yes | Inclusive 0-based text offset. |
+| `<to>` | yes | Exclusive text offset; must be greater than from. |
+
+**Examples:**
+
+```sh
+xapps typewriter format-range "Draft" 0 0 8 --marks bold --font-size 18 --color "#1f2937" --link https://example.com --new-tab
+```
+
+### `xapps typewriter set-line-spacing`
+
+Set or reset line spacing on a block.
+
+**Usage:**
+
+```
+xapps typewriter set-line-spacing <sheet> <index> <spacing> [--request-id <id> --expected-revision <n>] [--verify] [--json]
+```
+
+**Arguments:**
+
+| Argument | Required | Description |
+|---|---|---|
+| `<sheet>` | yes | Exact typewriter sheet name. |
+| `<index>` | yes | 0-based block index. |
+| `<spacing>` | yes | A 0.5–10 line-height multiple, or reset. |
+
+**Examples:**
+
+```sh
+xapps typewriter set-line-spacing "Draft" 1 1.5
+```
+
+### `xapps typewriter adjust-indent`
+
+Indent or outdent a block by one or more levels.
+
+**Usage:**
+
+```
+xapps typewriter adjust-indent <sheet> <index> <indent|outdent> [amount] [--request-id <id> --expected-revision <n>] [--verify] [--json]
+```
+
+**Arguments:**
+
+| Argument | Required | Description |
+|---|---|---|
+| `<sheet>` | yes | Exact typewriter sheet name. |
+| `<index>` | yes | 0-based block index. |
+| `<direction>` | yes | indent | outdent. |
+| `[amount]` | no | Integer levels, default 1. |
+
+**Examples:**
+
+```sh
+xapps typewriter adjust-indent "Draft" 1 indent 2
+```
+
+### `xapps typewriter set-list`
+
+Convert a block or existing list between bullet, ordered, checklist, and plain blocks.
+
+**Usage:**
+
+```
+xapps typewriter set-list <sheet> <index> <bullet|ordered|checklist|none> [--style <style>] [--checked true|false] [--request-id <id> --expected-revision <n>] [--verify] [--json]
+```
+
+**Arguments:**
+
+| Argument | Required | Description |
+|---|---|---|
+| `<sheet>` | yes | Exact typewriter sheet name. |
+| `<index>` | yes | 0-based block index. |
+| `<list-type>` | yes | bullet | ordered | checklist | none. |
+
+**Examples:**
+
+```sh
+xapps typewriter set-list "Draft" 2 checklist --checked false
+```
+
+### `xapps typewriter insert-break`
+
+Insert a horizontal rule or page break at a block boundary.
+
+**Usage:**
+
+```
+xapps typewriter insert-break <sheet> <index> <horizontal|page> [--request-id <id> --expected-revision <n>] [--verify] [--json]
+```
+
+**Arguments:**
+
+| Argument | Required | Description |
+|---|---|---|
+| `<sheet>` | yes | Exact typewriter sheet name. |
+| `<index>` | yes | Insertion index from 0 through the block count. |
+| `<break-type>` | yes | horizontal | page. |
+
+**Examples:**
+
+```sh
+xapps typewriter insert-break "Draft" 3 page
+```
+
+### `xapps typewriter replace-range`
+
+Replace one deterministic block-text range while preserving the first selected run’s marks.
+
+**Usage:**
+
+```
+xapps typewriter replace-range <sheet> <index> <from> <to> [text] [--request-id <id> --expected-revision <n>] [--verify] [--json]
+```
+
+**Arguments:**
+
+| Argument | Required | Description |
+|---|---|---|
+| `<sheet>` | yes | Exact typewriter sheet name. |
+| `<index>` | yes | 0-based block index. |
+| `<from>` | yes | Inclusive 0-based text offset. |
+| `<to>` | yes | Exclusive text offset. |
+| `[text]` | no | Replacement text; omit to delete the range. |
+
+**Examples:**
+
+```sh
+xapps typewriter replace-range "Draft" 0 0 5 "Launch"
+```
+
 ### `xapps typewriter replace-text`
 
 Plain-text find/replace across the document (all matches by default).
@@ -837,7 +2056,7 @@ Plain-text find/replace across the document (all matches by default).
 **Usage:**
 
 ```
-xapps typewriter replace-text <sheet> <find> [replace] [--first]
+xapps typewriter replace-text <sheet> <find> [replace] [--first] [--request-id <id> --expected-revision <n>] [--verify] [--json]
 ```
 
 **Arguments:**
@@ -866,23 +2085,22 @@ xapps typewriter replace-text "Draft" "TODO" "" --first
   fidelity.
 - **Surface embeds in Markdown** flatten to `[Embed: <kind>]` placeholder
   text. HTML preserves the embed node so an HTML round-trip survives.
-- **DOCX export from CLI is unsupported.** The `docx` library ships in the
-  lazy browser bundle. CLI export covers `html`, `md`, `txt`, and `json`.
-- **Cross-reference live navigation is in-flight.** The Cross-reference
-  dialog ships in V2.1.11, but heading nodes don't yet emit
-  `id="heading-{slug}"`, so generated cross-refs render as plain text on
-  click.
-- **Ruler interactivity** is V2.1.12 territory. V2.1.11 ships a reflect-
-  only ruler — markers track cursor position; dragging tabs/indent
-  triangles is not yet wired. Check `typewrite.md` Status table for the
-  current state.
-- **Live-mode embeds** are deferred. Dropping a spreadsheet range into a
-  typewriter doc creates a snapshot, not a live binding. Live-mode lands
-  when the workbook collab runtime exposes a per-sheet Y.Doc accessor.
-- **Yjs duplicate-import warning.** The lazy editor bundle ships its own
-  `yjs` instance; the workbook collab runtime carries another. Tiptap's
-  Collaboration extension still works but Yjs constructor checks across
-  instances are unreliable. Resolves when `XAppsCollab.getYDoc()` lands.
+- **DOCX import/export is public and bounded.** API, SDK, CLI, MCP/toolkit,
+  and browser flows share the same package validation and fidelity report.
+- **RTF and ODT are unsupported.** The fidelity report documents this product
+  decision and points users to DOCX, HTML, Markdown, or JSON alternatives.
+- **PDF is browser print-only.** The CLI/server path does not generate PDFs;
+  use Typewriter → Print in the live app for visual PDF output.
+- **Writing tools are local heuristics.** The current implementation is a
+  deterministic spelling/grammar/style/citation assistant, not a remote LLM,
+  live translation engine, or voice typing system.
+- **Surface embed export** uses the latest saved snapshot fallback. Live
+  embeds continue to refresh inside the app, but Markdown/DOCX exports remain
+  placeholder-based.
+- **Publish/admin readiness is a decision surface.** Download restrictions and
+  xApps-native ecosystem hooks are implemented, but public publish URLs,
+  e-signature envelopes, admin audit retention, external connectors, and
+  encryption-at-rest/KMS commitments remain platform work.
 - **Tiptap StarterKit duplicate extension names.** StarterKit v3 already
   includes `Underline` and `Link`; the bundle imports both explicitly.
   Harmless dedup at runtime but should be cleaned up.
@@ -899,10 +2117,17 @@ xapps typewriter replace-text "Draft" "TODO" "" --first
 | Toolbar | `src/runtime/browser-toolbar*.ts` |
 | Ruler (reflect-only) | `src/runtime/browser-ruler*.ts` |
 | Insert menu wiring | `src/runtime/browser-menu-handlers.ts` + `src/runtime/browser-insert-extensions.ts` |
+| Smart insert and chips | `src/runtime/browser-smart-insert.ts` |
 | Insert dialogs (image / link / embed / bookmark / cross-ref / special chars) | `src/runtime/browser-{image,link-dialog,insert-embed-dialog,bookmark-dialog,special-chars}.ts` |
+| Find / review / stats dialogs | `src/runtime/browser-{find-replace,review-comments,document-stats-dialog}.ts` |
+| Writing tools | `src/writing-tools.ts`, `src/runtime/browser-writing-tools.ts` |
+| Keyboard shortcuts and command finder | `src/runtime/browser-keyboard-shortcuts.ts`, `src/runtime/browser-menu-handlers.ts` |
+| Mobile/offline readiness | `src/mobile-offline-strategy.ts`, `src/runtime/browser-mobile-offline-readiness.ts` |
+| Publish/admin readiness | `src/publish-admin-ecosystem.ts`, `src/runtime/browser-publish-admin-readiness.ts` |
 | Tables | `src/runtime/browser-table*.ts` |
 | Surface embed mechanism | `src/runtime/browser-surface-embed.ts` + `src/runtime/browser-insert-embed-snapshots.ts` |
 | HTML / Markdown import-export | `src/runtime/browser-import-export-{html,md}.ts` |
+| Import/export fidelity report | `src/import-export-fidelity.ts`, `src/runtime/browser-import-export-fidelity.ts` |
 | DOCX import-export | `src/runtime/browser-docx-{serializer,importer,bundle,loader}.ts` |
 | Page chrome (header/footer, page numbering) | `src/runtime/browser-page-{chrome,setup,setup-dialog,pagination,print}.ts` |
 | Right-click context menu | `src/runtime/browser-context-menu*.ts` |

@@ -1,5 +1,22 @@
 ## Polls
 
+### Run a poll from question to result
+
+Use Poll when people should submit answers through a dedicated voter link. A Poll sheet is the organizer's editing and results surface; the voter page is the participant experience. Preview both before sharing.
+
+1. Write a specific question and choose a matching answer type. Use a single choice for one preferred option, multiple choice when several answers are allowed, and a rating when you need a scale.
+2. Review the answer options and instructions. For a stepped multi-question poll, check the question order and the final submit step as well as the first screen.
+3. Choose anonymous or identified responses, when results become visible, and whether people may edit after submission. State these expectations in your invitation so participants know what they are sharing.
+4. Open the voter URL from the sharing controls and submit a sample response in a disposable poll before running a real vote. Confirm the success state and the organizer's result, not merely that the page opened.
+5. Share the actual voter link. People should not need to navigate the organizer's workbook to answer. Monitor response totals and the question breakdown while the poll is open.
+6. Close the poll when voting ends and review the final results. If an on-close Kanban action is configured, inspect the resulting card; it is a separate workflow outcome from receiving votes.
+
+### Avoid common poll surprises
+
+An anonymous poll and an identified poll have different identity expectations. An edit-after-submit setting affects what an existing voter can change; it does not guarantee that an unrelated browser will recognize that voter. Results visibility affects participants' view, so check it before interpreting a hidden chart as a missing response.
+
+Saving a poll in the workspace library lets you reuse its authored structure. Confirm whether you are opening an existing poll or starting a new vote before circulating a link intended for a fresh audience.
+
 ### Run a live vote with mobile-first voter UX
 
 Poll sheets turn a workbook tab into a live polling surface. The same sheet is the **author's editor** and the **voter's view** — render mode flips on URL state and lifecycle. Voters open a deep-link (`?sheet=<name>&mode=vote`) on a phone or laptop, the chrome auto-locks, and they see only the question + tap-to-vote. Authors stay in admin mode with the question editor, live results panel, and share dialog.
@@ -16,7 +33,7 @@ Polls are useful for audience Q&A, product feedback, planning votes, retrospecti
 
 - Six question types: **single**, **multi**, **rating** (stars / NPS / numeric), **yes/no**, **text**, **ranking**
 - Mobile-first voter view with auto chrome lockdown (no menubar, no sheet tabs, no `+` button)
-- Lifecycle gates: `draft → open → closed`. Question structure is editable in draft only; option-add stays allowed once open
+- Lifecycle gates: `draft → open → closed`. Adding or removing questions and options is draft-only; open polls freeze the response contract while cosmetic text and media edits remain available
 - One-vote-per-viewer with cookie dedupe for anonymous polls and `viewerId` dedupe for identified polls
 - Per-IP rate limit (30 / minute, X-Forwarded-For-aware)
 - "Allow edit after submit" mode replaces the prior response instead of stacking duplicates
@@ -36,7 +53,7 @@ Polls are useful for audience Q&A, product feedback, planning votes, retrospecti
 2. **Set the title.** Click the title field at the top and type the poll's name. Tab away or press Enter to save.
 3. **Add a question.** Tap one of the type chips (Single / Multi / Rating / Yes/No / Text / Rank) at the bottom. A starter question appears.
 4. **Edit the prompt and options.** Click the prompt text or any option label to rename. Click the `✕` next to an option to delete it. Use the "Add an option…" row at the bottom of the question card to append.
-5. **Open the poll.** Click **Open poll** in the top bar. Question structure locks; `option-add` is still allowed for choice / multi / ranking types so you can extend during a live event without invalidating prior tallies.
+5. **Open the poll.** Click **Open poll** in the top bar. Question structure and option creation lock. Existing prompt and option presentation may still be edited, but add, remove, reorder, and type changes return `lifecycle_locked`.
 6. **Share the URL.** Click **Share** in the top bar, copy the voter URL, and send it to participants.
 7. **Watch results.** The live results panel below the question editor refreshes every 2 seconds while the admin pane is open.
 8. **Close the poll.** Click **Close poll** in the top bar when voting is done. The voter URL flips to a final-results view with a "This poll closed" banner.
@@ -61,7 +78,11 @@ Polls are useful for audience Q&A, product feedback, planning votes, retrospecti
 - **Already-voted state:** picked option stays highlighted, results bars persist, second submit returns `409 already_voted` (unless `allowEditAfterSubmit` is true).
 - **Closed poll:** voting is disabled; the same options are shown as final-results bars with a "This poll closed" banner.
 
-![Poll voter view](/help-assets/screenshots/poll-voter-view.png)
+![Desktop voter view with Working with data selected before explicit submission](/help-assets/screenshots/poll-voter-view.png)
+
+![Confirmed vote with the selected answer and visible result](/help-assets/screenshots/poll-vote-confirmation.png)
+
+The example is an anonymous, single-question poll with explicit submission and result visibility enabled. Selecting an option is the draft step; the confirmation appears after the server accepts the response.
 
 ---
 
@@ -170,7 +191,7 @@ Q=$(xapps add-question Survey --type yesno \
 xapps add-option Survey "$Q" "Yes"
 xapps add-option Survey "$Q" "No"
 
-# Open and vote
+# Open the authored poll; read responses (voters submit their own answers)
 xapps set-poll-status Survey open
 xapps poll-responses Survey
 ```
@@ -183,7 +204,7 @@ Run `xapps help poll <command>` for per-command flags.
 
 ### MCP
 
-The MCP surface mirrors the CLI 1:1: `poll_config`, `poll_set_config`, `poll_add_question`, `poll_update_question`, `poll_delete_question`, `poll_reorder_questions`, `poll_add_option`, `poll_set_status`, `poll_submit_response`, `poll_responses`. Useful for agent flows that build out a poll from a brief, run a synthetic vote, or scrape live tallies.
+The MCP surface mirrors the CLI 1:1: `poll_config`, `poll_set_config`, `poll_add_question`, `poll_update_question`, `poll_delete_question`, `poll_reorder_questions`, `poll_add_option`, `poll_set_status`, `poll_submit_response`, `poll_responses`. Useful for agent flows that author a poll from a brief or read authorized live tallies. Poll authoring does not authorize voting for another person. Synthetic responses belong only in an explicitly isolated test poll; never add fabricated votes to a real poll.
 
 ---
 
@@ -198,7 +219,7 @@ All admin and voter operations route through `/api/sheets/<poll>/*`:
 | `/api/sheets/<poll>/questions`                                  | GET/POST| List / add a question                                              |
 | `/api/sheets/<poll>/questions/<id>`                             | PUT/DELETE | Patch / delete a question                                       |
 | `/api/sheets/<poll>/questions/reorder`                          | POST    | Replace question order                                             |
-| `/api/sheets/<poll>/questions/<id>/options`                     | POST    | Append an option (allowed on open polls)                           |
+| `/api/sheets/<poll>/questions/<id>/options`                     | POST    | Append an option (draft only)                                      |
 | `/api/sheets/<poll>/questions/<id>/options/<oid>`               | PUT/DELETE | Patch / delete an option (delete is draft-only)                 |
 | `/api/sheets/<poll>/responses`                                  | GET/POST| Admin readback / submit a vote                                     |
 | `/api/sheets/<poll>/tally`                                      | GET     | Aggregate option counts (gated by `showResults`)                   |
@@ -220,8 +241,8 @@ POSTing a response is rate-limited (30 / minute / IP) and dedupes on cookie or `
 - `open → closed` stamps `pollConfig.closesAt`.
 - `closed → open` (reopen) clears `closesAt` and preserves prior responses.
 - Same-state transitions are rejected with `409`.
-- On `open`: question add / type change / question delete / option delete are blocked. Option add and cosmetic-only patches (prompt, required, color) stay allowed so authors can extend during a live event.
-- On `closed`: all mutations are blocked. POST `/responses` returns `410 poll_closed`.
+- On `open`: question add / type change / question delete / question reorder / option add / option delete are all blocked — each would change the response contract voters already answered under. Cosmetic-only patches stay allowed: `prompt` and `imageUrl` on a question, option updates, and the cosmetic `PollConfig` fields (`title`, `description`, `accentColor`, `coverImageUrl`, `brandLogoUrl`), plus the scheduling/automation fields `closesAt` (extend or shorten the deadline) and `onClose`. Every other `PollConfig` field — `anonymous`, `oneVotePerViewer`, `submitMode`, `showResults`, `allowEditAfterSubmit` — is rejected with `409 lifecycle_locked`.
+- On `closed`: question and response mutations are blocked. POST `/responses` returns `410 poll_closed`. `PUT /config` is still accepted so results can be re-projected — `showResults` in particular, which is how "close the poll, then publish the results" works — **except** for the response-contract fields `anonymous`, `oneVotePerViewer` and `submitMode`. Those stay frozen for the life of the poll once it leaves `draft`. Closing settles a poll; it does not unlock it. `anonymous` in particular is a projection, not an erasure — `viewerId` / `displayName` remain on disk — so permitting a post-close flip would let an author un-redact identities they had already hidden, and would silently re-point the dedupe key for any later reopen.
 
 ---
 
@@ -319,8 +340,7 @@ The stepped flow is entirely client-side; the server still receives a single `PO
 
 ---
 
-### Known Follow-Ups
+### Current limitations
 
 - **Cross-surface integrations.** Kanban-on-close ships. Doc / typewriter live-embed of the results panel + dashboard widget for poll responses are still open.
-- **Additional browser split cleanup.** `browser-admin.ts` and `browser-vote.ts` are now under the 900-line guardrail, but single-question / stepped-flow renderers can still be split further if future feature work adds size back.
 - **CLI yesno auto-seed.** `add-question --type yesno` does not seed yes/no options automatically; this is a known CLI ergonomics gap documented in the CLI section above.

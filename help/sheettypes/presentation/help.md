@@ -2,6 +2,52 @@
 
 ### Build slide decks inside the workbook
 
+Use **Presentation** for a sequence of slides with speaker notes and playback.
+Use **Design Canvas** for a standalone graphic and **Typewriter** for a report
+people will read as a document.
+
+### Build a deck people can follow
+
+1. Start with a deck template for a ready-made narrative, or add individual
+   template slides for your own structure.
+2. Choose a theme before polishing objects so the deck has consistent colors.
+3. Write each title as its slide's main point. Choose a suitable layout for
+   the evidence: KPI for metrics, comparison for alternatives, timeline for dates.
+4. Edit text on the stage and use the Objects panel for precise selection,
+   position and size. Put detailed explanation in the speaker notes below.
+5. Reorder the thumbnails into the story you want to tell. Check the opening
+   and closing as carefully as the middle of the deck.
+6. Start playback with **F5** or **View → Start presentation**. Navigate through
+   every slide and press **Escape** to return to editing.
+7. Export PDF for viewing or editable PowerPoint for further work. Inspect the
+   result and its fidelity report before sending it.
+
+### Choose a starting point
+
+| Goal | Starting point | Add before presenting |
+|---|---|---|
+| Report project progress | Project Status | Actual milestones, risks and decisions |
+| Explain a proposal | Sales Proposal | Audience-specific problem, scope and price |
+| Teach a process | Training Workshop | Worked examples and exercise instructions |
+| Pitch a product | Startup Pitch | Evidence, assumptions and the specific ask |
+
+### Keep numbers connected to their evidence
+
+Use `{{SheetName!CellRef}}` in text for live workbook values. Use a live embed
+for a workbook view that needs more context than one number. Open its source
+before the meeting and confirm the latest values. Exports capture a point in
+time; the workbook remains the place to edit the source and linked presentation.
+
+### Rehearse the complete experience
+
+- Read the slide title first: it should express what the audience needs to
+  understand, not only name the topic.
+- Check labels, tables and images in playback.
+- Review each slide's speaker notes and linked sources.
+- Advance through the final slide, then open the exported file.
+
+### Feature reference
+
 Presentation sheets give you a full slide editor with themes, slide templates, deck templates, text boxes, shapes, tables, images, speaker notes, and fullscreen playback -- all without leaving xApps.
 
 > 🤖 Agent example: an agent can draft the first slide deck from workbook data, lay out the narrative, and leave the human presenter with editable slides rather than a blank canvas.
@@ -34,6 +80,7 @@ Presentation sheets give you a full slide editor with themes, slide templates, d
 - Template variables in text boxes
 - PowerPoint (PPTX) import
 - PDF export
+- Editable PowerPoint (PPTX) export
 - Fullscreen presenter mode (F5, with slide counter and navigation)
 
 ---
@@ -146,7 +193,7 @@ Built-in shape types:
 | `leftBrace` | Brace |
 | `punchedTape` | Punched Tape |
 
-Shapes support fill color, stroke color, stroke width, border style (solid, dashed, dotted), opacity, and optional text labels. Select a shape and press `Enter` or click it again to edit the label text. In the inspector panel, use the **Rotation** field (-360 to 360 degrees) to rotate any shape.
+Shapes support fill color, stroke color, stroke width, border style (solid, dashed, dotted), opacity, and optional text labels. Select a shape and press `Enter` or click it again to edit the label text. Use the on-slide rotation handle for visual rotation, hold `Shift` while dragging to snap to 15 degree increments, or use the inspector **Rotation** field (-360 to 360 degrees) for exact values.
 
 #### Lines and Arrows
 
@@ -251,6 +298,8 @@ Variables resolve at render time, keeping slides in sync with workbook data. Use
 | Delete selection | `Delete` or `Backspace` |
 | Duplicate object | `Ctrl/Cmd + D` |
 | Select all | `Ctrl/Cmd + A` |
+| Rotate selected 1 degree | `Alt + Left/Right` |
+| Rotate selected 15 degrees | `Alt + Shift + Left/Right` |
 | Undo | `Ctrl/Cmd + Z` |
 | Start presentation | `F5` or **View > Start presentation** |
 | Deselect | `Escape` |
@@ -272,9 +321,14 @@ Variables resolve at render time, keeping slides in sync with workbook data. Use
 | Action | How |
 |---|---|
 | Import a PowerPoint file | **File > Import > PowerPoint** |
-| Export as PDF | **Slides > Export as PDF (Print)** |
+| Export as PDF | **Slides > Export as PDF (Print)** for highest fidelity, or **Download PDF (.pdf)** for deterministic bytes |
+| Export an editable PowerPoint file | **Slides > Export as PowerPoint (.pptx)** |
 
-PPTX import converts slides, text boxes, shapes, and images into editable xApps presentation objects.
+PPTX import converts slides, text boxes, shapes, and images into editable xApps presentation objects and persists an import-fidelity report. Hosts may optionally inject `XAppsPresentationPptxFidelityRenderer`, which returns exactly one image byte payload or durable workbook reference per slide; xApps persists those images as click-through visual fidelity layers while the editable DrawingML objects remain authoritative. With no renderer, an unavailable renderer, or an invalid result, import either uses the normal portable DrawingML fallback with a truthful report or rejects without changing the deck. xApps itself never invokes PowerPoint, AppleScript, LibreOffice, or a desktop renderer.
+
+The product intentionally opts out of bundling or invoking a renderer for the `>=0.97` target. The measured local print-quality reference provider produced weighted SSIM `0.962303457` across five decks and all 140 audit slides—an improvement over the editable-only `0.846024` baseline, but still below `0.97`. This intentional opt-out is not a `0.97` claim.
+
+Import remains browser-executed so automation cannot bypass the DrawingML fidelity engine; the API, SDK, CLI, MCP, and toolkit return an explicit browser-required rejection after validating package safety. Deterministic PDF and editable PPTX downloads are also available from the sheet menu and public format API.
 
 ---
 
@@ -284,6 +338,53 @@ PPTX import converts slides, text boxes, shapes, and images into editable xApps 
 export XAPPS_API_BASE_URL="https://your-xapps-host"
 ```
 
+#### Presentation import/export -- Validate, report, and export artifacts
+
+```bash
+xapps presentation-format-capabilities "Pitch Deck" --json
+xapps presentation-import-pptx-fidelity "Pitch Deck" --json
+xapps presentation-export-pdf "Pitch Deck" ./pitch.pdf
+xapps presentation-export-pptx "Pitch Deck" ./pitch.pptx
+```
+
+`presentation-import-pptx` validates malformed, oversized, encrypted, and unsupported input, then returns the browser handoff instead of claiming a false automated import pass.
+
+#### create-presentation -- Create a deck with its default slide
+
+```bash
+xapps create-presentation "Quarterly Review"
+```
+
+#### presentation-settings / set-presentation-settings -- Read or update deck settings
+
+```bash
+xapps presentation-settings "Pitch Deck" --json
+xapps set-presentation-settings "Pitch Deck" '{"presentationTheme":"aurora","presentationZoom":125,"presentationSlideWidth":1280,"presentationSlideHeight":720}' --json
+xapps set-presentation-theme "Pitch Deck" aurora --json
+```
+
+#### Typed generation, templates, AI runs, and object editing
+
+```bash
+xapps generate-deck "Pitch Deck" "Quarterly launch plan" --slides 8 --json
+xapps presentation-templates "Pitch Deck" --json
+xapps preview-presentation-template "Pitch Deck" deck pitch --json
+xapps apply-presentation-template "Pitch Deck" deck pitch --json
+xapps apply-deck-template "Pitch Deck" pitch --json
+
+xapps presentation-object-edit-state "Pitch Deck" slide-abc --json
+xapps edit-presentation-objects "Pitch Deck" slide-abc '{"action":"transform","objectIds":["obj-1"],"transform":{"dx":20}}' --json
+xapps undo-presentation-object-edit "Pitch Deck" slide-abc --json
+xapps redo-presentation-object-edit "Pitch Deck" slide-abc --json
+
+xapps presentation-ai-runs "Pitch Deck" --json
+xapps presentation-ai-run "Pitch Deck" run-1 --json
+xapps create-presentation-ai-run "Pitch Deck" '<closed-run-json>' --json
+xapps transition-presentation-ai-run "Pitch Deck" run-1 '<closed-transition-json>' --json
+```
+
+Template applies and object edits use the current revision automatically unless an explicit guarded request is supplied. AI-run commands manage durable provider lifecycle records; `generate-deck` itself remains deterministic and SDK-backed.
+
 #### slides -- List all slides in a deck
 
 ```bash
@@ -291,6 +392,42 @@ xapps slides "Pitch Deck"
 #   0: slide-abc Title Slide (3 objects)
 #   1: slide-def Problem (5 objects)
 #   2: slide-ghi Solution (7 objects)
+```
+
+#### presentation-slide-state -- Read the guarded deck revision
+
+Read this immediately before an atomic batch or reorder:
+
+```bash
+xapps presentation-slide-state "Pitch Deck" --json
+# {"ok":true,"revision":4,"count":3,"slides":[...]}
+```
+
+#### apply-slides-batch -- Atomically replace or append slides
+
+```bash
+xapps apply-slides-batch "Pitch Deck" '{"mode":"replace","slides":[{"id":"slide-new","name":"New deck","objects":[]}],"expectedRevision":4,"requestId":"replace-deck-001"}' --json
+```
+
+The full batch is validated before mutation. A stale revision or a request ID reused with a different payload is rejected. Retry the identical request ID and payload safely after a dropped response.
+
+#### reorder-slides -- Atomically reorder the exact slide set
+
+```bash
+xapps reorder-slides "Pitch Deck" "slide-ghi,slide-def,slide-abc" \
+  --expected-revision 5 \
+  --request-id "reorder-deck-001" \
+  --json
+```
+
+#### duplicate-slide -- Atomically duplicate a slide
+
+```bash
+xapps duplicate-slide "Pitch Deck" slide-abc \
+  --expected-revision 5 \
+  --request-id "duplicate-slide-001" \
+  --name "Copy" \
+  --json
 ```
 
 #### add-slide-layout -- Create a slide from a standard layout
@@ -314,6 +451,13 @@ xapps add-slide "Pitch Deck" '{"name":"Custom","bg":"#1e1b4b","objects":[]}'
 ```bash
 xapps update-slide "Pitch Deck" slide-abc456 '{"name":"Updated Title","bg":"#ffffff"}'
 # Slide slide-abc456 updated
+```
+
+#### slide-notes / set-slide-notes -- Read or update speaker notes
+
+```bash
+xapps slide-notes "Pitch Deck" slide-abc --json
+xapps set-slide-notes "Pitch Deck" slide-abc "Pause for questions"
 ```
 
 #### delete-slide -- Delete a slide
@@ -342,6 +486,8 @@ xapps presentation-shapes
 #   triangle Triangle
 #   pill    Pill
 #   arrow   Arrow
+#   doubleArrow, chevron, hexagon, star, parallelogram, trapezoid,
+#   wedgeCallout, leftBrace, punchedTape
 ```
 
 #### add-text-box -- Add a text box to a slide
@@ -367,6 +513,18 @@ xapps add-image "Pitch Deck" slide-abc "https://example.com/photo.jpg" --x 100 -
 # From local file (uploaded)
 xapps add-image "Pitch Deck" slide-abc ./chart.png --upload --fit cover
 # Slide object created: obj-345
+```
+
+#### Typed visual media commands
+
+These guarded commands read the current object revision automatically unless you provide both `--expected-revision` and `--request-id`:
+
+```bash
+xapps add-presentation-line "Pitch Deck" slide-abc '{"x":100,"y":180,"w":320,"h":4,"style":{"lineType":"double-arrow","stroke":"#2563eb","strokeWidth":4}}'
+xapps add-presentation-table "Pitch Deck" slide-abc '{"x":80,"y":140,"w":560,"h":220,"rows":[[{"text":"Metric"},{"text":"Value"}],[{"text":"ARR"},{"text":"$8.4M"}]]}'
+xapps add-presentation-chart "Pitch Deck" slide-abc '{"x":100,"y":130,"w":520,"h":280,"chartKind":"bar","chartData":{"categories":["Q1","Q2"],"series":[{"name":"ARR","values":[6.8,8.4]}]}}'
+xapps add-presentation-live-embed "Pitch Deck" slide-abc '{"x":80,"y":150,"w":600,"h":260,"liveData":{"kind":"range","sheet":"Metrics","range":"A1:D12","headerRow":true}}'
+xapps edit-presentation-image "Pitch Deck" slide-abc obj-345 '{"style":{"fit":"cover","brightness":110,"contrast":105,"clipShape":"rounded-rect"}}'
 ```
 
 #### set-slide-background -- Set slide background color
@@ -406,6 +564,22 @@ xapps delete-slide-object "Pitch Deck" slide-abc obj-678
 ```bash
 curl -H 'X-XApps-File: MyWorkbook.json' $XAPPS_API_BASE_URL/api/sheets/Pitch%20Deck/slides
 ```
+
+#### Read transaction state and apply a guarded batch
+
+```bash
+curl -H 'X-XApps-File: MyWorkbook.json' \
+  $XAPPS_API_BASE_URL/api/sheets/Pitch%20Deck/slides:state
+
+curl -X POST $XAPPS_API_BASE_URL/api/sheets/Pitch%20Deck/slides:batch \
+  -H 'X-XApps-File: MyWorkbook.json' \
+  -H 'Content-Type: application/json' \
+  -d '{"mode":"append","slides":[{"id":"slide-next","name":"Next","objects":[]}],"expectedRevision":4,"requestId":"append-slide-001"}'
+```
+
+`replace` and `append` use `slides`; `reorder` uses the exact current `slideIds` set in the desired order. The receipt includes the new `revision`, `requestId`, and `replayed` flag.
+
+The revision and bounded receipt ledger are server-owned. A normal browser/whole-sheet save that changes Presentation state advances the same revision and preserves the server ledger, so a batch created from an older state receives `409` instead of overwriting the browser edit. If transaction persistence fails, the in-memory slides, current slide, revision, and receipts are restored before the error is returned.
 
 #### Create a slide
 
@@ -465,52 +639,42 @@ curl -X DELETE -H 'X-XApps-File: MyWorkbook.json' $XAPPS_API_BASE_URL/api/sheets
 
 ### Agent / AI Workflow Recipes
 
-#### Recipe 1: Auto-generate a status report deck
-
-An AI agent can read project data from a spreadsheet and build a complete status deck:
+The recipes use an existing authorized `MyWorkbook.json` in `local` storage. Replace that file and storage target together for your actual workbook, and set `XAPPS_API_BASE_URL` to its authorized host. Commands that extract structured receipts also require `jq`.
 
 ```bash
-# Create slides from layout templates
-xapps add-slide-layout "Status" title --name "Q2 Update"
-xapps add-slide-layout "Status" title-body --name "Milestones"
-
-# List slides to get IDs
-xapps slides "Status"
-
-# Add KPI text boxes with template variables
-xapps add-text-box "Status" slide-abc "Revenue: {{Metrics!B2}}" --x 100 --y 200 --size 44 --color "#0f172a"
-xapps add-text-box "Status" slide-abc "Growth: {{Metrics!B3}}" --x 400 --y 200 --size 44 --color "#16a34a"
+xapps_scoped() {
+  xapps --base-url "${XAPPS_API_BASE_URL:?Set the authorized host URL}" \
+    --file 'MyWorkbook.json' --workbook-storage-target local "$@"
+}
 ```
 
-#### Recipe 2: Build a product comparison deck
+Presentation keeps provider execution, credentials and resumable provider state in the shared Assistant/provider layer. Deterministic composition and durable Presentation AI-run records return through guarded slide/object tools. Stock-provider credentials remain server-managed. Internal critique, prompt improvement and design-direction choices are orchestration steps rather than separate provider lifecycles.
+
+Use an existing `Status` deck. Prepare a typed slide array with stable slide/object IDs and replace illustrative text with evidence-backed content before applying:
 
 ```bash
-# Create comparison slides
-xapps add-slide-layout "Compare" two-column --name "Feature Comparison"
-xapps slides "Compare"
-
-# Add content to each column
-xapps add-text-box "Compare" slide-xyz "Our Product" --x 80 --y 170 --w 400 --h 40 --size 28 --align center
-xapps add-text-box "Compare" slide-xyz "Competitor" --x 520 --y 170 --w 400 --h 40 --size 28 --align center
-
-# Add shapes for visual elements
-xapps add-shape "Compare" slide-xyz circle --x 250 --y 300 --w 60 --h 60 --fill "#16a34a" --text "A+" --color "#fff"
+xapps_scoped presentation-slide-state Status --json > status-before.json
+PRESENTATION_REVISION=$(jq -er '.revision' status-before.json)
+cat > status-slides.json <<'JSON'
+[{"id":"status-review-1","name":"Review summary","bg":"#ffffff","objects":[{"id":"status-title-1","type":"text","x":80,"y":70,"w":800,"h":80,"text":"Project review","style":{"fontSize":36,"color":"#0f172a"}},{"id":"status-body-1","type":"text","x":80,"y":180,"w":800,"h":300,"text":"Replace this illustrative text with verified findings and source references.","style":{"fontSize":24,"color":"#334155"}}]}]
+JSON
+jq -n --argjson revision "$PRESENTATION_REVISION" --slurpfile slides status-slides.json \
+  '{mode:"append",slides:$slides[0],expectedRevision:$revision,requestId:"status-review-1"}' \
+  > reviewed-status-request.json
 ```
 
-#### Recipe 3: Import and annotate a presentation
+Review the prepared request for content, source metrics and layout intent. Apply the already authorized change and inspect the resulting saved deck:
 
 ```bash
-# After PPTX import, list slides and add annotations
-xapps slides "Imported Deck"
-
-# Add review comments as text boxes
-xapps add-text-box "Imported Deck" slide-abc "REVIEW: Update this metric" --x 600 --y 400 --w 300 --h 40 --size 16 --color "#e11d48"
-
-# Set background on specific slides
-xapps set-slide-background "Imported Deck" slide-def "#f8fafc"
+xapps_scoped apply-slides-batch Status "$(cat reviewed-status-request.json)" --json \
+  > status-apply-receipt.json
+xapps_scoped presentation-slide-state Status --json > status-after.json
+jq '.slides[] | select(.id == "status-review-1")' status-after.json
 ```
 
----
+`append` preserves existing slides; replacement is a separate destructive intent. Retain the shared Assistant run identity when resuming provider work so a reconnect does not create a second run. Inspect rendered slides when layout/readability is part of the deliverable, and attach actual rendered evidence. A saved JSON receipt does not prove visual quality.
+
+Keep every prepared payload, revision, request ID and receipt until verification completes. After uncertain delivery, retry the identical mutation with its original guard; do not rerun the preparation steps with a fresh revision. On `409`, reread, reconcile and create a new ID only for a newly decided intent. Read commands can run independently; writes against shared state run sequentially or as one atomic batch.
 
 ### Troubleshooting
 

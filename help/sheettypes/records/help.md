@@ -1,5 +1,29 @@
 ## Records Tables
 
+### Build a table people can use
+
+Records is for repeated things with consistent fields: contacts, inventory, requests, deals, or assets. Start with one table and a clear name. Add another table when it represents a different kind of thing, not merely a filtered subset.
+
+1. Create a table from a suitable template or define its fields. Use text for identifiers that must retain leading zeros, numbers for calculations, and select fields for controlled categories.
+2. Add a few representative records before importing a large file. Open one record's detail panel and check that the important information is easy to read and edit.
+3. Choose a view for the task: a grid for detailed editing, a form for entering one record, a board for stages, a calendar for dates, or a pivot for summaries. Different views still refer to the same table data.
+4. Apply a filter and sort for a useful question, such as “Which active deals close this month?” Save the view so colleagues can repeat the same review.
+5. Import CSV after reviewing the field mapping and preview. Confirm record counts and a few values afterward. Upsert can update matching records, so review its match field carefully instead of assuming every row is new.
+
+### Connect related tables
+
+For an inventory workbook, keep **Inventory** and **Suppliers** as separate tables. Add a relation field on Inventory pointing to Suppliers, then use the relation picker to select the supplier record. A lookup displays a related value; a rollup summarizes related values; a count answers how many related records there are. A copied supplier name is ordinary text and will not become a relationship automatically.
+
+### Answer a question with Query
+
+Click **Analyze** to open **Query records**. Start with a bounded read such as `SELECT * FROM Inventory LIMIT 50`, using the actual table name. Click **Run** and wait for the result grid or a visible error. The query editor, visual builder, and schema diagram help you describe the read; the displayed rows are a result, not another editable copy of your source table.
+
+If the query fails, check the exact table and field names, selected workbook, and SQL message. Do not interpret an empty result as missing data until you have removed restrictive filters and checked the source table. Qualified names such as `Sheet.Table` help distinguish tables in a larger workbook.
+
+### Recover a record or find a hidden table
+
+Clear filters and check the active table first. Hiding a table preserves it; its menu can restore visibility. Deleted records use soft-delete and Trash. Review the recovery controls before recreating records, which would give them new identities and may break intended relations. Use the record's activity/history to understand edits, and Undo/Redo for supported recent actions.
+
 ### Airtable-style relational tables in a workbook tab
 
 Records sheets turn a workbook tab into a typed relational table — like Airtable's grid. Each table has a fixed schema (fields with types), every row is a record with a stable id and system audit fields, and tables can link to each other so a record in **Deals** can point to a record in **Contacts** without copy-pasting.
@@ -21,24 +45,28 @@ Behind the grid, records persist in the workbook file alongside every other shee
 - Resize columns by dragging the column-edge handle
 - Multi-row select (shift-click for ranges) with a bulk-delete actions bar
 - In-grid search with highlighted matches
-- Named view types: **grid**, **kanban**, **calendar**, **gallery** — saved per-table, switchable from the view chip
+- Typed saved views: **grid**, **form**, **kanban**, **calendar**, **gallery**, **pivot**, **timeline**, and **gantt** — saved per-table and switchable from the view chip
 - Filter / sort / group on every view, with collapsible row groups + per-group aggregates + Expand all / Collapse all
 - Per-field cell colors (background + text) via the Color toolbar popover or the schema editor's Cell colors panel; "Color records by" tints the left bar by a singleSelect option
 - Star rating field (1–N stars, click to set, click again to clear)
 - Airtable-style 12-color chip palette for singleSelect / multiSelect
 - Linked-record picker — click any relation cell to choose target records
 - Relation hover previews with target-record display values
-- Per-record detail panel with Fields / Activity / Linked tabs + threaded comments
+- Per-record detail panel with Fields / Activity / Linked tabs + a chronological comment log
 - Per-record history (every cell change, with actor + timestamp)
 - Validation (required / unique / type) with structured `422` envelopes
 - CSV import with upsert + rollback-on-error
 - CSV export with column picker + delimiter choice
 - SQL query panel: text editor with autocomplete + Format + saved queries, side-by-side visual builder (tables-as-boxes, drag-to-JOIN ports, INNER/LEFT/RIGHT pill switcher, inline ✕ delete), and a Schema diagram launcher
 - SQL grammar: SELECT / DISTINCT / WHERE / GROUP BY / HAVING / ORDER BY / LIMIT / aggregates / CASE / scalar functions / **INNER · LEFT · RIGHT · CROSS JOIN with qualified column refs (`r.Name`)**
-- Multi-table per sheet (recs-57) — a single Records sheet can hold multiple tables; the tab strip switches between them, and SQL FROM clauses can reference either the sheet's active table or `Sheet.Table` explicitly
-- Formula expression language with autocomplete, field picker, and live preview
+- Multiple tables per sheet — a single Records sheet can hold multiple tables; the left navigation switches between them, and SQL FROM clauses can reference either the sheet's active table or `Sheet.Table` explicitly
+- Formula expression language (~68 functions across text/logic/math/date/regex/array/record) with autocomplete, field picker, and live preview
 - Undo / redo (Ctrl+Z / Ctrl+Y) for cell edits, add row, rating, bulk delete, row reorder, link records
-- Per-table tab strip across the top with Rename / Hide / Delete / Restore menu
+- Table navigation with Rename / Hide / Delete / Restore actions
+
+CSV preview, import, and export use the same server contracts from the browser, SDK, CLI, MCP, and hosted tools. CLI equivalents are `records-preview-csv <sheet> <file>`, `records-import-csv <sheet> <file>`, and `records-export-csv <sheet>`; add `--table-id` for an explicit table and pair `--expected-revision` with `--request-id` for replay-safe imports.
+
+Records automations use the same layered contract. `records-list-automations`, `records-add-automation`, `records-update-automation`, `records-test-automation`, `records-automation-runs`, and `records-automation-effects` delegate to the typed Records SDK. Guarded mutations pair `--expected-revision` with `--request-id`; exact retries replay without running actions twice. Run/effect entries persist stable request, trace, run, and effect identities. Webhook URLs are checked against local/private targets, sensitive headers are rejected, secrets are redacted from reads, and ambiguous interrupted delivery requires explicit `records-retry-automation-effect --allow-ambiguous` recovery.
 
 ![Records grid with Airtable-style chrome](/help-assets/screenshots/records-grid.png)
 
@@ -46,7 +74,7 @@ Behind the grid, records persist in the workbook file alongside every other shee
 
 ### Multiple tables in one sheet
 
-A single Records sheet can hold many tables — switch between them using the **tab strip** across the top of the grid. Each tab is one independent table with its own schema, records, views, and history. Click `+` in the tab strip to create a new table, or right-click any tab to Rename / Hide / Delete it. Hidden tables retain all their data; they re-appear in the same menu as **Restore** entries.
+A single Records sheet can hold many tables — switch between them in **Tables** in the left navigation. Each table has its own schema, records, views, and history. Use the `+` beside **Tables** or **New table** to add one. Its menu offers Rename / Hide / Delete. Hidden tables retain their data and can be restored.
 
 ![Multiple tables — Suppliers table active in the same Records sheet](/help-assets/screenshots/records-multi-table.png)
 
@@ -69,11 +97,11 @@ A single Records sheet can hold many tables — switch between them using the **
 
 ### Anatomy of the grid
 
-- **Tab strip** (top) — one tab per records table in the workbook. The active tab is the white "lifted" tab. The caret on each tab opens a menu with Rename / Hide table (keep data) / Delete table…; hidden tables show up as Restore entries in the same menu. Click `+` to create a new table.
-- **Toolbar** (above the tab strip) — Undo / Redo at the far left, then the active **view chip** (e.g. "Grid view") and a collaborator avatar. The middle group has Hide fields, Filter, Group, Sort, Color, Row height, Share view, and More. The right group has Edit fields (schema editor), Import CSV, Query (SQL panel), and a global search input.
+- **Left navigation** — Tables switches the active table; Views chooses a saved view. The Build actions open New table, New view, View options, Fields, Analyze, Import, Interfaces, and Automations. Table menus manage names, visibility, and removal.
+- **Toolbar** — Hide fields, Filter, Group, Sort, Color, Row height, Share view, and More control the current view. **Edit fields** opens Field Manager; **Import CSV** opens import; **Analyze** opens Query records. **Search records** searches the table. The context line below identifies the active table and view.
 - **Header row** (sticky) — one `<th>` per visible field with type icon + name + sort arrow. Each header is draggable for reorder; the 6px handle on the right edge drags column width. The `▾` caret in the header opens the field options menu.
 - **Body** — one row per record. The `#R-NNN` autonumber lives in a sticky left column; the per-row checkbox lives in another sticky column to its left.
-- **Group header rows** — when the active view has a `groupBy`, the body is partitioned by that field's display value. The chevron toggles collapse; counts + numeric Σ aggregates render on the group row.
+- **Group header rows** — when the active view is grouped, the body is partitioned by the group fields' display values. Grouping nests up to 3 levels ("Group by … then by … then by …"); each header row carries a field-name eyebrow, a colored value pill, a Count, and per-column aggregates aligned under their columns (honoring the summary-bar picks, else the type default). The chevron toggles collapse (deeper levels are indented and tinted).
 - **Add-row strip + footer** — `+ Add a record` at the bottom inserts a record and focuses the first editable cell. The footer chips show the live record count plus per-field aggregates (Σ on numbers, true-count on checkboxes, won/done/closed counts on selects).
 
 ---
@@ -82,7 +110,7 @@ A single Records sheet can hold many tables — switch between them using the **
 
 Two paths:
 
-1. From any workbook, click `+` on the records tab strip → enter a name → the new sheet opens in **schema mode** with the quick-start template panel.
+1. Add a Records sheet from the workbook's sheet picker. Inside Records, use **New table** or the `+` beside **Tables** to create another table, and **Edit fields** to define its schema or start from a template.
 2. From the CLI: `xapps records-create-table "Deals"`.
 
 Quick-start templates seed the schema with 4–5 starter fields you can edit or delete after. Click the `×` in the header (or press `Esc`) to dismiss the schema editor and start with a blank table.
@@ -114,10 +142,19 @@ Quick-start templates seed the schema with 4–5 starter fields you can edit or 
 - **file** — file or image upload (multiple allowed).
 - **relation** — link to records in another records table. Click the relation cell to open the picker.
 - **lookup** — pull a field from a linked record.
-- **rollup** — aggregate a field across linked records.
+- **rollup** — aggregate a field across linked records. Aggregators: `sum`, `avg`, `median`, `range`, `min`, `max`, `count`, `distinctCount`, `unique` (distinct values joined), `concat`, `percentChecked` (% truthy), `and`/`or` (all/any truthy), `earliestDate`/`latestDate`.
 - **count** — count linked records.
-- **formula** — derived value from an expression; supports `IF / AND / OR / NOT / CONCAT / LEN / UPPER / LOWER / TRIM / CONTAINS / ABS / ROUND / SUM / AVG / COUNT / MIN / MAX / NOW / TODAY`. Errors render in red.
-- **ai** — value produced by an AI agent on a per-record basis. Configure a prompt template that can reference other fields in the record (e.g. `Summarize this product: {{Notes}}`). The result is cached; re-run manually by clicking the cell or via the AI executor panel. Useful for auto-generating descriptions, classifications, or translations.
+
+**Conditional lookup / rollup / count** — each of these accepts an optional `options.filter` (a view-filter shape: `{ conjunction, clauses|children }`) evaluated against each *linked* record, so the field includes only the linked records that match. E.g. a rollup with `filter: { clauses: [{ field: "Status", op: "eq", value: "done" }] }` sums only the linked records whose Status is done; a count with the same filter counts only those. Clause field refs resolve by field id or name on the linked table; a filter that matches nothing yields `0` for count/sum and blank for lookup. Set it via the field options on create/patch (API, CLI `records-add-field`, MCP) — it recomputes on the next read.
+- **formula** — derived value from an expression with a ~68-function library (autocomplete shows signatures). Errors render in red. Functions by category:
+  - **Logical**: `IF`, `SWITCH`, `AND`, `OR`, `NOT`, `XOR`, `ISERROR`, `ISBLANK`, `BLANK`, `TRUE`, `FALSE`
+  - **Text**: `CONCAT`, `LEN`, `UPPER`, `LOWER`, `TRIM`, `CONTAINS`, `LEFT`, `RIGHT`, `MID`, `FIND`, `SEARCH`, `SUBSTITUTE`, `REPLACE`, `REPT`, `PROPER`, `T`, `VALUE`, `ENCODE_URL_COMPONENT`
+  - **Regex**: `REGEX_MATCH`, `REGEX_EXTRACT`, `REGEX_REPLACE` (JS regex; escape backslash classes as `\\w` inside a string)
+  - **Math**: `ABS`, `ROUND`, `SUM`, `AVG`, `COUNT`, `MIN`, `MAX`, `MOD`, `POWER`, `SQRT`, `EXP`, `LN`, `LOG`, `INT`, `TRUNC`, `SIGN`, `CEILING`, `FLOOR`, `ROUNDUP`, `ROUNDDOWN`, `EVEN`, `ODD`, `ISEVEN`, `ISODD`
+  - **Date/time**: `NOW`, `TODAY`, `DATEADD`, `DATETIME_DIFF`, `DATETIME_FORMAT`, `DATETIME_PARSE`, `DATESTR`, `TIMESTR`, `YEAR`, `MONTH`, `DAY`, `HOUR`, `MINUTE`, `SECOND`, `WEEKDAY`, `WEEKNUM`, `IS_BEFORE`, `IS_AFTER`, `IS_SAME`, `WORKDAY`
+  - **Array** (over the argument list): `ARRAYJOIN`, `ARRAYUNIQUE`, `ARRAYCOMPACT`
+  - **Record**: `RECORD_ID`, `CREATED_TIME`, `LAST_MODIFIED_TIME`
+- **ai** — governed, cached AI value produced per record. Configure a prompt template such as `Summarize this product: {{Notes}}`; the cell exposes Run/Retry and its durable status. Successful structured output is written atomically with citations and provenance; blocked or invalid output does not replace the prior value.
 
 System fields (`#`, `createdAt`, `createdBy`, `lastModifiedAt`, `lastModifiedBy`) are auto-stamped and read-only.
 
@@ -137,6 +174,7 @@ A view is a saved configuration on a table. Each view has a **type** that decide
 - **gallery** — large-card layout driven by an attachment / image field.
 - **form** — add or edit one record at a time with a custom field layout.
 - **pivot** — a cross-tab that groups rows/columns and aggregates a value (see below).
+- **timeline** / **gantt** — records laid out by configured start/end and label fields.
 
 Switching views replaces the toolbar's view chip label and re-renders the body. The view list lives in the view chip dropdown; **Manage saved views…** opens a reorder/rename/delete modal.
 
@@ -144,8 +182,9 @@ Switching views replaces the toolbar's view chip label and re-renders the body. 
 
 - **Filter** — boolean expression over fields (e.g. `Status = "Won" AND Amount > 1000`).
 - **Sort** — one field + direction.
-- **Group by** — partition rows by a field's value; the group header row shows count + numeric aggregates and is collapsible. Expand all / Collapse all controls live above the body when a group is set.
+- **Group by** — partition rows by a field's value; the group header shows count + per-column aggregates and is collapsible. Group by up to 3 fields for nested subgroups (the Group popover shows an ordered "Group by … then by …" stack with per-level field selects, remove, and "+ Add subgroup"). Expand all / Collapse all flip every group at every level. Saved views store the chain as `view.config.groupByFieldIds`; the legacy single-field `groupBy` still loads.
 - **Hidden fields** — per-view list of fields to hide.
+- **Color records by** — save a singleSelect field whose option color becomes each grid row's left accent.
 
 Views persist per-table inside the workbook (`recordsTables[<id>].views[]`).
 
@@ -156,11 +195,21 @@ Views persist per-table inside the workbook (`recordsTables[<id>].views[]`).
 - **New saved view…** — pick a type and give it a name. Opens to the active type immediately.
 - **Manage saved views…** — opens a modal to reorder, rename, or delete views.
 - The active filter/sort/group for the current view is shown in the toolbar.
-- `xapps records-add-view <sheet> <view-json>` and `xapps records-update-view <sheet> <viewId> <patch-json>` are the CLI equivalents.
+- `xapps records-add-view`, `records-get-view`, `records-update-view`, and `records-pivot-drill` expose the same typed contracts through the CLI; MCP and hosted tools use the matching underscore names.
 
 **Filtering records:**
 
-The Filter panel (toolbar → Filter) adds row conditions to the active view. Conditions are ANDed together. Each condition picks a field, an operator (`=`, `≠`, `contains`, `is empty`, `>`, `<`, `≥`, `≤`, `in`), and a value. The condition count badge on the Filter button lights up when filters are active.
+The Filter panel (toolbar → Filter) adds row conditions to the active view. Each condition picks a field, an operator (`=`, `≠`, `contains`, `is empty`, `>`, `<`, `≥`, `≤`, `in`), and a value; the panel's And/Or selector sets how sibling conditions combine. The condition count badge on the Filter button lights up when filters are active.
+
+**Nested condition groups.** "+ Add condition group" inserts a group — a bracketed sub-list with its own And/Or — so filters like `Status = "Won" AND (Owner = "Maya" OR Owner = "Aki")` compose directly. Groups nest up to 3 levels deep, with at most 50 conditions in total.
+
+Saved views store this as `view.filter`. Two shapes are accepted, never combined: legacy flat `{ conjunction, clauses: [{field, op, value}] }`, or nested `{ conjunction, children: [...] }` where each child is a clause or a `{ conjunction, children }` group. Existing flat filters keep working unchanged; the same evaluator drives the grid, saved-view activation, and embed resolution.
+
+**Conditional record coloring.** The Color popover's "Color records by conditions" section holds ordered rules — each rule pairs a bar color with a condition (`When <field> <op> <value>`); the first matching rule paints the record's left color bar and beats the select-field coloring below it. Rules reorder with ↑/↓ and persist per table; saved views store them as `view.config.colorRules: [{ color: "#rrggbb", filter: <view.filter shape> }]` (up to 10 rules, filters may use nested condition groups via the API).
+
+**Per-column summary bar.** The grid's sticky footer row shows one aggregate per column, aligned under its column — record count pinned at the left. Click any footer cell to pick the aggregate: Count, Empty, Filled, Unique, % Empty/Filled/Unique everywhere; Sum, Avg, Median, Min, Max, Range on numeric columns; Earliest/Latest on dates; Checked/Unchecked/% Checked on checkboxes; or None. Defaults mirror the old chips (Sum on numbers, Checked on checkboxes). Aggregates compute over the filtered rows only, format per the column (currency, percent), persist per table, and saved views store them as `view.config.summaries: { <fieldId>: "<agg>" }`.
+
+**Color as data across views.** The same row color (conditional rules first, then color-by-select) carries into every view of the table: kanban cards get a left color edge, calendar chips a left bar, gallery cards a top accent strip, and timeline/gantt bars take the record's color instead of the rotation palette. The Color popover's "Tint select cells" toggle additionally washes singleSelect grid cells with their option's pastel background (`view.config.selectCellTint`).
 
 ![Filter panel with no-filter-applied state and Add filter button](/help-assets/screenshots/records-filter.png)
 
@@ -184,7 +233,7 @@ A **pivot** view summarizes a table into a cross-tab: pick one or more **Row** d
 
 **Drill-down** — click any value cell to expand the underlying records behind that intersection (up to 500), shown in a panel below the cross-tab.
 
-Under the hood the pivot config is compiled to a `GROUP BY` query and run through the same SQL engine as the **Query** tool, then reshaped client-side. The config persists at `views[<id>].config.pivot` with resolved `expr` + `label` per dimension. The pure SQL/reshape logic lives in `pivot-core.ts` (unit-tested); the browser renderer mirrors it.
+Under the hood the pivot config is compiled to a `GROUP BY` query and run through the same SQL engine as the **Query** tool, then reshaped client-side. The config persists at `views[<id>].config.pivot` with resolved `expr` + `label` per dimension. Cell drill-down posts its row/column selection to the saved-view route, so the server rebuilds the underlying-record query from the validated pivot config rather than accepting browser-authored SQL.
 
 ---
 
@@ -197,7 +246,7 @@ Click the **autonumber button** (`1`, `2`, …) in the left column of any row to
 The detail panel has four tabs:
 
 - **Fields** — all field values in a stacked form layout. Every field is editable inline. Click **Open in form** (top-right) to open the record in a full-page form view.
-- **Comments** — threaded discussion on that record. Type `@name` to mention a collaborator. Supports edit and delete of own comments.
+- **Comments** — a flat chronological discussion log on that record. `@name` remains plain comment text; server-side threading, reactions, and mention parsing are not part of this contract. Supports edit and delete of your own comments.
 - **Activity** — per-field change log (who changed what, old → new value, timestamp). Filter by field id via CLI: `xapps records-history <sheet> <recordId> [--field-id <fieldId>]`.
 - **Linked** — records in other tables that link to this record (backlinks from relation fields).
 
@@ -205,7 +254,7 @@ The detail panel has four tabs:
 
 ---
 
-### Linking records (recs-24)
+### Linking records
 
 1. Add a `relation` field; in the schema editor pick the target table.
 2. In the grid, click any cell of that field — the linked-record picker opens.
@@ -214,6 +263,8 @@ The detail panel has four tabs:
 
 Hovering a relation cell shows a tooltip with the target records' primary-field values (recs-13).
 
+Agents can use `records-list-links`, `records-link`, and `records-unlink`; guarded writes accept `--expected-revision` with a stable `--request-id` so retries do not duplicate links.
+
 ---
 
 ### Bulk operations
@@ -221,6 +272,8 @@ Hovering a relation cell shows a tooltip with the target records' primary-field 
 - **Select rows** — header checkbox toggles all; per-row checkboxes; `Shift+Click` selects a range.
 - **Bulk delete** — the floating bar at the bottom shows the count + a red Delete button. Undo restores them.
 - **Bulk update** — via SDK / CLI: `xapps records-bulk-update <table> <ids> --patch '{...}'`.
+- **Batch create / patch** — one persisted request for mixed creates and updates: `xapps records-batch <table> '[{"type":"create","fields":{...}},{"type":"patch","recordId":"rec_...","fields":{...}}]'`.
+- **Batch add fields** — one persisted schema request for an ordered set of non-relation fields: `xapps records-add-fields <sheet> '[{"name":"Title","type":"text","primary":true},{"name":"Status","type":"singleSelect","options":{"options":[]}}]'`. Quick-start templates use this path, so selecting a template saves and syncs once instead of once per field.
 - **Find / replace** — toolbar → Edit → Find and replace, or `Ctrl/Cmd + H`. Supports per-field scoping, case-sensitivity, and a **dry-run preview** that shows matches before committing. CLI: `xapps records-find-replace <sheet> --find <text> --replace <text> [--case-sensitive] [--field-ids <csv>] [--dry-run]`.
 
 ---
@@ -276,6 +329,12 @@ LIMIT 50
 
 Plus DISTINCT, AS aliases, CASE expressions, and scalar functions (`UPPER / LOWER / LENGTH / COALESCE`). The result panel can be exported as CSV directly. Saved queries persist per-table — pick **Save as…** to name and recall a query.
 
+Queries run with bounded input, join, intermediate-memory, result and execution
+budgets. A small `LIMIT` does not make an unbounded join safe: overly broad
+queries fail with `records_sql_budget_exceeded` instead of partial results.
+Reduce the source data or simplify the join. If query capacity is busy, retry
+after an active query completes. These failures do not modify workbook data.
+
 **JOIN support**
 
 The parser supports `INNER`, `LEFT [OUTER]`, `RIGHT [OUTER]`, and `CROSS JOIN` with an optional `ON <predicate>`. Use a table alias to disambiguate qualified column refs:
@@ -302,7 +361,7 @@ The Schema diagram launcher in the Query dialog opens a read-only ER view of eve
 
 ### Embed in other surfaces
 
-A records grid can be embedded inside a `doc` page, a `dashboard` tile, or a `canvas` card via the records embed component. Pick the table + view; the embed renders the same grid surface and shares live data + collab.
+A destination surface can persist a Records embed after you pick its source table, saved view, fields, order, and row limit. The versioned descriptor is bound to the open workbook file and destination sheet; missing/deleted targets render a visible error instead of reading a different workbook. Agents can discover stable choices with `records-list-embed-sources <sheet>` and validate/read back a descriptor with `records-resolve-embed <descriptor-json>`; the matching SDK and tool methods are `listEmbedSources` / `resolveEmbed` and `records_list_embed_sources` / `records_resolve_embed`.
 
 ---
 
@@ -310,12 +369,14 @@ A records grid can be embedded inside a `doc` page, a `dashboard` tile, or a `ca
 
 Every records operation is reachable from four layers, all mirrored:
 
-- **SDK** — `createRecordsClient(host).addField(...)` etc.
-- **CLI** — `xapps records-add-field <table> ...`
-- **MCP** — `records.addField` tool, same args.
-- **meshAgent toolkit** — the same set, registered as `recordsSurface.xappsToolkit` so agents in the same workspace pick them up.
+- **SDK** — `createXAppsClient(...).records.addField(...)`, `addFields(...)`, and related `client.records.*` helpers. Pass `{ tableId: "tbl_..." }` to target a specific Records table instead of the active table.
+- **CLI** — `xapps records-add-field <sheet> ...` and `xapps records-add-fields <sheet> <fields-json>`; table-scoped commands accept `--table-id <id>`. The CLI also covers saved queries, forms, links, record/view reorder, table metadata, and dependency-aware schema operations (`records-integrity-plan` / `records-integrity-undo`).
+- **MCP** — `records_*` tools expose the same SDK-backed surface, including `records_add_fields`, `records_batch`, `records_submit_form`, `records_list_queries`, and `records_schema_health`.
+- **meshAgent toolkit** — the `xapps-records` toolkit publishes first-class `records_*` functions. If only the core workbook toolkit is visible, run `workbook_search(["records"])` then `workbook_command_schema("records-batch")` to find the right Records tool and schema before falling back.
 
-Agents should track every engagement as a Kanban card and stamp it with `--created-by <agent-id>` so changes can be audited.
+Formula and AI execution use the same contract at every layer: `records-formula-parse`, `records-formula-preview`, `records-formula-recalculate`, `records-ai-run`, `records-ai-status`, and `records-ai-retry` (underscore names in MCP/toolkit). AI retries require the current run revision plus a stable mutation id, so reconnects can safely replay without duplicate writeback.
+
+For repository work, select tracking from the canonical `AGENTS.md` work-class table; Git-only operations and small fixes have lighter paths. When a Kanban card is required, stamp it with stable `--created-by <agent-id>` and use the guarded scoped card contract. Using Records alone does not mandate a tracking workbook.
 
 ---
 
@@ -327,7 +388,7 @@ Mutations that fail validation return a `422` envelope with a `details.violation
 
 ### Undo / redo
 
-The toolbar's Undo / Redo buttons (and `Ctrl/Cmd+Z` / `Ctrl/Cmd+Y`) revert the last record-level mutation: cell edits, checkbox toggles, add row, rating, bulk delete, row reorder, linking records. Schema-level changes (add / remove / rename field) are not in the undo stack yet — those go through the schema editor and have their own confirm-on-destructive prompts.
+The toolbar's Undo / Redo buttons (and `Ctrl/Cmd+Z` / `Ctrl/Cmd+Y`) revert record-level mutations. Field/table deletion is dependency-aware: preview with `records-integrity-plan`, use explicit cascade repair when dependencies exist, and restore the persisted workbook-wide snapshot with `records-integrity-undo`.
 
 ---
 
@@ -345,7 +406,7 @@ Both color paths persist on the field's `options`, sync via Y.js, and survive a 
 
 ### Storage shape
 
-A records sheet stores its data inside a `recordsTables[]` array — one entry per tab in the strip. Each entry has:
+A records sheet stores its data inside a `recordsTables[]` array — one entry per table in the left navigation. Each entry has:
 
 | Field | Purpose |
 | --- | --- |
@@ -359,9 +420,10 @@ A records sheet stores its data inside a `recordsTables[]` array — one entry p
 | `hiddenFields` | Per-table hidden-field ids. |
 | `links` | Edge table: `{ targetTableId: { targetRecordId: { sourceRecordId: true } } }`. |
 | `history` | Per-record change log. |
-| `comments` | Per-record comment threads. |
+| `comments` | Per-record chronological comments. |
+| `aiRuns` / `aiRunReceipts` | Bounded durable AI lifecycle and idempotent retry ledger. |
 
-At the sheet level: `activeTableId` points to the table currently shown in the grid; switching tabs in the strip flips this. Legacy single-table sheets (pre-recs-57) auto-migrate into a single `recordsTables[]` entry on first load.
+At the sheet level: `activeTableId` points to the table currently shown in the grid; selecting another table changes this. Legacy single-table sheets migrate into a single `recordsTables[]` entry on first load.
 
 Soft-deleted records keep their data and can be restored via the trash list (`/records/deleted` → `/records/<id>/restore`).
 
@@ -369,4 +431,4 @@ Soft-deleted records keep their data and can be restored via the trash list (`/r
 
 A record's `fields` object is stored keyed by **field id** (`fld_…`) — the single canonical key. Field ids are stable across renames; field names are not, so id is what the grid, sort, filter, and SQL all read.
 
-For convenience, every write path — `POST/PATCH /records`, the SDK (`createRecord` / `patchRecord`), CLI (`records-create` / `records-patch`), MCP (`records_create` / `records_patch`), the meshAgent toolkit, bulk-update, CSV import, and form submit — accepts a `fields` map keyed by **either** field id **or** field name. Name keys are normalized to the field-id key before the record is persisted (when both are supplied for the same field, the id value wins). Legacy records that were stored name-keyed are migrated to id keys the first time their table loads. Reads still tolerate either key, but new writes are always id-canonical.
+For convenience, every write path — `POST/PATCH /records`, `/records/batch`, the SDK (`createRecord` / `patchRecord` / `batchRecords`), CLI (`records-create` / `records-patch` / `records-batch`), MCP (`records_create` / `records_patch` / `records_batch`), the meshAgent toolkit, bulk-update, CSV import, and form submit — accepts a `fields` map keyed by **either** field id **or** field name. Name keys are normalized to the field-id key before the record is persisted (when both are supplied for the same field, the id value wins). Legacy records that were stored name-keyed are migrated to id keys the first time their table loads. Reads still tolerate either key, but new writes are always id-canonical.

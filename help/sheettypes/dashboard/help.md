@@ -1,5 +1,20 @@
 ## Dashboard
 
+### Build a dashboard that answers a question
+
+Start with the decision the dashboard should support, such as “Are we ready to launch?” Keep a small number of useful widgets above the fold, and retain the source sheets so readers can inspect the underlying records and calculations.
+
+1. Prepare the source data in Spreadsheet or another supported sheet. Give headers and sheets stable, descriptive names.
+2. Add a Dashboard and choose a widget suited to the question: a headline value, a trend, a comparison, a table, or explanatory text.
+3. Configure its binding to the intended sheet/range or supported source. Compare the displayed value with the source before adding more widgets. A polished empty widget is usually a binding problem, not proof that the value is zero.
+4. Give the widget a title that states the measure, including units or period when relevant. Use color consistently across related widgets.
+5. Arrange and resize widgets using the layout controls. Check the full dashboard after a layout-mode change, because placement rules vary by mode.
+6. Change a representative source value and confirm the bound widget reflects it. Review filters, range boundaries, and labels before sharing a readout.
+
+### Diagnose a surprising value
+
+Open the source sheet and compare the exact range or record set. Check whether a header was included as data, a total was counted twice, or a template variable points to the wrong sheet. A widget only reflects its configured source; it does not define the business meaning of a metric for you. Text and captions are useful for explaining that meaning alongside the numbers.
+
 ### Overview
 
 Dashboard sheets turn workbook data into styled widget surfaces for executive summaries, KPI snapshots, CRM pipeline reviews, launch status boards, revenue tracking, and at-a-glance reporting. Widgets pull live data from other sheets in the workbook and render it as cards, CRM funnels, pipeline stage summaries, charts, linked map views, tables, text blocks, gauges, treemaps, and progress rings. Dashboards support full surface styling, two layout modes, drag-to-move, drag-to-resize, and a 12-24 column grid system.
@@ -279,6 +294,16 @@ Agents should prefer the typed helpers for dashboard construction. Raw
 `add-widget <json>` remains available for advanced or unsupported widget
 payloads, but the typed commands avoid memorizing the full widget schema.
 
+**Read state or apply an atomic guarded transaction:**
+
+```
+xapps dashboard state MyDashboard --file MyWorkbook.json
+xapps dashboard mutate MyDashboard '{"requestId":"dash-1","expectedRevision":0,"operations":[{"op":"create","widget":{"type":"kpi","title":"Revenue"}}]}' --file MyWorkbook.json
+```
+
+`mutate` applies all operations or none. Reuse the same `requestId` only to
+replay the same payload; read `state` again before retrying a revision conflict.
+
 **Set surface settings:**
 
 ```
@@ -484,136 +509,38 @@ Dashboard widget w-abc123 deleted
 
 ### API Endpoints
 
-**List all widgets:**
+Use `X-XApps-File: MyWorkbook.json` and `X-XApps-Workbook-Storage-Target: local` on every request to the authorized base URL.
 
-```bash
-curl -H 'X-XApps-File: MyWorkbook.json' $XAPPS_API_BASE_URL/api/sheets/MyDashboard/widgets
-```
+| Operation | Route | Contract |
+| --- | --- | --- |
+| Read state/revision | `GET /api/sheets/<sheet>/dashboard/state` | Canonical widgets and settings |
+| Read widgets | `GET /api/sheets/<sheet>/widgets` | Saved widgets |
+| Atomic mutation | `POST /api/sheets/<sheet>/dashboard/mutate` | `DashboardMutationRequest`: expected revision, stable request ID, typed operations |
 
-**Read one widget:**
-
-```bash
-curl -H 'X-XApps-File: MyWorkbook.json' $XAPPS_API_BASE_URL/api/sheets/MyDashboard/widgets/w-abc123
-```
-
-**Create a widget:**
-
-```bash
-curl -X POST $XAPPS_API_BASE_URL/api/sheets/MyDashboard/widgets \
-  -H 'X-XApps-File: MyWorkbook.json' \
-  -H "Content-Type: application/json" \
-  -d '{
-    "type": "kpi",
-    "title": "Conversion Rate",
-    "dataSource": {"sheetName": "Funnel", "range": "C5"},
-    "config": {"suffix": "%", "trend": "+2.1pp"},
-    "gridW": 3,
-    "gridH": 2,
-    "style": {"accentColor": "#34a853"}
-  }'
-```
-
-**Update a widget:**
-
-```bash
-curl -X PUT $XAPPS_API_BASE_URL/api/sheets/MyDashboard/widgets/w-abc123 \
-  -H 'X-XApps-File: MyWorkbook.json' \
-  -H "Content-Type: application/json" \
-  -d '{"title": "Revenue (Q2)", "config": {"trend": "+15%"}}'
-```
-
-**Delete a widget:**
-
-```bash
-curl -X DELETE -H 'X-XApps-File: MyWorkbook.json' $XAPPS_API_BASE_URL/api/sheets/MyDashboard/widgets/w-abc123
-```
+Prefer the guarded CLI example below or the typed SDK to construct the exact schema. A create operation wraps a `widget`; an update supplies `id` and `patch`. Preserve the receipt for uncertain-delivery replay and read current state after a conflict. Source: `packages/xapps-surface-dashboard/src/public-api.ts` and `packages/xapps-surface-dashboard/src/server.ts`.
 
 ### Agent / AI Workflow Recipes
 
-**Recipe 1: Build an executive dashboard from scratch**
-
-An agent can create a complete KPI dashboard by reading data from existing sheets and adding widgets programmatically:
+Choose the authorized saved workbook and its actual storage target before running the examples. Set `XAPPS_API_BASE_URL` to that host. This helper keeps every operation in the same scope (replace the example file and `local` together when needed):
 
 ```bash
-# 1. Create KPI cards for key metrics
-curl -X POST $XAPPS_API_BASE_URL/api/sheets/ExecBoard/widgets \
-  -H 'X-XApps-File: MyWorkbook.json' \
-  -H "Content-Type: application/json" \
-  -d '{"type":"kpi","title":"ARR","dataSource":{"sheetName":"Finance","range":"B2"},"config":{"prefix":"$","suffix":"M","trend":"+22%"},"gridW":3,"gridH":2}'
-
-curl -X POST $XAPPS_API_BASE_URL/api/sheets/ExecBoard/widgets \
-  -H 'X-XApps-File: MyWorkbook.json' \
-  -H "Content-Type: application/json" \
-  -d '{"type":"kpi","title":"Active Users","dataSource":{"sheetName":"Metrics","range":"B3"},"config":{"suffix":"K","trend":"+15%"},"gridW":3,"gridH":2}'
-
-# 2. Add a revenue trend line chart
-curl -X POST $XAPPS_API_BASE_URL/api/sheets/ExecBoard/widgets \
-  -H 'X-XApps-File: MyWorkbook.json' \
-  -H "Content-Type: application/json" \
-  -d '{"type":"line","title":"Revenue Trend","dataSource":{"sheetName":"Finance","range":"B2:B13"},"config":{"labelRange":"A2:A13","valueRange":"B2:B13"},"gridW":6,"gridH":3}'
-
-# 3. Add a text block for narrative context
-curl -X POST $XAPPS_API_BASE_URL/api/sheets/ExecBoard/widgets \
-  -H 'X-XApps-File: MyWorkbook.json' \
-  -H "Content-Type: application/json" \
-  -d '{"type":"text","title":"Weekly Update","config":{"content":"ARR grew to {{Finance!B2}}M this quarter. Pipeline has {{Pipeline!A1}} active deals. Next board meeting: {{Calendar!B1}}."},"gridW":6,"gridH":2}'
+xapps_scoped() {
+  xapps --base-url "${XAPPS_API_BASE_URL:?Set the authorized host URL}" \
+    --file 'MyWorkbook.json' --workbook-storage-target local "$@"
+}
 ```
 
-**Recipe 2: Monitoring dashboard with gauges and progress rings**
-
-Build a system monitoring or project health dashboard:
+Read bounded source ranges and verify the metric definition, period and units before creating a widget. A sample trend is not evidence: omit decorative growth claims unless a calculation supports them.
 
 ```bash
-# CPU gauge
-curl -X POST $XAPPS_API_BASE_URL/api/sheets/Monitor/widgets \
-  -H 'X-XApps-File: MyWorkbook.json' \
-  -H "Content-Type: application/json" \
-  -d '{"type":"gauge","title":"CPU","dataSource":{"sheetName":"Infra","range":"B1"},"config":{"gaugeMin":0,"gaugeMax":100,"gaugeSuffix":"%"},"gridW":3,"gridH":3}'
-
-# Memory gauge
-curl -X POST $XAPPS_API_BASE_URL/api/sheets/Monitor/widgets \
-  -H 'X-XApps-File: MyWorkbook.json' \
-  -H "Content-Type: application/json" \
-  -d '{"type":"gauge","title":"Memory","dataSource":{"sheetName":"Infra","range":"B2"},"config":{"gaugeMin":0,"gaugeMax":64,"gaugeSuffix":"GB"},"gridW":3,"gridH":3}'
-
-# Sprint progress ring
-curl -X POST $XAPPS_API_BASE_URL/api/sheets/Monitor/widgets \
-  -H 'X-XApps-File: MyWorkbook.json' \
-  -H "Content-Type: application/json" \
-  -d '{"type":"progress","title":"Sprint","dataSource":{"sheetName":"Sprint","range":"E1"},"config":{"max":100},"gridW":3,"gridH":2}'
-
-# Error rate table
-curl -X POST $XAPPS_API_BASE_URL/api/sheets/Monitor/widgets \
-  -H 'X-XApps-File: MyWorkbook.json' \
-  -H "Content-Type: application/json" \
-  -d '{"type":"table","title":"Recent Errors","dataSource":{"sheetName":"Logs","range":"A1:D20"},"gridW":6,"gridH":3}'
+xapps_scoped dashboard state ExecBoard --json
+# Set DASHBOARD_REVISION to the returned revision.
+xapps_scoped dashboard mutate ExecBoard \
+  "{\"requestId\":\"exec-board-1\",\"expectedRevision\":${DASHBOARD_REVISION},\"operations\":[{\"op\":\"create\",\"widget\":{\"id\":\"arr-kpi\",\"type\":\"kpi\",\"title\":\"ARR\",\"dataSource\":{\"sheetName\":\"Finance\",\"range\":\"B2\"},\"gridW\":3,\"gridH\":2}}]}" --json
+xapps_scoped widgets ExecBoard --json
 ```
 
-**Recipe 3: Financial heatmap with treemap widget**
-
-Create a Finviz-style stock or sector performance view:
-
-```bash
-# Populate a spreadsheet with stock data first, then add the treemap
-curl -X POST $XAPPS_API_BASE_URL/api/sheets/Markets/widgets \
-  -H 'X-XApps-File: MyWorkbook.json' \
-  -H "Content-Type: application/json" \
-  -d '{
-    "type": "treemap",
-    "title": "S&P 500 Heatmap",
-    "dataSource": {"sheetName": "Stocks", "range": "A1"},
-    "config": {
-      "tmLabels": "A2:A50",
-      "tmSizes": "B2:B50",
-      "tmColors": "C2:C50",
-      "tmMinColor": "#d93025",
-      "tmNeutral": "#555555",
-      "tmMaxColor": "#34a853"
-    },
-    "gridW": 12,
-    "gridH": 5
-  }'
-```
+The mutation body is `DashboardMutationRequest` from `packages/xapps-surface-dashboard/src/public-api.ts`: `requestId`, `expectedRevision`, and typed `operations`. Add related creates/updates to that one atomic operation list. The returned canonical widgets/revision are the immediate receipt; inspect the final bindings and values. Keep the exact payload, expected revision and request ID after uncertain delivery; retry that same intent. On a revision conflict, reread and reconcile before creating a new intent and request ID.
 
 ### Troubleshooting
 

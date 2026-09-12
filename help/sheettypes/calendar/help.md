@@ -1,5 +1,50 @@
 ## Calendar
 
+### Choose the right calendar workflow
+
+Use an ordinary event when you already know the time. Use **Find a time** when people need to compare availability first. Google Calendar sync is a separate connection: collecting manual availability does not inspect anyone's calendar or connect a Google account.
+
+### Find a time together
+
+1. Open a saved Calendar sheet and click **Find a time** in its toolbar. If requests already exist, this opens **Availability requests**; create another request from that manager.
+2. Give the request a recognizable title, choose the date range, weekdays, daily time window, meeting duration, and time zone. The candidate count helps you avoid asking people to review an unnecessarily large grid.
+3. Leave invitees empty to share one open link, or list names and email addresses for individual links. Review the delivery result: a generated link is not evidence that an email arrived.
+4. Create the request and copy its link. People opening an open link can inspect the group view first, then choose their own availability, enter their name, and click or drag across times. Wait for **Availability saved** before leaving. Unmarked times are not available responses.
+5. Return to **Find a time** to see reply counts, pending people, **Best options**, and the availability heatmap. A high-ranking option is a comparison of responses, not a booking. Review who is still pending before choosing it.
+6. Select an option and click **Schedule meeting**. Review **Schedule this meeting?**, then confirm. The request closes and one local Calendar event is created. Download its `.ics` file or use **Open Meeting** for the project call.
+
+Finalizing does **not** send a provider calendar invitation. Share the confirmed time or calendar file deliberately. If email is unavailable, use the visible copy-link fallback; reminders do not become delivered merely because they were requested. Revoking an individual response link removes that link's access.
+
+### Respond to an availability request
+
+![Open availability link showing the group view before a visitor enters their name](/help-assets/screenshots/calendar-availability-group.png)
+
+The **Everyone** tab shows the group's current answers. Switch to **Your times**, enter your name, and choose **Available** or **If need be** before marking the grid. Drag over marked times again to clear them. The time-zone selector controls the times you see; read it before comparing the request with your own schedule.
+
+![Your times with a named respondent, painted times, and the Availability saved confirmation](/help-assets/screenshots/calendar-availability-response.png)
+
+Wait for the saved confirmation, then reopen the same link to make changes. An open link admits new respondents; it is not a private invitation to just one named person.
+
+![Everyone view showing an overlapping time after two people submitted their answers](/help-assets/screenshots/calendar-availability-overlap.png)
+
+The count in a time slot describes submitted availability. “Everyone who replied can make it” is different from “everyone invited has replied.” Check pending people in the organizer view.
+
+### Compare responses and confirm the meeting
+
+![Organizer Availability requests with Best options, a heatmap, and three of four replies](/help-assets/screenshots/calendar-scheduling-organizer-results.png)
+
+**Best options** ranks the returned answers; **Everyone available** narrows the candidates. Selecting a time highlights a choice without booking it. This example also shows the honest local-host state **Email delivery is not configured**—the availability grid still works through shared links.
+
+![Availability organizer scrolled to People and per-person invitation controls](/help-assets/screenshots/calendar-scheduling-invitation-management.png)
+
+Use the People section to distinguish responded and pending invitees, copy a private link, request a reminder, or revoke access. Review the displayed delivery status after each action.
+
+![Schedule this meeting confirmation explaining creation of a local event](/help-assets/screenshots/calendar-scheduling-finalization-confirm.png)
+
+![Finalized availability request with Meeting scheduled and calendar download actions](/help-assets/screenshots/calendar-scheduling-finalized.png)
+
+Confirmation creates the local event once and changes the request to **Scheduled**. The `.ics` download and Meeting-sheet handoff help carry the decision into the rest of the project.
+
 ### Schedule work visually
 
 Calendar sheets give you **Month**, **Week**, and **Day** views for events, deadlines, editorial schedules, launches, and personal planning. Events are color-coded, support optional times, and can be imported from standard ICS calendar files.
@@ -28,6 +73,7 @@ Like all xApps sheet types, calendar data is stored as cells, so spreadsheet for
 - Cross-sheet formula integration
 - Undo/redo support
 - CLI and API for full programmatic control
+- Manual availability requests shared by one open link or private per-person email links, drag-to-paint response grid, ranked best contiguous meeting windows, reminders, revocation, and finalization
 
 ---
 
@@ -84,6 +130,12 @@ Each event stores the following fields:
 | Time | C (col 2) | Time in HH:MM format (optional) |
 | Description | D (col 3) | Longer text description |
 | Color | E (col 4) | Hex color code for the event chip |
+| Stable ID | F (col 5) | Durable event identity; agents should prefer this over a row number |
+| All day | G (col 6) | Explicit all-day flag |
+| Time zone | H (col 7) | IANA time zone or `UTC` for timed imported events |
+| Source UID | I (col 8) | Stable external identity, including ICS `UID` |
+| End date | J (col 9) | Optional inclusive timed end or exclusive all-day end date |
+| End time | K (col 10) | Optional end time in HH:MM form |
 
 Events without a time are treated as all-day events and appear at the top of the day in Week/Day views.
 
@@ -151,7 +203,19 @@ xapps import-ics "My Calendar" /path/to/export.ics
 # Output: Imported 47 events into My Calendar
 ```
 
-The importer parses VEVENT entries and creates one row per event with title, date, time, and description mapped to the standard columns.
+The importer accepts `VEVENT` entries with required `SUMMARY` and `DTSTART`, plus optional `UID`, `DESCRIPTION`, CSS-hex `COLOR`, `DTEND`, or a week/day/hour/minute `DURATION`. `DATE`, floating `DATE-TIME`, UTC (`Z`), and `TZID` values are preserved at Calendar's minute precision. Re-importing the same `UID` updates the existing stable event instead of duplicating it. Recurrence fields (`RRULE`, `RDATE`, `RECURRENCE-ID`, and `EXDATE`), second-precision durations, invalid dates/times, duplicate UIDs, and mixed valid/invalid batches are rejected atomically.
+
+### Local API concurrency contract
+
+Read `GET /api/sheets/{name}/state` before a local write. Event create/update/delete, settings updates, and ICS import require `requestId` plus `expectedRevision`; `expectedFingerprint` may also be supplied. Reusing the same request id and identical body safely replays the prior result, while stale revisions or changed request intent return a structured `409` error. Failed persistence returns `calendar_persistence_failed` and restores the exact pre-write state. Mutation receipts are stored on the sheet and bounded to the latest 50 requests.
+
+Hosted and legacy service-principal agent tools intentionally cover local workbook Calendar operations only. Viewer-private Google Calendar operations require a delegated human principal and are not exposed to those toolkits.
+
+### Automation contract: API -> SDK -> agents
+
+1. **Public API.** Read `GET /api/sheets/{name}/state`; use guarded `/events`, `/settings`, `/ics`, and organizer `/scheduling-sessions` routes published in generated OpenAPI. Invitee token-response routes are intentionally absent from service-principal surfaces. The private Google service family under `/api/services/google-calendar/*` additionally requires a human principal and saved-workbook scope.
+2. **Typed SDK.** `client.calendar` owns local state, query, CRUD, settings, ICS, organizer scheduling, and saved-workbook destination methods. `client.calendar.google` owns the closed human-principal Google lifecycle/source/mode/sync/event contract.
+3. **SDK-backed agents.** Calendar CLI and MCP/toolkit operations delegate local workbook behavior to `client.calendar`; they do not reconstruct routes, receive invitee response tokens, or receive private Google grants.
 
 ### Google Calendar Sync
 
@@ -167,15 +231,17 @@ In **Local + Google** and **Google only** modes, the calendar makes live read re
 
 **Write-back:** In Google primary mode (`Google only`), creating, updating, or deleting events writes directly to the signed-in viewer's Google Calendar. In overlay mode, new events can be directed to Google or kept local using a per-event destination picker in the event editor.
 
-**Connecting Google:** Click the "Connect Google" button in the sync bar to begin the OAuth flow. After authorization, your Google calendars appear as an overlay. The connection is per-viewer and stored outside the workbook JSON.
+**Connecting Google:** Click the "Connect Google" button in the sync bar to begin the OAuth flow. If access is revoked or needs renewal, the same control becomes **Reconnect Google**. After authorization, your Google calendars appear as an overlay. The connection, private calendar selection, account profile, and provider event links are per-viewer and remain outside workbook JSON.
 
-For deployed MeshAgent rooms, store the Google OAuth client values as room secrets for the xApps service identity: `xapps-google-client-id` and `xapps-google-client-secret`. With the production `xApps` deploy identity, create them with `meshagent room secret set --room=xapps --for-identity=xApps --id=xapps-google-client-id ...` and the matching client-secret command before using `meshagent deploy --env-secret`. Public MeshAgent URLs automatically read those credentials and store each viewer's Google session in room secrets when a MeshAgent room connection is available; localhost keeps using local OAuth env values plus the encrypted local token file.
+**Disconnecting:** A connected sheet shows a secondary **Disconnect** action. It opens an in-page confirmation; confirming removes Calendar access and private Calendar metadata for the current viewer, preserves other Google features such as Drive, and returns the sheet to Local only mode. Cancel, Escape, and clicking outside the dialog leave the connection unchanged.
+
+In deployments with the selected MeshAgent secrets-v2 backend, Calendar obtains access only through the server-owned Google grant runtime. The browser never receives a refresh token, and OAuth tokens, connected email, provider-derived preferences, private sources, and private event links are not workbook fields. Legacy encrypted-file credentials remain available only when the host is explicitly running without the selected v2 runtime.
 
 ---
 
 ### Display Preferences
 
-Each calendar sheet stores optional display preferences that control how dates and times are shown. These are per-sheet settings stored alongside the workbook data:
+Calendar separates durable shared state from viewer-private display state. `calendarView` and `calendarDate` are guarded workbook settings exposed through API, SDK, CLI, and tools. Explicit non-Google display fields can also live on the sheet, while absent values derive from the current browser. Google-derived profile, locale, time zone, clock/week-start preferences, source selection, and provider links are per-viewer private state and are scrubbed from workbook/Yjs persistence.
 
 | Preference | Sheet field | Default |
 |---|---|---|
@@ -234,10 +300,12 @@ xapps events "Team Calendar"
 
 # Filter by date range:
 xapps events "Team Calendar" --from 2026-04-10 --to 2026-04-15
-# Output:
-#   #0 2026-04-10 09:00 - Sprint planning
-#   #1 2026-04-11 - Design review
-#   #2 2026-04-15 14:30 - Product launch
+
+# Exact filter, text search, stable sort, and pagination:
+xapps events "Team Calendar" --filter '{"color":"#1a73e8"}' --search sprint --sort date --order asc --limit 20 --offset 0
+
+# Read one event by stable id or row:
+xapps get-event "Team Calendar" LAUNCH-1
 ```
 
 #### Add an Event
@@ -250,8 +318,8 @@ xapps add-event "Team Calendar" "Sprint planning" --date 2026-04-10 --time 09:00
 xapps add-event "Team Calendar" "Product launch" --date 2026-04-15 --time 14:30 --id LAUNCH-1
 # Output: Event created (row 1, id=LAUNCH-1)
 
-# All-day event (no time):
-xapps add-event "Team Calendar" "Company holiday" --date 2026-04-20
+# All-day event with an explicit display time zone:
+xapps add-event "Team Calendar" "Company holiday" --date 2026-04-20 --all-day --time-zone Pacific/Honolulu
 # Output: Event created (row 2)
 ```
 
@@ -274,6 +342,16 @@ xapps delete-event "Team Calendar" 0
 
 xapps delete-event "Team Calendar" LAUNCH-1
 # Output: Event LAUNCH-1 deleted (id=LAUNCH-1)
+
+# Verification succeeds only after a 404 read-back; auth, server, and network failures remain errors:
+xapps delete-event "Team Calendar" LAUNCH-1 --verify
+```
+
+#### Calendar Settings
+
+```bash
+xapps calendar-settings "Team Calendar"
+xapps set-calendar-settings "Team Calendar" '{"calendarView":"week","calendarDate":"2026-04-20"}' --verify
 ```
 
 #### Import ICS
@@ -282,6 +360,27 @@ xapps delete-event "Team Calendar" LAUNCH-1
 xapps import-ics "Team Calendar" /path/to/google-calendar.ics
 # Output: Imported 47 events into Team Calendar
 ```
+
+#### Manual Availability Coordination
+
+```bash
+# The JSON includes title, startDate/endDate, dayStart/dayEnd, durationMinutes,
+# timeZone, weekdays, invitees, and optionally deliverInvitations.
+# invitees may be empty: the request is then shared by link alone and people
+# add themselves by name. allowOpenResponses defaults to true.
+xapps create-scheduling-session "Team Calendar" '{"title":"Board meeting","startDate":"2026-07-20","endDate":"2026-07-31","dayStart":"08:00","dayEnd":"18:00","durationMinutes":60,"timeZone":"America/Los_Angeles","weekdays":[1,2,3,4,5],"invitees":[],"allowOpenResponses":true}' --verify
+xapps scheduling-sessions "Team Calendar"
+xapps scheduling-session "Team Calendar" schedule-123
+xapps send-scheduling-invitations "Team Calendar" schedule-123 --kind reminder --invitee-ids '["invitee-123"]' --rotate --verify
+xapps revoke-scheduling-access "Team Calendar" schedule-123 invitee-123 --verify
+xapps finalize-scheduling-session "Team Calendar" schedule-123 slot-2026-07-20-0900 --verify
+```
+
+These are organizer operations. People respond manually — either from the one shared link anyone can open, or from a private per-person link emailed to invitees the organizer listed. No shared or connected calendar is required, and nobody needs an account.
+
+On the response page each person drags across a day-by-time grid to mark when they are free; anything left blank counts as unavailable. A third "if need be" state is available alongside "available". Whoever opens the shared link picks a name, and that name is bound to a secret on first use so a later visitor cannot overwrite their answers. Organizer detail may include private links so an authorized organizer can copy or rotate them, but the invitee token-response endpoints themselves are not exposed as SDK, CLI, MCP, toolkit, or generated OpenAPI operations.
+
+Every local mutation accepts `--request-id`, `--expected-revision`, and optional `--expected-fingerprint`. Supplying no guard makes the CLI read current Calendar state and create a fresh request id. Mutation output preserves SDK revision, receipt, and replay metadata. ICS import is one atomic guarded mutation.
 
 ---
 
@@ -294,97 +393,105 @@ curl -H 'X-XApps-File: MyWorkbook.json' $XAPPS_API_BASE_URL/api/sheets/Team%20Ca
 # List events in a date range
 curl -H 'X-XApps-File: MyWorkbook.json' "$XAPPS_API_BASE_URL/api/sheets/Team%20Calendar/events?from=2026-04-01&to=2026-04-30"
 
-# Create an event
+# Read the guard used by every local mutation
+curl -H 'X-XApps-File: MyWorkbook.json' $XAPPS_API_BASE_URL/api/sheets/Team%20Calendar/state
+
+# Create an event (use the revision/fingerprint returned above)
 curl -X POST $XAPPS_API_BASE_URL/api/sheets/Team%20Calendar/events \
   -H 'X-XApps-File: MyWorkbook.json' \
   -H "Content-Type: application/json" \
-  -d '{"title":"Sprint planning","date":"2026-04-10","time":"09:00","description":"Backlog grooming","color":"#1a73e8"}'
+  -d '{"requestId":"calendar-create-1","expectedRevision":0,"title":"Sprint planning","date":"2026-04-10","time":"09:00","description":"Backlog grooming","color":"#1a73e8"}'
 
 # Update an event (by row number)
 curl -X PUT $XAPPS_API_BASE_URL/api/sheets/Team%20Calendar/events/0 \
   -H 'X-XApps-File: MyWorkbook.json' \
   -H "Content-Type: application/json" \
-  -d '{"title":"Sprint planning (moved)","time":"10:00"}'
+  -d '{"requestId":"calendar-update-1","expectedRevision":1,"title":"Sprint planning (moved)","time":"10:00"}'
 
 # Update by custom ID
 curl -X PUT $XAPPS_API_BASE_URL/api/sheets/Team%20Calendar/events/LAUNCH-1 \
   -H 'X-XApps-File: MyWorkbook.json' \
   -H "Content-Type: application/json" \
-  -d '{"date":"2026-04-16"}'
+  -d '{"requestId":"calendar-update-launch-1","expectedRevision":2,"date":"2026-04-16"}'
 
 # Delete an event
-curl -X DELETE -H 'X-XApps-File: MyWorkbook.json' $XAPPS_API_BASE_URL/api/sheets/Team%20Calendar/events/0
+curl -X DELETE $XAPPS_API_BASE_URL/api/sheets/Team%20Calendar/events/0 \
+  -H 'X-XApps-File: MyWorkbook.json' \
+  -H "Content-Type: application/json" \
+  -d '{"requestId":"calendar-delete-1","expectedRevision":3}'
 
 # Import ICS file content
 curl -X POST $XAPPS_API_BASE_URL/api/sheets/Team%20Calendar/ics \
   -H 'X-XApps-File: MyWorkbook.json' \
   -H "Content-Type: application/json" \
-  -d '{"ics":"BEGIN:VCALENDAR\nBEGIN:VEVENT\nSUMMARY:Test\nDTSTART:20260410T090000\nEND:VEVENT\nEND:VCALENDAR"}'
+  -d '{"requestId":"calendar-ics-1","expectedRevision":4,"ics":"BEGIN:VCALENDAR\nBEGIN:VEVENT\nSUMMARY:Test\nDTSTART:20260410T090000\nEND:VEVENT\nEND:VCALENDAR"}'
+
+# Organizer scheduling routes
+# GET/POST /api/sheets/Team%20Calendar/scheduling-sessions
+# GET      /api/sheets/Team%20Calendar/scheduling-sessions/{sessionId}
+# POST     /api/sheets/Team%20Calendar/scheduling-sessions/{sessionId}/invitations
+# DELETE   /api/sheets/Team%20Calendar/scheduling-sessions/{sessionId}/access/{inviteeId}
+# POST     /api/sheets/Team%20Calendar/scheduling-sessions/{sessionId}/finalize
 ```
 
 ---
 
 ### Agent/AI Workflow Recipes
 
-#### Recipe 1: Populate a release calendar from milestones
-
-An AI agent receives a list of release milestones and creates a calendar for the team.
+The recipes use an existing authorized `MyWorkbook.json` in `local` storage. Replace that file and storage target together for your actual workbook, and set `XAPPS_API_BASE_URL` to its authorized host. Commands that extract structured receipts also require `jq`.
 
 ```bash
-# Step 1: Create events for each milestone
-xapps add-event "Release Calendar" "Alpha release" --date 2026-04-15 --desc "Internal alpha build" --color "#ff9800" --id ALPHA
-xapps add-event "Release Calendar" "Beta release" --date 2026-05-01 --desc "Public beta" --color "#2196f3" --id BETA
-xapps add-event "Release Calendar" "RC1" --date 2026-05-15 --desc "Release candidate 1" --color "#9c27b0" --id RC1
-xapps add-event "Release Calendar" "GA Launch" --date 2026-06-01 --time "09:00" --desc "General availability" --color "#4caf50" --id GA
-
-# Step 2: Verify the calendar
-xapps events "Release Calendar"
-# Output:
-#   #0 ALPHA 2026-04-15 - Alpha release
-#   #1 BETA 2026-05-01 - Beta release
-#   #2 RC1 2026-05-15 - RC1
-#   #3 GA 2026-06-01 09:00 - GA Launch
+xapps_scoped() {
+  xapps --base-url "${XAPPS_API_BASE_URL:?Set the authorized host URL}" \
+    --file 'MyWorkbook.json' --workbook-storage-target local "$@"
+}
 ```
 
-#### Recipe 2: Import and clean up an ICS export
-
-An agent imports a calendar from Google Calendar and removes past events.
+#### Add an authorized milestone
 
 ```bash
-# Step 1: Import the ICS file
-xapps import-ics "Imported Cal" /tmp/google-export.ics
-# Output: Imported 120 events into Imported Cal
-
-# Step 2: List events to find past ones
-xapps events "Imported Cal" --to 2026-04-09
-
-# Step 3: Delete past events by row number
-xapps delete-event "Imported Cal" 0
-xapps delete-event "Imported Cal" 1
-# ... (repeat for each past event)
-
-# Step 4: Verify remaining events
-xapps events "Imported Cal" --from 2026-04-10
+xapps_scoped calendar-settings "Release Calendar" --json > release-calendar-before.json
+CALENDAR_REVISION=$(jq -er '.revision' release-calendar-before.json)
+CALENDAR_FINGERPRINT=$(jq -er '.fingerprint' release-calendar-before.json)
+xapps_scoped add-event "Release Calendar" "Alpha release" --date 2026-09-15 --id ALPHA \
+  --expected-revision "$CALENDAR_REVISION" --expected-fingerprint "$CALENDAR_FINGERPRINT" \
+  --request-id release-alpha-1 --verify --json > release-alpha-receipt.json
+xapps_scoped events "Release Calendar" --from 2026-09-15 --to 2026-09-15 --json
 ```
 
-#### Recipe 3: Generate a weekly digest from calendar data
+For another milestone, read `calendar-settings` again or use the immediately verified canonical result when no other writer could intervene; assign a new request ID to that distinct event. Do not share one stale guard across several creates.
 
-An agent reads the calendar for the current week and produces a summary.
+#### Import an authorized ICS file
 
 ```bash
-# Step 1: Query this week's events
-xapps events "Team Calendar" --from 2026-04-06 --to 2026-04-12
-# Output:
-#   #0 2026-04-07 09:00 - Standup
-#   #1 2026-04-08 14:00 - Design review
-#   #2 2026-04-10 09:00 - Sprint planning
-#   #3 2026-04-10 - All-hands (all-day)
-
-# Step 2: Use the output to compose a digest email or Slack message
-# (Agent uses the event list to format a human-readable summary)
+xapps_scoped calendar-settings "Imported Cal" --json > imported-calendar-before.json
+CALENDAR_REVISION=$(jq -er '.revision' imported-calendar-before.json)
+CALENDAR_FINGERPRINT=$(jq -er '.fingerprint' imported-calendar-before.json)
+xapps_scoped import-ics "Imported Cal" ./google-export.ics \
+  --expected-revision "$CALENDAR_REVISION" --expected-fingerprint "$CALENDAR_FINGERPRINT" \
+  --request-id calendar-import-1 --verify --json > calendar-import-receipt.json
+xapps_scoped events "Imported Cal" --from 2026-09-01 --to 2026-09-30 --limit 50 --json
 ```
 
----
+Preserve the exact ICS bytes together with the original guard for a lost-response retry. `events` returns event records; acquire the revision and fingerprint from `calendar-settings`, not from that list.
+
+#### Remove one obsolete event only when removal is authorized
+
+First identify the actual stable event ID from a bounded `events` read and set `EVENT_ID`. Import does not itself authorize deleting historical events.
+
+```bash
+xapps_scoped calendar-settings "Imported Cal" --json > calendar-delete-before.json
+CALENDAR_REVISION=$(jq -er '.revision' calendar-delete-before.json)
+CALENDAR_FINGERPRINT=$(jq -er '.fingerprint' calendar-delete-before.json)
+xapps_scoped delete-event "Imported Cal" "$EVENT_ID" \
+  --expected-revision "$CALENDAR_REVISION" --expected-fingerprint "$CALENDAR_FINGERPRINT" \
+  --request-id remove-obsolete-event-1 --verify --json > calendar-delete-receipt.json
+xapps_scoped calendar-settings "Imported Cal" --json
+```
+
+For a weekly digest, query a bounded date range and draft the summary. Sending email or a Chat message requires that delivery authorization separately from calendar read access.
+
+Keep every prepared payload, revision, request ID and receipt until verification completes. After uncertain delivery, retry the identical mutation with its original guard; do not rerun the preparation steps with a fresh revision. On `409`, reread, reconcile and create a new ID only for a newly decided intent. Read commands can run independently; writes against shared state run sequentially or as one atomic batch.
 
 ### Troubleshooting
 
